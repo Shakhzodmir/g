@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dev-dist/
+coverage/
+playwright-report/
+test-results/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+
+# raw research workspace (final report is copied into docs/)
+research_notes/
+reports/
