@@ -1,5 +1,406 @@
-/* Design tokens: filled in by Task A2. */
+/*
+ * Design tokens — "Ishkor" (Rishtan ceramics). Contrast pairs verified against WCAG 2.2.
+ * Themes are selected with html[data-theme]; sensory level with html[data-sensory]; board mode with html[data-board].
+ */
+
 :root {
-  --bg: #fbf7f0;
-  --text: #1e2633;
+  /* Type families */
+  --font-ui: 'Nunito Variable', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Playpen Sans Variable', var(--font-ui);
+  --font-adult: 'Onest Variable', 'Onest', 'Segoe UI', system-ui, sans-serif;
+
+  /* Type scale (phone baseline; board mode scales the root font-size) */
+  --fs-display: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem);
+  --fs-title: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+  --fs-body: 1.125rem;
+  --fs-label: 1.0625rem;
+  --fs-caption: 0.875rem;
+  --lh-tight: 1.2;
+  --lh-body: 1.55;
+
+  /* Spacing */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.25rem;
+  --s-6: 1.5rem;
+  --s-8: 2rem;
+  --s-10: 2.5rem;
+  --s-12: 3rem;
+  --s-16: 4rem;
+
+  /* Shape: radius encodes hierarchy (cell < card < sheet < tile < pill) */
+  --r-chip: 12px;
+  --r-cell: 20px;
+  --r-card: 28px;
+  --r-sheet: 32px;
+  --r-tile: 48px;
+  --r-pill: 999px;
+
+  /* Touch */
+  --touch-min: 48px;
+  --cell-min: 72px;
+  --ui-scale: 1;
+  --reach: 0.45;
+
+  /* Motion */
+  --dur-fast: 150ms;
+  --dur-med: 300ms;
+  --dur-slow: 500ms;
+  --ease-out: cubic-bezier(0.2, 0.9, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Layout */
+  --nav-h: 76px;
+  --rail-w: 104px;
+  --content-max: 1200px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* ---------- Bolajon: light, children (default) ---------- */
+:root,
+html[data-theme='bolajon'] {
+  color-scheme: light;
+  --bg: #f4f8f7; /* glazed white of Rishtan ceramics */
+  --bg-deep: #e3efed;
+  --surface: #ffffff;
+  --surface-2: #edf4f3;
+  --text: #1e2633; /* siyoh */
+  --text-muted: #4a5568;
+  --primary: #0a7584; /* ishkor */
+  --on-primary: #ffffff;
+  --primary-container: #cdeff2;
+  --on-primary-container: #053f47;
+  --secondary: #2b4fb5; /* lojuvard */
+  --on-secondary: #ffffff;
+  --secondary-container: #dbe4ff;
+  --accent: #b42a43; /* anor */
+  --on-accent: #ffffff;
+  --success: #1c7d45; /* yashil */
+  --on-success: #ffffff;
+  --warm: #f4b740; /* zar */
+  --on-warm: #3a2a00;
+  --warm-container: #fff0c9;
+  --outline: #7a8494;
+  --outline-soft: #d3dfdd;
+  --focus-outer: #1e2633;
+  --focus-inner: #ffffff;
+  --scan: #f4b740;
+  --shadow-rgb: 23 54 60;
+  --glaze: rgb(255 255 255 / 0.7);
+  --scrim: rgb(14 23 38 / 0.45);
+
+  --fitz-people-bg: #ffe58f;
+  --fitz-people-border: #8f6b00;
+  --fitz-action-bg: #bdebc8;
+  --fitz-action-border: #2f8f4e;
+  --fitz-describe-bg: #c3ddfb;
+  --fitz-describe-border: #2f6fb8;
+  --fitz-thing-bg: #ffd1a6;
+  --fitz-thing-border: #c2621a;
+  --fitz-social-bg: #f8c8dc;
+  --fitz-social-border: #b8487a;
+  --fitz-question-bg: #dccbfa;
+  --fitz-question-border: #7a4fc4;
+  --fitz-negation-bg: #f7bdbd;
+  --fitz-negation-border: #c23a3a;
+  --fitz-misc-bg: #e6e8ed;
+  --fitz-misc-border: #7a8494;
+  --fitz-text: #1e2633;
+}
+
+/* ---------- Tun: dark ---------- */
+html[data-theme='tun'] {
+  color-scheme: dark;
+  --bg: #0e1726;
+  --bg-deep: #0a1220;
+  --surface: #16233a;
+  --surface-2: #1d2c47;
+  --text: #edf2f7;
+  --text-muted: #b4c0d0;
+  --primary: #4fd1db;
+  --on-primary: #032a30;
+  --primary-container: #0f4a52;
+  --on-primary-container: #cdeff2;
+  --secondary: #9db4ff;
+  --on-secondary: #0b1a47;
+  --secondary-container: #23345f;
+  --accent: #ff8a9b;
+  --on-accent: #3a0710;
+  --success: #5bd48a;
+  --on-success: #062a14;
+  --warm: #ffc861;
+  --on-warm: #2e2000;
+  --warm-container: #3d3014;
+  --outline: #7e8ba3;
+  --outline-soft: #2a3a57;
+  --focus-outer: #ffd84d;
+  --focus-inner: #0e1726;
+  --scan: #ffd84d;
+  --shadow-rgb: 0 0 0;
+  --glaze: rgb(255 255 255 / 0.08);
+  --scrim: rgb(0 0 0 / 0.6);
+
+  --fitz-people-bg: #5a4700;
+  --fitz-people-border: #e8c547;
+  --fitz-action-bg: #14532d;
+  --fitz-action-border: #5bd48a;
+  --fitz-describe-bg: #163e73;
+  --fitz-describe-border: #7fb3f5;
+  --fitz-thing-bg: #6b3410;
+  --fitz-thing-border: #f0a35e;
+  --fitz-social-bg: #6a1f44;
+  --fitz-social-border: #f28db8;
+  --fitz-question-bg: #3e2a75;
+  --fitz-question-border: #b497f2;
+  --fitz-negation-bg: #6e1a1a;
+  --fitz-negation-border: #f28b8b;
+  --fitz-misc-bg: #2c3647;
+  --fitz-misc-border: #8a96ab;
+  --fitz-text: #edf2f7;
+}
+
+/* ---------- Tinch: calm, low arousal ---------- */
+html[data-theme='tinch'] {
+  color-scheme: light;
+  --bg: #f1f3f2;
+  --bg-deep: #e5e9e8;
+  --surface: #fbfbfa;
+  --surface-2: #eceeed;
+  --text: #283140;
+  --text-muted: #556070;
+  --primary: #3c7a82;
+  --on-primary: #ffffff;
+  --primary-container: #dbeaec;
+  --on-primary-container: #1f454a;
+  --secondary: #4a5f9a;
+  --on-secondary: #ffffff;
+  --secondary-container: #e1e6f3;
+  --accent: #8f4955;
+  --on-accent: #ffffff;
+  --success: #3d7a55;
+  --on-success: #ffffff;
+  --warm: #d9b266;
+  --on-warm: #2f2410;
+  --warm-container: #f4ead4;
+  --outline: #7d8590;
+  --outline-soft: #d9dddc;
+  --focus-outer: #283140;
+  --focus-inner: #ffffff;
+  --scan: #c99a3f;
+  --shadow-rgb: 40 49 64;
+  --glaze: rgb(255 255 255 / 0.5);
+  --scrim: rgb(40 49 64 / 0.4);
+
+  --fitz-people-bg: #f3e6b9;
+  --fitz-people-border: #8a7230;
+  --fitz-action-bg: #d3e6d8;
+  --fitz-action-border: #4c7f5c;
+  --fitz-describe-bg: #d6e1ee;
+  --fitz-describe-border: #4f6f96;
+  --fitz-thing-bg: #f0dcc8;
+  --fitz-thing-border: #a06a3d;
+  --fitz-social-bg: #ecd6df;
+  --fitz-social-border: #95607a;
+  --fitz-question-bg: #e1daee;
+  --fitz-question-border: #6f5c96;
+  --fitz-negation-bg: #edd2d2;
+  --fitz-negation-border: #9a5050;
+  --fitz-misc-bg: #e6e8eb;
+  --fitz-misc-border: #7d8590;
+  --fitz-text: #283140;
+}
+
+/* ---------- Kattalar: adults, neutral and dignified ---------- */
+html[data-theme='kattalar'] {
+  color-scheme: light;
+  --font-ui: var(--font-adult);
+  --font-display: var(--font-adult);
+  --bg: #f6f7f6;
+  --bg-deep: #eceeec;
+  --surface: #ffffff;
+  --surface-2: #f0f2f1;
+  --text: #1f2328;
+  --text-muted: #5b6270;
+  --primary: #0a7584;
+  --on-primary: #ffffff;
+  --primary-container: #d6eef1;
+  --on-primary-container: #053f47;
+  --secondary: #2b4fb5;
+  --on-secondary: #ffffff;
+  --secondary-container: #dfe6fb;
+  --accent: #b42a43;
+  --on-accent: #ffffff;
+  --success: #1c7d45;
+  --on-success: #ffffff;
+  --warm: #e2a93a;
+  --on-warm: #2e2000;
+  --warm-container: #fbf0d6;
+  --outline: #7a8494;
+  --outline-soft: #dde1e0;
+  --focus-outer: #1f2328;
+  --focus-inner: #ffffff;
+  --scan: #e2a93a;
+  --shadow-rgb: 31 35 40;
+  --glaze: rgb(255 255 255 / 0.4);
+  --scrim: rgb(31 35 40 / 0.45);
+  --r-cell: 12px;
+  --r-card: 16px;
+  --r-sheet: 20px;
+  --r-tile: 24px;
+
+  --fitz-people-bg: #fbe9a8;
+  --fitz-people-border: #8f6b00;
+  --fitz-action-bg: #cdeed5;
+  --fitz-action-border: #2f8f4e;
+  --fitz-describe-bg: #d2e4fa;
+  --fitz-describe-border: #2f6fb8;
+  --fitz-thing-bg: #fddcbd;
+  --fitz-thing-border: #c2621a;
+  --fitz-social-bg: #f7d6e4;
+  --fitz-social-border: #b8487a;
+  --fitz-question-bg: #e3d7f9;
+  --fitz-question-border: #7a4fc4;
+  --fitz-negation-bg: #f6cdcd;
+  --fitz-negation-border: #c23a3a;
+  --fitz-misc-bg: #eceef1;
+  --fitz-misc-border: #7a8494;
+  --fitz-text: #1f2328;
+}
+
+/* ---------- High contrast: light ---------- */
+html[data-theme='hc-light'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-deep: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --text: #000000;
+  --text-muted: #1a1a1a;
+  --primary: #00205b;
+  --on-primary: #ffffff;
+  --primary-container: #ffffff;
+  --on-primary-container: #00205b;
+  --secondary: #00205b;
+  --on-secondary: #ffffff;
+  --secondary-container: #ffffff;
+  --accent: #7a0019;
+  --on-accent: #ffffff;
+  --success: #004d1a;
+  --on-success: #ffffff;
+  --warm: #00205b;
+  --on-warm: #ffffff;
+  --warm-container: #ffffff;
+  --outline: #000000;
+  --outline-soft: #000000;
+  --focus-outer: #a0006e;
+  --focus-inner: #ffffff;
+  --scan: #a0006e;
+  --shadow-rgb: 0 0 0;
+  --glaze: transparent;
+  --scrim: rgb(0 0 0 / 0.7);
+  --fitz-people-bg: #ffffff;
+  --fitz-people-border: #000000;
+  --fitz-action-bg: #ffffff;
+  --fitz-action-border: #000000;
+  --fitz-describe-bg: #ffffff;
+  --fitz-describe-border: #000000;
+  --fitz-thing-bg: #ffffff;
+  --fitz-thing-border: #000000;
+  --fitz-social-bg: #ffffff;
+  --fitz-social-border: #000000;
+  --fitz-question-bg: #ffffff;
+  --fitz-question-border: #000000;
+  --fitz-negation-bg: #ffffff;
+  --fitz-negation-border: #000000;
+  --fitz-misc-bg: #ffffff;
+  --fitz-misc-border: #000000;
+  --fitz-text: #000000;
+}
+
+/* ---------- High contrast: dark ---------- */
+html[data-theme='hc-dark'] {
+  color-scheme: dark;
+  --bg: #000000;
+  --bg-deep: #000000;
+  --surface: #000000;
+  --surface-2: #000000;
+  --text: #ffffff;
+  --text-muted: #f0f0f0;
+  --primary: #00e5ff;
+  --on-primary: #000000;
+  --primary-container: #000000;
+  --on-primary-container: #00e5ff;
+  --secondary: #00e5ff;
+  --on-secondary: #000000;
+  --secondary-container: #000000;
+  --accent: #ff6b8a;
+  --on-accent: #000000;
+  --success: #6bff9e;
+  --on-success: #000000;
+  --warm: #ffe500;
+  --on-warm: #000000;
+  --warm-container: #000000;
+  --outline: #ffffff;
+  --outline-soft: #ffffff;
+  --focus-outer: #ffe500;
+  --focus-inner: #000000;
+  --scan: #ffe500;
+  --shadow-rgb: 0 0 0;
+  --glaze: transparent;
+  --scrim: rgb(0 0 0 / 0.8);
+  --fitz-people-bg: #000000;
+  --fitz-people-border: #ffe500;
+  --fitz-action-bg: #000000;
+  --fitz-action-border: #6bff9e;
+  --fitz-describe-bg: #000000;
+  --fitz-describe-border: #00e5ff;
+  --fitz-thing-bg: #000000;
+  --fitz-thing-border: #ffb36b;
+  --fitz-social-bg: #000000;
+  --fitz-social-border: #ff9ecb;
+  --fitz-question-bg: #000000;
+  --fitz-question-border: #c9a7ff;
+  --fitz-negation-bg: #000000;
+  --fitz-negation-border: #ff6b6b;
+  --fitz-misc-bg: #000000;
+  --fitz-misc-border: #ffffff;
+  --fitz-text: #ffffff;
+}
+
+/* Elevation (soft, tinted toward the theme's ink) */
+:root,
+html[data-theme] {
+  --elev-1: 0 1px 2px rgb(var(--shadow-rgb) / 0.1), 0 1px 1px rgb(var(--shadow-rgb) / 0.06);
+  --elev-2: 0 4px 12px rgb(var(--shadow-rgb) / 0.1), 0 1px 3px rgb(var(--shadow-rgb) / 0.08);
+  --elev-3: 0 12px 28px rgb(var(--shadow-rgb) / 0.13), 0 3px 6px rgb(var(--shadow-rgb) / 0.08);
+  --elev-dialog: 0 24px 56px rgb(var(--shadow-rgb) / 0.22), 0 6px 14px rgb(var(--shadow-rgb) / 0.1);
+}
+
+html[data-theme='hc-light'],
+html[data-theme='hc-dark'] {
+  --elev-1: none;
+  --elev-2: none;
+  --elev-3: none;
+  --elev-dialog: none;
+}
+
+/* Board mode: everything scales from the root font-size; --ui-scale is set from calibration. */
+html[data-board='true'] {
+  --ui-scale: 1.5;
+  --cell-min: 5.5rem;
+  --touch-min: 4rem;
+  --nav-h: 5.5rem;
+}
+
+/* Sensory level: calm removes springs and long motion */
+html[data-sensory='calm'] {
+  --dur-fast: 120ms;
+  --dur-med: 160ms;
+  --dur-slow: 200ms;
+  --ease-spring: var(--ease-out);
 }
