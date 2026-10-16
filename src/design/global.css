@@ -1,0 +1,6 @@
+/* Global styles: filled in by Task A2. */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
