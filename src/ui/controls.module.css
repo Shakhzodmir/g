@@ -1,0 +1,133 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: var(--touch-min);
+}
+
+.stack {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.labels {
+  display: grid;
+  gap: 2px;
+}
+
+.label {
+  font-weight: 700;
+  font-size: var(--fs-label);
+  padding: 0;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  line-height: 1.35;
+}
+
+.value {
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.switch {
+  flex: none;
+  position: relative;
+  width: 64px;
+  height: 38px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--outline-soft);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.switch[aria-checked='true'] {
+  background: var(--primary);
+}
+
+.knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.switch[aria-checked='true'] .knob {
+  transform: translateX(26px);
+}
+
+.range {
+  width: 100%;
+  height: var(--touch-min);
+  accent-color: var(--primary);
+}
+
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.segments {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+}
+
+.wrap {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  border-radius: var(--r-cell);
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: calc(var(--touch-min) - 8px);
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.15;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.wrap .segment {
+  border-radius: calc(var(--r-cell) - 4px);
+}
+
+.segment[data-checked] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--elev-1);
+}
+
+.segment:has(:focus-visible) {
+  outline: 3px solid var(--focus-outer);
+  outline-offset: 1px;
+}
+
+@media (forced-colors: active) {
+  .segment[data-checked] {
+    border: 2px solid Highlight;
+  }
+}

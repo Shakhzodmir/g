@@ -1,0 +1,116 @@
+.btn {
+  --btn-bg: var(--primary);
+  --btn-fg: var(--on-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  padding: 0 var(--s-5);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-weight: 800;
+  font-size: var(--fs-label);
+  line-height: 1.15;
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glaze);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+  touch-action: manipulation;
+}
+
+.btn[data-pressed='true'] {
+  transform: scale(0.96);
+  box-shadow: none;
+}
+
+.btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn[data-holding='true'] {
+  background-image: linear-gradient(90deg, rgb(255 255 255 / 0.28) 0 0);
+  background-repeat: no-repeat;
+  background-size: 0 100%;
+  animation: hold var(--hold-ms) linear forwards;
+}
+
+@keyframes hold {
+  to {
+    background-size: 100% 100%;
+  }
+}
+
+.primary {
+  --btn-bg: var(--primary);
+  --btn-fg: var(--on-primary);
+}
+.secondary {
+  --btn-bg: var(--secondary);
+  --btn-fg: var(--on-secondary);
+}
+.soft {
+  --btn-bg: var(--primary-container);
+  --btn-fg: var(--on-primary-container);
+  box-shadow: none;
+}
+.warm {
+  --btn-bg: var(--warm);
+  --btn-fg: var(--on-warm);
+}
+.ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--text);
+  box-shadow: none;
+}
+.ghost:hover {
+  background: var(--surface-2);
+}
+
+.md {
+  min-height: var(--touch-min);
+}
+.lg {
+  min-height: calc(var(--touch-min) + 0.75rem);
+  padding: 0 var(--s-6);
+  font-size: 1.1875rem;
+}
+.xl {
+  min-height: calc(var(--touch-min) + 1.75rem);
+  padding: 0 var(--s-8);
+  font-size: 1.375rem;
+}
+
+.iconOnly {
+  padding: 0;
+  aspect-ratio: 1;
+}
+
+.block {
+  width: 100%;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+}
+
+.icon :global(svg) {
+  width: 1.4em;
+  height: 1.4em;
+}
+
+.text {
+  text-align: center;
+}
+
+@media (forced-colors: active) {
+  .btn {
+    border: 2px solid ButtonText;
+  }
+}

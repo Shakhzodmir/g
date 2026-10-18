@@ -1,0 +1,27 @@
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.photo {
+  object-fit: cover;
+  border-radius: calc(var(--r-cell) - 6px);
+}
+
+.fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.dot {
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--primary-container);
+  box-shadow: inset 0 -6px 0 rgb(var(--shadow-rgb) / 0.08);
+}

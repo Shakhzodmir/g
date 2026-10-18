@@ -1,0 +1,32 @@
+.header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: calc(var(--s-3) + var(--safe-top)) var(--s-4) var(--s-3);
+}
+
+.spacer {
+  width: var(--touch-min);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+  font-size: var(--fs-title);
+  overflow-wrap: anywhere;
+}
+
+.symbol {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.actions {
+  display: flex;
+  gap: var(--s-2);
+  justify-content: flex-end;
+}

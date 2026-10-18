@@ -1,0 +1,70 @@
+.card {
+  padding: var(--s-5);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+  padding: var(--s-10) var(--s-4);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-weight: 800;
+  font-size: var(--fs-title);
+}
+
+.emptyText {
+  max-width: 34ch;
+  color: var(--text-muted);
+}
+
+.reward {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4);
+}
+
+.rewardGlow {
+  width: clamp(7rem, 22vmin, 12rem);
+  aspect-ratio: 1;
+  padding: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--warm-container) 0 55%, transparent 72%);
+}
+
+.rewardLabel {
+  font-weight: 800;
+  font-size: var(--fs-title);
+  text-align: center;
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.particle {
+  grid-area: 1 / 1;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--warm);
+}
+
+.particle:nth-child(3n) {
+  background: var(--primary);
+}
+
+.particle:nth-child(3n + 1) {
+  background: #9ad8dc;
+}
