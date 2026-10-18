@@ -6,7 +6,7 @@
 :root {
   /* Type families */
   --font-ui: 'Nunito Variable', 'Nunito', 'Segoe UI', system-ui, sans-serif;
-  --font-display: 'Playpen Sans Variable', var(--font-ui);
+  --font-display: var(--font-ui);
   --font-adult: 'Onest Variable', 'Onest', 'Segoe UI', system-ui, sans-serif;
 
   /* Type scale (phone baseline; board mode scales the root font-size) */

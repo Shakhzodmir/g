@@ -11,7 +11,6 @@ const SUBSETS = ['latin', 'latin-ext', 'cyrillic', 'cyrillic-ext']
 const FAMILIES = [
   { pkg: 'nunito', file: 'nunito', family: 'Nunito Variable' },
   { pkg: 'onest', file: 'onest', family: 'Onest Variable' },
-  { pkg: 'playpen-sans', file: 'playpen-sans', family: 'Playpen Sans Variable' },
 ]
 
 mkdirSync(outDir, { recursive: true })
