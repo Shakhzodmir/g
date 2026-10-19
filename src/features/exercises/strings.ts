@@ -56,7 +56,7 @@ export const S = defineStrings({
     adultConfirms: 'Kattalar tasdiqlaydi',
   },
   ru: {
-    title: 'Упражнения',
+    title: 'Разминка',
     blowTitle: 'Подуй!',
     voiceTitle: 'Лети, Муся!',
     voiceTitleAdult: 'Голос',

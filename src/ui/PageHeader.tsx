@@ -13,7 +13,7 @@ export function PageHeader({ title, back = '/', actions, symbol }: { title: stri
   return (
     <header className={styles.header} data-no-print>
       {back !== null ? (
-        <Button variant="soft" iconOnly icon={<ArrowLeft />} label={t('back')} onActivate={() => navigate(back)}>
+        <Button className={styles.back} variant="soft" iconOnly icon={<ArrowLeft />} label={t('back')} onActivate={() => navigate(back)}>
           {t('back')}
         </Button>
       ) : (

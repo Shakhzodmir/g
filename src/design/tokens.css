@@ -51,6 +51,19 @@
   --ease-out: cubic-bezier(0.2, 0.9, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
+  /* Page rhythm: one gutter and one set of content widths for every screen */
+  --gutter: 1rem;
+  --section-gap: var(--s-6);
+  --width-narrow: 40rem;
+  --width-normal: 62rem;
+  --width-wide: 80rem;
+
+  /* Text roles (min 14px for reading text; 13px only for tab/nav labels) */
+  --fs-nav: 0.8125rem;
+  --fs-card-title: 1.125rem;
+  --fs-card-meta: 0.875rem;
+  --measure: 62ch;
+
   /* Layout */
   --nav-h: 76px;
   --rail-w: 104px;
@@ -59,6 +72,19 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
+}
+
+@media (min-width: 600px) {
+  :root {
+    --gutter: 1.5rem;
+    --section-gap: var(--s-8);
+  }
+}
+
+@media (min-width: 1000px) {
+  :root {
+    --gutter: 2rem;
+  }
 }
 
 /* ---------- Bolajon: light, children (default) ---------- */

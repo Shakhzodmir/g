@@ -1,22 +1,32 @@
 .header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto var(--header-reserve, 0px);
+  grid-template-areas: 'back title actions reserve';
   align-items: center;
-  gap: var(--s-3);
-  padding: calc(var(--s-3) + var(--safe-top)) calc(var(--s-4) + var(--header-reserve, 0px)) var(--s-3) var(--s-4);
+  column-gap: var(--s-3);
+  row-gap: var(--s-2);
+  padding: calc(var(--s-3) + var(--safe-top)) calc(var(--gutter) + var(--safe-right)) var(--s-3) calc(var(--gutter) + var(--safe-left));
+}
+
+.back {
+  grid-area: back;
 }
 
 .spacer {
+  grid-area: back;
   width: var(--touch-min);
 }
 
 .title {
+  grid-area: title;
   display: flex;
   align-items: center;
   gap: var(--s-3);
   min-width: 0;
   font-size: var(--fs-title);
-  overflow-wrap: anywhere;
+  line-height: 1.15;
+  overflow-wrap: break-word;
+  hyphens: manual;
 }
 
 .symbol {
@@ -26,7 +36,20 @@
 }
 
 .actions {
+  grid-area: actions;
   display: flex;
   gap: var(--s-2);
   justify-content: flex-end;
+}
+
+/* Phones: the title gets its own full-width row, the first row holds back / actions / the Break button */
+@media (max-width: 30rem) {
+  .header {
+    grid-template-areas:
+      'back . actions reserve'
+      'title title title title';
+  }
+  .title {
+    font-size: 1.5rem;
+  }
 }

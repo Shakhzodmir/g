@@ -335,7 +335,7 @@ export const S = defineStrings({
     topWordsTitle: 'Чаще всего выбирали',
     newWordsTitle: 'Новые слова этой недели',
     gamesTitle: 'Игры',
-    exercisesTitle: 'Упражнения',
+    exercisesTitle: 'Разминка',
     feelingsTitle: 'Выбранные чувства',
     noneYet: 'Пока нет',
     times: '{n} {times}',

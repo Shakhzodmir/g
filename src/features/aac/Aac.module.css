@@ -322,6 +322,7 @@
   letter-spacing: -0.01em;
   text-align: center;
   overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .placeholder {

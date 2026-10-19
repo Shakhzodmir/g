@@ -47,13 +47,14 @@
   gap: 2px;
   width: 100%;
   min-height: 4rem;
-  padding: var(--s-2) var(--s-1);
+  min-width: 0;
+  padding: var(--s-2) 2px;
   border: 0;
   border-radius: var(--r-cell);
   background: transparent;
   color: var(--text-muted);
   font-weight: 700;
-  font-size: 0.8125rem;
+  font-size: var(--fs-nav);
   line-height: 1.1;
 }
 
@@ -72,8 +73,10 @@
 }
 
 .navLabel {
+  max-width: 100%;
   text-align: center;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 /* Tablets, laptops, desktops: a calm fixed rail on the left */

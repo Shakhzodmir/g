@@ -22,6 +22,6 @@ export const FEATURES: Record<FeatureId, FeatureDef> = {
   feelings: { id: 'feelings', path: '/feelings', title: { uz: 'Hissiyotlarim', ru: 'Мои чувства' }, symbol: 'feelings', Component: lazy(() => import('../features/feelings')) },
   stories: { id: 'stories', path: '/stories', title: { uz: 'Hikoyalar', ru: 'Истории' }, symbol: 'book', Component: lazy(() => import('../features/stories')) },
   games: { id: 'games', path: '/games', title: { uz: 'Oʻyinlar', ru: 'Игры' }, symbol: 'puzzle', Component: lazy(() => import('../features/games')) },
-  exercises: { id: 'exercises', path: '/exercises', title: { uz: 'Mashqlar', ru: 'Упражнения' }, symbol: 'lips', Component: lazy(() => import('../features/exercises')) },
+  exercises: { id: 'exercises', path: '/exercises', title: { uz: 'Mashqlar', ru: 'Разминка' }, symbol: 'lips', Component: lazy(() => import('../features/exercises')) },
   parent: { id: 'parent', path: '/parent', title: { uz: 'Ota-onalar', ru: 'Родителям' }, symbol: 'family', Component: lazy(() => import('../features/parent')) },
 }

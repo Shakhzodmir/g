@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { Fitz } from '../../content/types'
-import type { AacSettings } from '../../store/profile'
+import { shy } from '../../lib/hyphenate'
+import { useProfileStore, type AacSettings } from '../../store/profile'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './Aac.module.css'
@@ -22,6 +23,7 @@ export interface CellProps {
 
 /** One AAC cell: symbol first, optional short label above or below, part-of-speech colour + border. */
 export function Cell({ symbol, src, label, fitz, aac, onActivate, scanGroup, glow }: CellProps) {
+  const lang = useProfileStore((s) => s.profile.speechLang)
   return (
     <Pressable
       className={styles.cell}
@@ -38,7 +40,7 @@ export function Cell({ symbol, src, label, fitz, aac, onActivate, scanGroup, glo
       </span>
       {aac.showLabels && (
         <span className={styles.cellLabel} aria-hidden="true">
-          {label}
+          {shy(label, lang)}
         </span>
       )}
     </Pressable>

@@ -35,7 +35,7 @@ export const SHELL = defineStrings({
     homeTalk: 'Говорить',
     homeDay: 'Мой день',
     homeGames: 'Игры',
-    homeExercises: 'Упражнения',
+    homeExercises: 'Разминка',
     homeTimer: 'Таймер',
     homeTokens: 'Звёздочки',
     homeStories: 'Истории',

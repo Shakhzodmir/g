@@ -55,7 +55,7 @@ export const COMMON = defineStrings({
     navHome: 'Главная',
     navTalk: 'Говорить',
     navGames: 'Игры',
-    navExercises: 'Упражнения',
+    navExercises: 'Разминка',
     navDay: 'Мой день',
     navParents: 'Родителям',
     navParentsLong: 'Родителям и специалистам',
