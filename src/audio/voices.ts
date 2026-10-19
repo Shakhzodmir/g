@@ -15,25 +15,76 @@ export function pickVoice(voices: readonly Pick<SpeechSynthesisVoice, 'lang' | '
 }
 
 let cached: SpeechSynthesisVoice[] | null = null
+let pending: Promise<SpeechSynthesisVoice[]> | null = null
+let watching = false
+/** True once a wait for the list has ended (even empty): later calls never wait again, the watcher keeps the cache fresh. */
+let settled = false
 
-/** Resolves the voice list (Chrome fills it asynchronously). Empty when the API is missing. */
+/** Keeps the cache current: Chrome fills the list asynchronously and may change it later. */
+function watchVoices(synth: SpeechSynthesis): void {
+  if (watching) return
+  watching = true
+  try {
+    synth.addEventListener?.('voiceschanged', () => {
+      const now = synth.getVoices()
+      if (now.length) cached = now
+    })
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Voices known right now, without waiting (empty until the browser has filled the list). */
+export function voicesNow(): SpeechSynthesisVoice[] {
+  const synth = globalThis.speechSynthesis
+  if (!synth) return []
+  try {
+    const now = synth.getVoices()
+    if (now.length) cached = now
+  } catch {
+    /* ignore */
+  }
+  return cached ?? []
+}
+
+/** Synchronous system-voice lookup from what is known now. Never waits. */
+export function systemVoiceNow(lang: SpeechLang): SpeechSynthesisVoice | null {
+  return (pickVoice(voicesNow(), lang) as SpeechSynthesisVoice | null) ?? null
+}
+
+/**
+ * Resolves the voice list (Chrome fills it asynchronously). Empty when the API is missing or the device has
+ * no voices at all. One shared wait per call site: concurrent callers reuse the same pending promise.
+ */
 export function loadVoices(timeoutMs = 1500): Promise<SpeechSynthesisVoice[]> {
   const synth = globalThis.speechSynthesis
   if (!synth) return Promise.resolve([])
-  const now = synth.getVoices()
-  if (now.length) {
-    cached = now
-    return Promise.resolve(now)
-  }
-  if (cached) return Promise.resolve(cached)
-  return new Promise((resolve) => {
-    const done = () => {
-      cached = synth.getVoices()
-      resolve(cached)
+  const now = voicesNow()
+  if (now.length || settled) return Promise.resolve(now)
+  if (pending) return pending
+  watchVoices(synth)
+  pending = new Promise<SpeechSynthesisVoice[]>((resolve) => {
+    let timer: ReturnType<typeof setTimeout>
+    const finish = () => {
+      clearTimeout(timer)
+      synth.removeEventListener?.('voiceschanged', finish)
+      pending = null
+      settled = true
+      resolve(voicesNow())
     }
-    synth.addEventListener?.('voiceschanged', done, { once: true })
-    setTimeout(done, timeoutMs)
+    synth.addEventListener?.('voiceschanged', finish, { once: true })
+    timer = setTimeout(finish, timeoutMs)
   })
+  return pending
+}
+
+/** Starts filling the voice cache in the background (call once at app start). Never throws, never blocks. */
+export function preloadVoices(): void {
+  try {
+    void loadVoices()
+  } catch {
+    /* ignore */
+  }
 }
 
 export async function systemVoiceFor(lang: SpeechLang): Promise<SpeechSynthesisVoice | null> {

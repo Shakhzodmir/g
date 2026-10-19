@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { analyzeFrame, lowBandRatio, powerSpectrum, rms, spectralFlatness } from './audioFeatures'
 import { baselineOf, metricValue, poseActive } from './blendMetric'
-import { createBlowDetector, estimateFloor, type BlowState } from './blowDetector'
+import { assessCalibration, createBlowDetector, estimateFloor, type BlowState } from './blowDetector'
 import { createHoldCounter } from './holdCounter'
 import { add, FRAME, FRAME_MS, frames, lowNoise, sine, SR, voiced, whiteNoise } from './synth'
 import { createVoiceActivity, voiceLevel } from './voiceActivity'
@@ -194,5 +194,37 @@ describe('blend metric', () => {
     expect(poseActive(0.4, base, 0.25)).toBe(true)
     expect(poseActive(0.3, base, 0.25)).toBe(false)
     expect(poseActive(null, base, 0.25)).toBe(false)
+  })
+})
+
+describe('calibration quality (B12)', () => {
+  const room = (n: number, amp = 0.002) => frames(whiteNoise(FRAME * n, amp, 11)).map((f) => analyzeFrame(f, SR))
+
+  it('a quiet room gives a small floor and no warning', () => {
+    const r = assessCalibration(room(36))
+    expect(r.floor).toBeLessThan(0.01)
+    expect(r.blowing).toBe(false)
+    expect(r.noisy).toBe(false)
+  })
+
+  it('continuous blowing during the calibration is detected (not taken as a quiet room)', () => {
+    const blown = frames(lowNoise(FRAME * 36, 0.15, 500)).map((f) => analyzeFrame(f, SR))
+    const r = assessCalibration(blown)
+    expect(r.blowing).toBe(true)
+    expect(r.floor).toBeGreaterThan(0.05)
+  })
+
+  it('a few blown frames at the start do not spoil the floor', () => {
+    const blownStart = frames(lowNoise(FRAME * 8, 0.15, 500)).map((f) => analyzeFrame(f, SR))
+    const r = assessCalibration([...blownStart, ...room(28)])
+    expect(r.blowing).toBe(false)
+    expect(r.floor).toBeLessThan(0.01)
+  })
+
+  it('a loud but steady room (fan, street) is flagged noisy, not as blowing', () => {
+    const loud = frames(voiced(FRAME * 36, 220, 0.2)).map((f) => analyzeFrame(f, SR)) // tonal and loud
+    const r = assessCalibration(loud)
+    expect(r.noisy).toBe(true)
+    expect(r.blowing).toBe(false)
   })
 })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatVars, renderBi, renderWithVars, type Dict } from './index'
+import { formatNumber, formatQuantity, formatVars, keepLatin, renderBi, renderWithVars, subtitle, unit, type Dict } from './index'
 
 // Every strings module in the app (common + one per feature) must be complete and well-formed.
 const modules = import.meta.glob<Record<string, unknown>>(['./common.ts', '../**/strings.ts'], { eager: true })
@@ -50,5 +50,55 @@ describe('renderBi', () => {
     expect(renderWithVars(bi, 'uz', 'latn', { n: 3 })).toBe('Yana 3 ta yulduzcha')
     expect(renderWithVars(bi, 'ru', 'latn', { n: 3 })).toBe('Ещё 3')
     expect(renderWithVars({ uz: 'Salom, {name}!', ru: 'Привет, {name}!' }, 'uzc', 'cyrl', { name: 'Aziz' })).toBe('Салом, Aziz!')
+  })
+})
+
+describe('L-13: one on-screen rule for Uzbek Latin', () => {
+  it('every Latin script uses ‘ ’ glyphs, data keeps ʻ ʼ', () => {
+    const bi = { uz: 'Maʼlumotlar va Oʻzbekcha', ru: 'Данные' }
+    expect(renderBi(bi, 'uz', 'latn')).toBe('Ma’lumotlar va O‘zbekcha')
+    expect(renderBi(bi, 'uz', 'latn2026')).toBe('Ma’lumotlar va Özbekça')
+    expect(bi.uz).toContain('ʼ')
+  })
+
+  it('variables (names) are inserted as typed, with the tighter glyphs only', () => {
+    const bi = { uz: 'Salom, {name}!', ru: 'Привет, {name}!' }
+    expect(renderWithVars(bi, 'uz', 'latn', { name: 'Oʻtkir' })).toBe('Salom, O‘tkir!')
+    expect(renderWithVars(bi, 'uzc', 'cyrl', { name: 'Oʻtkir' })).toBe('Салом, O‘tkir!')
+    expect(renderWithVars(bi, 'ru', 'latn', { name: 'Aziz' })).toBe('Привет, Aziz!')
+  })
+
+  it('keepLatin() inside a string keeps the name in Cyrillic', () => {
+    expect(renderBi({ uz: `Salom, ${keepLatin('Aziz')}!`, ru: '' }, 'uzc', 'cyrl')).toBe('Салом, Aziz!')
+    expect(renderBi({ uz: `Salom, ${keepLatin('Aziz')}!`, ru: '' }, 'uz', 'latn')).toBe('Salom, Aziz!')
+  })
+})
+
+describe('L-14: localised numbers and units', () => {
+  it('uses a decimal comma and the unit of the UI language', () => {
+    expect(formatNumber(1.5, 'ru')).toBe('1,5')
+    expect(formatNumber(2, 'ru')).toBe('2')
+    expect(formatNumber(1.25, 'uz')).toBe('1,25')
+    expect(unit('ru', 'cm')).toBe('см')
+    expect(unit('uzc', 'cm')).toBe('см')
+    expect(unit('uz', 'cm')).toBe('sm')
+    expect(unit('ru', 'min')).toBe('мин')
+    expect(unit('uzc', 's')).toBe('с')
+    expect(formatQuantity(80, 'cm', 'ru')).toBe('80 см')
+    expect(formatQuantity(1.5, 'x', 'ru')).toBe('×1,5')
+    expect(formatQuantity(1.5, 's', 'uz')).toBe('1,5 s')
+  })
+})
+
+describe('L-16: subtitle', () => {
+  const bi = { uz: 'suv', ru: 'вода' }
+  it('shows the UI-language text when it differs from the spoken one', () => {
+    expect(subtitle(bi, 'ru', 'uz', 'latn')).toBe('вода')
+    expect(subtitle(bi, 'uz', 'ru', 'latn')).toBe('suv')
+    expect(subtitle(bi, 'uzc', 'ru', 'cyrl')).toBe('сув')
+  })
+  it('is null when UI and speech language agree', () => {
+    expect(subtitle(bi, 'ru', 'ru', 'latn')).toBeNull()
+    expect(subtitle(bi, 'uz', 'uz', 'latn')).toBeNull()
   })
 })

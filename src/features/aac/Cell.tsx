@@ -5,6 +5,7 @@ import { useProfileStore, type AacSettings } from '../../store/profile'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './Aac.module.css'
+import { useSpeechHtmlLang } from './lang'
 
 /** Cells are narrow: words of 6+ letters get soft hyphens (the shared shy() starts at 7). */
 function cellText(text: string, lang: 'uz' | 'ru'): string {
@@ -29,10 +30,12 @@ export interface CellProps {
 /** One AAC cell: symbol first, optional short label above or below, part-of-speech colour + border. */
 export function Cell({ symbol, src, label, fitz, aac, onActivate, scanGroup, glow }: CellProps) {
   const lang = useProfileStore((s) => s.profile.speechLang)
+  const htmlLang = useSpeechHtmlLang()
   return (
     <Pressable
       className={styles.cell}
       label={label}
+      lang={htmlLang}
       scanGroup={scanGroup}
       onActivate={onActivate}
       style={aac.colorCoding ? fitzVars(fitz) : undefined}

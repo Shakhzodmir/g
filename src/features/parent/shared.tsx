@@ -1,13 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useId, type ReactNode } from 'react'
-import { ARTICULATION } from '../../content/exercises'
-import { FEELINGS } from '../../content/feelings'
-import { PHRASES } from '../../content/phrases'
 import { TOPICS } from '../../content/topics'
-import type { Fitz, TopicId } from '../../content/types'
-import { wordById } from '../../content/vocab'
+import type { TopicId } from '../../content/types'
 import { COMMON } from '../../i18n/common'
-import { formatVars, useI18n, useLabel, useStrings, type Bi } from '../../i18n'
+import { formatVars, useI18n, useLabel, useStrings } from '../../i18n'
 import { db, type CustomCard } from '../../store/db'
 import { useProfileStore, type Profile } from '../../store/profile'
 import { Button } from '../../ui/Button'
@@ -16,6 +12,8 @@ import { Card } from '../../ui/misc'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import { useObjectUrl } from './image'
+import { AVATARS, FITZ } from './model'
+import type { RefInfo } from './refs'
 import styles from './parent.module.css'
 import { S, type StrKey } from './strings'
 
@@ -49,9 +47,7 @@ export function Section({ title, children, className, id }: { title?: string; ch
   )
 }
 
-export const FITZ: Fitz[] = ['people', 'action', 'describe', 'thing', 'social', 'question', 'negation', 'misc']
-
-export const AVATARS = ['dove', 'cat', 'dog_face', 'rabbit', 'owl', 'turtle', 'butterfly', 'lion', 'tulip', 'sunflower'] as const
+export { AVATARS, FITZ }
 
 /** Profile avatar symbol (the default avatar "musicha" is drawn with the dove symbol). */
 export function avatarSymbol(p: Pick<Profile, 'avatar' | 'kind'>): string {
@@ -110,35 +106,6 @@ export function useCustomCards(): CustomCard[] | undefined {
   return useLiveQuery(() => db.cards.where('profileId').equals(pid).toArray().catch(() => [] as CustomCard[]), [pid])
 }
 
-export interface RefInfo {
-  label: Bi
-  symbol: string
-  image?: Blob | null
-}
-
-function humanize(ref: string): Bi {
-  const s = ref.replace(/^[a-z]+\./, '').replace(/[_-]+/g, ' ')
-  const txt = s.charAt(0).toUpperCase() + s.slice(1)
-  return { uz: txt, ru: txt }
-}
-
-/** Resolves an event ref (word, custom card `c.<id>`, phrase, feeling, exercise) to something displayable. */
-export function resolveRef(ref: string, cards: CustomCard[] = []): RefInfo {
-  const w = wordById(ref)
-  if (w) return { label: w, symbol: w.symbol }
-  if (ref.startsWith('c.')) {
-    const c = cards.find((x) => x.id === ref.slice(2))
-    if (c) return { label: { uz: c.uz || c.ru, ru: c.ru || c.uz }, symbol: c.symbol ?? 'framed_picture', image: c.image }
-  }
-  const f = FEELINGS.find((x) => x.id === ref || `f.${x.id}` === ref)
-  if (f) return { label: f, symbol: f.symbol }
-  const p = PHRASES.find((x) => x.id === ref || `p.${x.id}` === ref)
-  if (p) return { label: p, symbol: p.symbol }
-  const ex = ARTICULATION.find((x) => x.id === ref)
-  if (ex) return { label: ex.title, symbol: 'lips' }
-  return { label: humanize(ref), symbol: 'sparkles' }
-}
-
 /** Symbol or the custom card's photo. */
 export function RefVisual({ info, className }: { info: RefInfo; className?: string }) {
   const url = useObjectUrl(info.image ?? null)
@@ -195,6 +162,41 @@ export function ConfirmDialog({
       }
     >
       <p>{text}</p>
+    </Dialog>
+  )
+}
+
+/** Shown on every adult screen while nothing can be saved (IndexedDB unavailable: private mode, blocked storage). */
+export function StorageBanner() {
+  const t = useT()
+  const persistent = useProfileStore((s) => s.persistent)
+  const loaded = useProfileStore((s) => s.loaded)
+  if (persistent || !loaded) return null
+  return (
+    <p className={styles.notice} role="status">
+      {t('noStorage')}
+    </p>
+  )
+}
+
+/** "Unsaved changes. Close?" — the primary action keeps the person in the form. */
+export function DiscardDialog({ open, onKeep, onDiscard }: { open: boolean; onKeep: () => void; onDiscard: () => void }) {
+  const t = useT()
+  return (
+    <Dialog
+      open={open}
+      onClose={onKeep}
+      title={t('discardTitle')}
+      footer={
+        <>
+          <Button variant="ghost" onActivate={onDiscard}>
+            {t('discardDo')}
+          </Button>
+          <Button onActivate={onKeep}>{t('discardKeep')}</Button>
+        </>
+      }
+    >
+      <p>{t('discardQ')}</p>
     </Dialog>
   )
 }

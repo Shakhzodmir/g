@@ -20,15 +20,15 @@ export const VOICE_LINES: VoiceLine[] = [
   v('mascot_lets_go', 'Qani, boshladik.', 'Давай начнём.', 'Дав+ай начн+ём.'),
 
   // Calm praise
-  v('praise_barakalla', 'Barakalla!', 'Молодец!', 'Молод+ец!'),
+  v('praise_barakalla', 'Barakalla!', 'Так держать!', 'Так держ+ать!'),
   v('praise_yaxshi', 'Yaxshi.', 'Хорошо.', 'Хорош+о.'),
   v('praise_zor', 'Zoʻr!', 'Здорово!', 'Зд+орово!'),
   v('praise_ajoyib', 'Ajoyib.', 'Отлично.', 'Отл+ично.'),
-  v('praise_ofarin', 'Ofarin!', 'Умница!', '+Умница!'),
+  v('praise_ofarin', 'Ofarin!', 'Замечательно.', 'Замеч+ательно.'),
   v('praise_uddalading', 'Uddalading.', 'У тебя получилось.', 'У теб+я получ+илось.'),
   v('praise_mana_shunday', 'Mana shunday.', 'Вот так.', 'Вот так.'),
   v('praise_chiroyli', 'Chiroyli.', 'Красиво.', 'Крас+иво.'),
-  v('praise_harakat', 'Yaxshi harakat qilding.', 'Хорошо получается.', 'Хорош+о получ+ается.'),
+  v('praise_harakat', 'Yaxshi harakat qilding.', 'Хорошая попытка.', 'Хорош+ая поп+ытка.'),
 
   // Gentle retry (never "wrong")
   v('retry_again', 'Yana bir marta urinib koʻramiz.', 'Попробуем ещё раз.', 'Попр+обуем ещ+ё раз.'),

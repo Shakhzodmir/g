@@ -139,6 +139,7 @@ function MemoryBoard({ level, onDone, multiTouch, heading, done }: { level: Leve
       )}
       <div
         className={styles.memoryBoard}
+        data-reach
         data-multi={multiTouch || undefined}
         style={{ '--cols': grid.cols, '--rows': grid.rows } as React.CSSProperties}
         role="grid"

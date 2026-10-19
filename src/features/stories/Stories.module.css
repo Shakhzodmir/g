@@ -14,7 +14,9 @@
 }
 
 :global(html[data-board='true']) .page {
-  min-height: calc(100dvh - 9.5rem);
+  /* fills the space above the bottom bar; the [data-reach] block sits at its bottom */
+  flex: 1 0 auto;
+  min-height: 0;
 }
 
 /* ---------- List ---------- */
@@ -72,8 +74,7 @@
 }
 
 :global(html[data-board='true']) .list {
-  margin-top: auto;
-  padding-bottom: 4.5rem;
+  padding-bottom: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 

@@ -9,7 +9,7 @@ import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './parent.module.css'
-import { avatarSymbol, useProfileTitle, useT } from './shared'
+import { avatarSymbol, StorageBanner, useProfileTitle, useT } from './shared'
 import type { StrKey } from './strings'
 
 const ITEMS: Array<{ path: string; title: StrKey; hint: StrKey; icon: ReactNode }> = [
@@ -28,7 +28,6 @@ export default function ParentHome() {
   const tc = useStrings(COMMON)
   const navigate = useNavigate()
   const profile = useProfileStore((s) => s.profile)
-  const persistent = useProfileStore((s) => s.persistent)
   const name = useProfileTitle()
 
   return (
@@ -42,7 +41,7 @@ export default function ParentHome() {
             {t('profileLine', { name })}
           </span>
         </div>
-        {!persistent && <p className={styles.notice}>{t('noStorage')}</p>}
+        <StorageBanner />
         <ul className={styles.homeGrid}>
           {ITEMS.map((it) => (
             <li key={it.path}>

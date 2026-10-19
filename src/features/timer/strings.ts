@@ -27,7 +27,7 @@ export const S = defineStrings({
     start: 'Старт',
     pause: 'Пауза',
     resume: 'Продолжить',
-    reset: 'Сначала',
+    reset: 'Заново',
     presets: 'Выберите время',
     minutes: '{n} мин',
     unit: 'мин',

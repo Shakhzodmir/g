@@ -26,5 +26,14 @@ export function phraseEntry(p: Phrase): Entry {
 }
 
 export function cardEntry(c: CustomCard, src?: string): Entry {
-  return { key: `c.${c.id}`, ref: `c.${c.id}`, kind: 'card', text: { uz: c.uz, ru: c.ru }, symbol: c.symbol ?? 'framed_picture', fitz: c.fitz, src }
+  return {
+    key: `c.${c.id}`,
+    ref: `c.${c.id}`,
+    kind: 'card',
+    // A card written in one language only still has a label, an accessible name and a voice in the other.
+    text: { uz: c.uz || c.ru, ru: c.ru || c.uz },
+    symbol: c.symbol ?? 'framed_picture',
+    fitz: c.fitz,
+    src,
+  }
 }

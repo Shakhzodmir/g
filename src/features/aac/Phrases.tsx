@@ -10,14 +10,14 @@ import { S } from './strings'
 const PAIN_IDS = new Set(Array.from({ length: 11 }, (_, i) => `pain_${i}`))
 
 /** Quick phrases for the profile's audience (children: kid/both; adults: adult/both), pain scale excluded. */
-export function PhrasesPanel({ adult, onTap, glowKey }: { adult: boolean; onTap: OnTap; glowKey: string | null }) {
+export function PhrasesPanel({ adult, onTap, glowKey, name }: { adult: boolean; onTap: OnTap; glowKey: string | null; name: string }) {
   const label = useLabel()
   const list = useMemo(
     () => PHRASES.filter((p) => !PAIN_IDS.has(p.id) && (p.audience === 'both' || p.audience === (adult ? 'adult' : 'kid'))),
     [adult],
   )
   return (
-    <div className={styles.phraseGrid} role="group">
+    <div className={styles.phraseGrid} role="group" aria-label={name}>
       {list.map((p, i) => {
         const e = phraseEntry(p)
         return (
@@ -58,7 +58,8 @@ export function PainPanel({ onTap, glowKey }: { onTap: OnTap; glowKey: string | 
             <Pressable
               key={p.id}
               className={styles.painBtn}
-              label={label(e.text)}
+              // The visible text is the number, so the name starts with it (WCAG 2.5.3): "7. Pain: 7 / 10. Strong".
+              label={`${n}. ${label(e.text)}`}
               scanGroup={n < 6 ? 'pain-a' : 'pain-b'}
               pressed={chosen === n}
               style={{ '--n': n } as CSSProperties}

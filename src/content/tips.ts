@@ -72,7 +72,7 @@ export const TIPS: ParentTip[] = [
   },
   {
     id: 'always_available',
-    symbol: 'speaking_head',
+    symbol: 'left_speech_bubble',
     title: { uz: 'Kommunikator — bu ovoz', ru: 'Коммуникатор — это голос' },
     body: {
       uz: 'Kommunikator har doim bolaning yonida boʻlsin: uyda, koʻchada, mehmonda. Uni jazo sifatida olib qoʻymang va «ekran vaqti» deb cheklamang. Bu — bolaning ovozi.',
@@ -103,7 +103,7 @@ export const TIPS: ParentTip[] = [
     title: { uz: 'Urinishni maqtang', ru: 'Хвалите старание' },
     body: {
       uz: 'Natijani emas, harakatni maqtang: «Oʻzing soʻrading, barakalla!». Maqtovni tinch ovozda ayting. Baland ovoz va qarsaklar baʼzi bolalarni choʻchitadi.',
-      ru: 'Хвалите не результат, а старание: «Ты сам попросил, молодец!». Хвалите спокойным голосом. Громкие возгласы и хлопки пугают некоторых детей.',
+      ru: 'Хвалите не результат, а старание: «Ты просишь словами — здорово!». Хвалите спокойным голосом. Громкие возгласы и хлопки пугают некоторых детей.',
     },
   },
   {

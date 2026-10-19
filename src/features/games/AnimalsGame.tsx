@@ -71,7 +71,7 @@ function Explore({ level }: { level: Level }) {
   const [bobs, setBobs] = useState<Record<string, number>>({})
   const pool = poolFor(level)
   return (
-    <ul className={styles.exploreGrid} role="list">
+    <ul className={styles.exploreGrid} role="list" data-reach>
       {pool.map((s) => (
         <li key={s.id}>
           <ChoiceCard
@@ -144,7 +144,7 @@ function Seek({ session }: { session: GameSession }) {
   return (
     <div className={styles.seek}>
       <PromptBar text={label(askText(cur.target))} listenLabel={t('listenAgain')} onListen={ask} />
-      <ul className={styles.choices} role="list" data-n={cur.options.length} style={{ '--n': cur.options.length } as React.CSSProperties}>
+      <ul className={styles.choices} role="list" data-reach data-n={cur.options.length} style={{ '--n': cur.options.length } as React.CSSProperties}>
         {cur.options.map((o) => {
           const right = o.id === cur.target.id
           return (

@@ -67,7 +67,7 @@ describe('camera denied → model-only mode', () => {
   it('mirror: shows the no-camera note and keeps the adult "Uddaladi!" button', async () => {
     denyMedia()
     at('/exercises/mirror/smile', <MirrorExercise />, '/exercises/mirror/:id')
-    fireEvent.click(screen.getByRole('button', { name: 'Oynani yoqish' }))
+    fireEvent.click(screen.getByRole('button', { name: /^(Oynani|Ko.zguni) yoqish$/ }))
     expect(await screen.findByText(/Kamera yoʻq|Kamera yo‘q/)).toBeVisible()
     const got = screen.getByRole('button', { name: 'Uddaladi!' })
     fireEvent.click(got)

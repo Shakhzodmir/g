@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { db, dbAvailable, newId } from './db'
 import { useDevice } from './device'
-import { DEFAULT_PROFILE_ID, defaultProfile, mergeProfile, type Profile, type ProfilePatch } from './profileTypes'
+import { DEFAULT_PROFILE_ID, defaultProfile, mergeProfile, sanitizeProfile, type Profile, type ProfilePatch, type Sensory } from './profileTypes'
 
 export * from './profileTypes'
 
@@ -18,10 +18,34 @@ interface ProfileState {
   remove: (id: string) => Promise<void>
 }
 
+/**
+ * Session-only sensory override (the teacher's "Tinch rejim" on the board). While it is active the in-memory
+ * profile shows the override, but storage always receives the user's own saved level (`sessionSensoryBase`).
+ */
+let sessionSensoryBase: Sensory | null = null
+
+export function sessionSensoryActive(): boolean {
+  return sessionSensoryBase !== null
+}
+
+/** Sets (level) or ends (null) the session override; ending restores exactly the previous level. */
+export function setSessionSensory(level: Sensory | null): void {
+  const { profile } = useProfileStore.getState()
+  if (level === null) {
+    if (sessionSensoryBase === null) return
+    const back = sessionSensoryBase
+    sessionSensoryBase = null
+    useProfileStore.setState({ profile: { ...profile, sensory: back } })
+    return
+  }
+  if (sessionSensoryBase === null) sessionSensoryBase = profile.sensory
+  if (profile.sensory !== level) useProfileStore.setState({ profile: { ...profile, sensory: level } })
+}
+
 async function persist(profile: Profile): Promise<boolean> {
   if (!(await dbAvailable())) return false
   try {
-    await db.profiles.put(profile)
+    await db.profiles.put(sessionSensoryBase === null ? profile : { ...profile, sensory: sessionSensoryBase })
     return true
   } catch {
     return false
@@ -46,8 +70,8 @@ export const useProfileStore = create<ProfileState>()((set, get) => ({
       const active = all.find((p) => p.id === wanted) ?? all[0]
       if (active) {
         // Merge with defaults so profiles saved by older versions gain new settings.
-        const profile = mergeProfile(defaultProfile(), active)
-        set({ profile, profiles: all, loaded: true, persistent: true })
+        const profile = sanitizeProfile(active)
+        set({ profile, profiles: all.map((p) => sanitizeProfile(p)), loaded: true, persistent: true })
         useDevice.getState().setActiveProfileId(profile.id)
       } else {
         set({ profiles: [get().profile], loaded: true, persistent: true })
@@ -58,6 +82,8 @@ export const useProfileStore = create<ProfileState>()((set, get) => ({
   },
 
   update: async (patch) => {
+    // An explicit choice of the sensory level ends the temporary override.
+    if (patch.sensory !== undefined) sessionSensoryBase = null
     const profile = mergeProfile(get().profile, patch)
     set({ profile, profiles: replace(get().profiles, profile) })
     const ok = await persist(profile)
@@ -75,7 +101,8 @@ export const useProfileStore = create<ProfileState>()((set, get) => ({
   switchTo: async (id) => {
     const found = get().profiles.find((p) => p.id === id)
     if (!found) return
-    set({ profile: mergeProfile(defaultProfile(), found) })
+    sessionSensoryBase = null
+    set({ profile: sanitizeProfile(found) })
     useDevice.getState().setActiveProfileId(id)
   },
 

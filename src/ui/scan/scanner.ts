@@ -31,6 +31,21 @@ export function collectUnits(root: HTMLElement): ScanUnit[] {
   return units
 }
 
+/**
+ * Keeps the highlighted element clear of the sticky navigation and the fixed Break button: when it is not
+ * fully inside the usable area (the viewport minus its CSS `scroll-margin`) it is centred in the visible part.
+ */
+export function revealInView(el: HTMLElement): void {
+  if (typeof el.scrollIntoView !== 'function') return
+  const r = el.getBoundingClientRect()
+  const cs = getComputedStyle(el)
+  const top = parseFloat(cs.scrollMarginTop) || 0
+  const bottom = parseFloat(cs.scrollMarginBottom) || 0
+  const vh = window.innerHeight || document.documentElement.clientHeight
+  const inside = r.top >= top && r.bottom <= vh - bottom && r.left >= 0 && r.right <= (window.innerWidth || Infinity)
+  if (!inside) el.scrollIntoView({ block: 'center', inline: 'nearest' })
+}
+
 export class Scanner {
   private level: { group: string; elements: HTMLElement[] } | null = null
   private index = -1
@@ -60,7 +75,7 @@ export class Scanner {
     document.querySelectorAll(`.${SCAN_CLASS}`).forEach((e) => e.classList.remove(SCAN_CLASS))
     const cur = this.current()
     cur.forEach((e) => e.classList.add(SCAN_CLASS))
-    cur[0]?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+    if (cur[0]) revealInView(cur[0])
     const label = cur.length === 1 ? cur[0].getAttribute('aria-label') ?? cur[0].textContent ?? '' : ''
     if (label && this.onCue) this.onCue(label)
   }

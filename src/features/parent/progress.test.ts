@@ -129,9 +129,26 @@ describe('summarize', () => {
     expect(supportLines(s)).toEqual([{ id: 'gentle', n: 0, refs: [] }])
   })
 
-  it('limits the top list to 10 words', () => {
-    const events = Array.from({ length: 15 }, (_, i) => ev('aac_word', `w${String(i).padStart(2, '0')}`, at(2026, 10, 13, 9, i)))
-    expect(summarize(events, NOW).topWords).toHaveLength(10)
+  it('keeps a bounded candidate list (the screen shows 10 after hiding unnamed refs)', () => {
+    const events = Array.from({ length: 60 }, (_, i) => ev('aac_word', `w${String(i).padStart(2, '0')}`, at(2026, 10, 13, 9, i)))
+    expect(summarize(events, NOW).topWords).toHaveLength(40)
+  })
+
+  it('counts ready phrases in the most-chosen list too (P8), but not modelling or feelings', () => {
+    const events = [
+      ev('aac_phrase', 'help_me', at(2026, 10, 13, 9, 0)),
+      ev('aac_phrase', 'help_me', at(2026, 10, 13, 9, 1)),
+      ev('aac_word', 'water', at(2026, 10, 13, 9, 2)),
+      ev('aac_phrase', 'feeling:happy', at(2026, 10, 13, 9, 3)),
+      ev('aac_phrase', 'hug_me', at(2026, 10, 13, 9, 4), { model: true }),
+      ev('aac_model', 'water', at(2026, 10, 13, 9, 5)),
+    ]
+    const s = summarize(events, NOW)
+    expect(s.topWords).toEqual([
+      { ref: 'help_me', count: 2 },
+      { ref: 'water', count: 1 },
+    ])
+    expect(s.topWordThisWeek).toEqual({ ref: 'help_me', count: 2 })
   })
 })
 
@@ -141,5 +158,19 @@ describe('pluralRu', () => {
     expect([1, 2, 5, 11, 12, 21, 22, 25, 104].map(f)).toEqual(['раз', 'раза', 'раз', 'раз', 'раз', 'раз', 'раза', 'раз', 'раза'])
     expect(pluralRu(21, 'день', 'дня', 'дней')).toBe('день')
     expect(pluralRu(14, 'день', 'дня', 'дней')).toBe('дней')
+  })
+})
+
+describe('canonical refs (P8)', () => {
+  it('counts the same exercise or game logged under different spellings once', () => {
+    const events = [
+      ev('exercise', 'voice', at(2026, 10, 13, 9, 0)),
+      ev('exercise', 'exercise:voice', at(2026, 10, 13, 9, 1)),
+      ev('game_round', 'find', at(2026, 10, 13, 9, 2)),
+      ev('game_round', 'game:find', at(2026, 10, 13, 9, 3)),
+    ]
+    const s = summarize(events, NOW)
+    expect(s.exercises).toEqual([{ ref: 'voice', count: 2 }])
+    expect(s.games).toEqual([{ ref: 'find', count: 2 }])
   })
 })

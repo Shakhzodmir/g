@@ -119,12 +119,6 @@
   max-width: 40ch;
 }
 
-/* Whiteboard: hub tiles sit low, within the children's reach. */
-:global(html[data-board='true']) .hub {
-  min-height: calc(100dvh - 17rem);
-  align-content: end;
-}
-
 /* ---------- Game stage (blow) ---------- */
 .stage {
   position: relative;
@@ -724,8 +718,67 @@
   }
 }
 
-/* Whiteboard: a lower stage keeps the buttons and the note above the bottom bar. */
+/*
+ * Whiteboard (board mode). The page fills the space above the bottom bar; the picture (stage / sky / hub notes)
+ * takes whatever is left at the top, and everything a child presses is the [data-reach] block: bottom-aligned,
+ * as tall as the calibrated reach zone allows, scrolling inside it (see AppShell.module.css).
+ */
+:global(html[data-board='true']) .frame,
+:global(html[data-board='true']) .screen {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--width-wide);
+}
+
+:global(html[data-board='true']) .hub {
+  flex: 1 0 auto;
+  align-content: end;
+  padding-bottom: 0;
+}
+
+:global(html[data-board='true']) .screen {
+  padding-bottom: 0;
+}
+
+/* The explanations are not for little hands: they sit above the tiles. */
+:global(html[data-board='true']) .hub > :not([data-reach]) {
+  order: -1;
+}
+
 :global(html[data-board='true']) .stage,
 :global(html[data-board='true']) .sky {
-  height: clamp(10rem, 30dvh, 34rem);
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 10rem;
+}
+
+/* If the zone is too small for everything, the first thing in view is the one primary action. */
+:global(html[data-board='true']) .controls > .start,
+:global(html[data-board='true']) .controls > .holdZone,
+:global(html[data-board='true']) .controls > .micBlock {
+  order: -1;
+}
+
+:global(html[data-board='true']) .controls[data-reach] {
+  padding-block: var(--s-1);
+}
+
+:global(html[data-board='true']) .controls > .picker {
+  order: -1;
+}
+
+/* The explanation is for adults (it also sits on the hub page); in the reach zone only the action stays. */
+:global(html[data-board='true']) .controls > .start > .adultNote {
+  display: none;
+}
+
+:global(html[data-board='true']) .mirrorGrid {
+  width: min(100% - 2 * var(--gutter) - var(--safe-left) - var(--safe-right), 2 * min(30dvh, 26rem) + var(--s-3));
+}
+
+.micBlock {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-1);
 }

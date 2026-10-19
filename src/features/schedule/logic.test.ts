@@ -81,3 +81,27 @@ describe('card refs', () => {
     for (const t of SCHEDULE_TEMPLATES) for (const id of t.items) expect(acts.has(id), id).toBe(true)
   })
 })
+
+describe('undo of an accidental "done"', () => {
+  it('toggling a done item back makes it current again and keeps the others', () => {
+    let items = itemsFrom(['a', 'b', 'c'])
+    items = markCurrentDone(items)
+    items = markCurrentDone(items)
+    expect(currentIndex(items)).toBe(2)
+    const undone = setDone(items, 1, false)
+    expect(undone.map((i) => i.done)).toEqual([true, false, false])
+    expect(currentIndex(undone)).toBe(1)
+    expect(items.map((i) => i.done)).toEqual([true, true, false]) // pure: the old list is untouched
+  })
+
+  it('undoing the last item of a finished list reopens it', () => {
+    const items = [{ ref: 'lesson', done: true }, { ref: 'play_time', done: true }]
+    expect(allDone(items)).toBe(true)
+    expect(allDone(setDone(items, 1, false))).toBe(false)
+  })
+
+  it('out-of-range undo is ignored', () => {
+    const items = itemsFrom(['a'])
+    expect(setDone(items, 5, false)).toBe(items)
+  })
+})

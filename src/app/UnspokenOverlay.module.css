@@ -1,26 +1,33 @@
+/*
+ * The unspoken-word card never covers the board and never takes a tap: it sits right under the header
+ * (over the message bar), ignores pointers entirely and leaves by itself after 2.5 s.
+ */
 .toast {
   position: fixed;
   z-index: 60;
   left: 50%;
-  top: 30%;
+  top: calc(var(--safe-top) + 4rem);
   translate: -50% 0;
-  width: min(92vw, 36rem);
-  padding: var(--s-6);
-  border-radius: var(--r-sheet);
+  width: min(92vw, 32rem);
+  max-height: 7rem;
+  overflow: hidden;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-card);
   background: var(--surface);
   box-shadow: var(--elev-dialog);
   text-align: center;
+  pointer-events: none;
 }
 
 .big {
-  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-size: clamp(1.5rem, 5.5vw, 2.5rem);
   font-weight: 900;
   line-height: 1.1;
   overflow-wrap: anywhere;
 }
 
 .hint {
-  margin-top: var(--s-3);
+  margin-top: var(--s-1);
   color: var(--text-muted);
   font-size: var(--fs-caption);
 }

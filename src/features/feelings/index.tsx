@@ -54,7 +54,7 @@ function FeelingGrid() {
       <PageHeader title={t('title')} />
       <div className={styles.body}>
         <Ask text={t('ask')} listen={t('listenAsk')} line="feel_ask" />
-        <ul className={styles.feelings} role="list">
+        <ul className={styles.feelings} role="list" data-reach>
           {FEELINGS.map((f) => {
             const name = label(f)
             return (
@@ -122,6 +122,7 @@ function FeelingHelp({ feeling }: { feeling: Feeling }) {
           <Volume2 className={styles.heroSpeaker} aria-hidden="true" />
         </Pressable>
 
+        <div className={styles.reach} data-reach>
         <section className={styles.helpBox} aria-labelledby="feel-help">
           <Ask as="h2" id="feel-help" text={t('helpTitle')} listen={t('listenHelp')} line="feel_help" />
           <ul className={styles.helpers} role="list">
@@ -157,6 +158,7 @@ function FeelingHelp({ feeling }: { feeling: Feeling }) {
           <Button variant="secondary" size="lg" icon={<SymbolImg id="speaking_head" size={30} />} onActivate={() => setSummary(true)}>
             {t('showAdult')}
           </Button>
+        </div>
         </div>
       </div>
 

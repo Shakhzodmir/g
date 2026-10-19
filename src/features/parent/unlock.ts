@@ -1,31 +1,54 @@
 /*
- * In-memory "adult area unlocked" flag. It lives only for this page session: a reload in a fresh tab or a
- * shared link straight to #/parent shows the ParentGate again. Nothing is persisted on purpose.
+ * In-memory "adult area unlocked" state. It lives only in this page session (a reload, a new tab or a shared
+ * link shows the ParentGate again) and it is deliberately short-lived:
+ *  - it is dropped as soon as the user leaves the /parent tree (the area component unmounts),
+ *  - it expires after IDLE_LOCK_MS without any interaction,
+ *  - browser history is never trusted: Back / Forward / a typed #/parent/... URL re-enter through the gate.
+ * Nothing is persisted on purpose.
  */
-let unlocked = false
 
-export function isParentUnlocked(): boolean {
-  return unlocked
+/** Ten minutes without a touch, click or key press locks the adult area again. */
+export const IDLE_LOCK_MS = 10 * 60 * 1000
+
+let unlocked = false
+let lastActivity = 0
+
+/** True while the area is unlocked and the last interaction was less than IDLE_LOCK_MS ago. */
+export function isParentUnlocked(now = Date.now()): boolean {
+  if (!unlocked) return false
+  if (now - lastActivity > IDLE_LOCK_MS) {
+    unlocked = false
+    return false
+  }
+  return true
 }
 
-export function markParentUnlocked(): void {
+export function markParentUnlocked(now = Date.now()): void {
   unlocked = true
+  lastActivity = now
+}
+
+/** Records an interaction; ignored while locked (it can never re-open the area). */
+export function touchParent(now = Date.now()): void {
+  if (unlocked && now - lastActivity <= IDLE_LOCK_MS) lastActivity = now
 }
 
 export function lockParent(): void {
   unlocked = false
+  lastActivity = 0
+}
+
+/** Whether a route belongs to the adult tree (a hash route such as `/parent/settings`). */
+export function inParentTree(pathname: string): boolean {
+  return pathname === '/parent' || pathname.startsWith('/parent/')
 }
 
 /**
- * Whether the current entry into /parent can be trusted without showing the gate again.
- * - An in-app navigation (history key other than react-router's initial 'default') can only come from the
- *   home screen's ParentGate in v0.1, so it counts as passed.
- * - `state.parentUnlocked` lets other screens say so explicitly.
- * - In development, `?qa` unlocks for automated screenshots.
+ * Whether entering /parent can skip the gate. Only the in-memory unlock counts: history entries and
+ * `location.state` are NOT trusted (Back and typed URLs would otherwise bypass the gate). In development,
+ * `?qa` unlocks for automated screenshots.
  */
-export function trustedEntry(loc: { key: string; state: unknown; search: string }, dev: boolean): boolean {
-  if (unlocked) return true
-  if (loc.key !== 'default') return true
-  if ((loc.state as { parentUnlocked?: boolean } | null)?.parentUnlocked === true) return true
+export function trustedEntry(loc: { search: string }, dev: boolean, now = Date.now()): boolean {
+  if (isParentUnlocked(now)) return true
   return dev && new URLSearchParams(loc.search).has('qa')
 }

@@ -1,6 +1,9 @@
+import { normalizeUz, uzCyrlToLatn } from '../../i18n/orthography'
 import type { SpeechLang, UzScript } from '../../i18n/types'
 
-export type LayoutId = 'uz-latn' | 'uz-cyrl' | 'ru'
+export { uzCyrlToLatn }
+
+export type LayoutId = 'uz-latn' | 'uz-latn26' | 'uz-cyrl' | 'ru'
 
 export interface KeyDef {
   /** What the key shows. */
@@ -15,15 +18,18 @@ export interface KeyboardLayout {
 }
 
 const keys = (s: string): KeyDef[] => Array.from(s).map((ch) => ({ label: ch, insert: ch }))
-const PUNCT = keys(',.?')
+const DIGITS = keys('1234567890')
+/** Punctuation row shared by every layout (hyphen for compound words, digits are a row of their own). */
+const PUNCT = keys(',.?!-')
 
 /*
- * Uzbek Latin: the familiar QWERTY rows plus oʻ, gʻ and the tutuq belgisi. Typed text uses ‘ and ’
+ * Uzbek Latin (1995): the familiar QWERTY rows plus oʻ, gʻ and the tutuq belgisi. Typed text uses ‘ and ’
  * for display (Nunito renders U+02BB/U+02BC with a wide gap); speech normalizes them to ʻ/ʼ.
  */
 const UZ_LATN: KeyboardLayout = {
   id: 'uz-latn',
   rows: [
+    DIGITS,
     keys('qwertyuiop'),
     keys('asdfghjkl'),
     [...keys('zxcvbnm')],
@@ -36,59 +42,57 @@ const UZ_LATN: KeyboardLayout = {
   ],
 }
 
+/*
+ * Uzbek Latin 2026 (Ş Ç Ö Ğ): one key per letter, no ‘ keys; the tutuq belgisi stays. Typed text is converted
+ * back to the canonical 1995 spelling (Sh Ch Oʻ Gʻ) before it is spoken or predicted.
+ */
+const UZ_LATN26: KeyboardLayout = {
+  id: 'uz-latn26',
+  rows: [DIGITS, keys('qwertyuiop'), keys('asdfghjkl'), [...keys('zxcvbnm')], [...keys('şçöğ'), { label: '’', insert: '’' }, ...PUNCT]],
+}
+
+/* Uzbek Cyrillic plus щ ы (loanwords and names), a digit row and punctuation with the hyphen. */
 const UZ_CYRL: KeyboardLayout = {
   id: 'uz-cyrl',
-  rows: [keys('йцукенгшўзхъ'), keys('фқвапролджэ'), keys('ячсмитьбюҳғё'), PUNCT],
+  rows: [DIGITS, keys('йцукенгшўзхъ'), keys('фқвапролджэ'), keys('ячсмитьбюҳғё'), [...keys('щы'), ...PUNCT]],
 }
 
 const RU: KeyboardLayout = {
   id: 'ru',
-  rows: [keys('йцукенгшщзхъ'), keys('фывапролджэ'), keys('ячсмитьбюё'), PUNCT],
+  rows: [DIGITS, keys('йцукенгшщзхъ'), keys('фывапролджэ'), keys('ячсмитьбюёы'), PUNCT],
 }
 
-export const LAYOUTS: Record<LayoutId, KeyboardLayout> = { 'uz-latn': UZ_LATN, 'uz-cyrl': UZ_CYRL, ru: RU }
+export const LAYOUTS: Record<LayoutId, KeyboardLayout> = { 'uz-latn': UZ_LATN, 'uz-latn26': UZ_LATN26, 'uz-cyrl': UZ_CYRL, ru: RU }
 
 /** The layout follows what is spoken: Russian speech → Russian keys; Uzbek → the device's Uzbek script. */
 export function layoutFor(speechLang: SpeechLang, uzScript: UzScript): LayoutId {
   if (speechLang === 'ru') return 'ru'
+  if (uzScript === 'latn2026') return 'uz-latn26'
   return uzScript === 'cyrl' ? 'uz-cyrl' : 'uz-latn'
 }
 
-const CYR: Record<string, string> = {
-  а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', ё: 'yo', ж: 'j', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l',
-  м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'x', ц: 'ts', ч: 'ch',
-  ш: 'sh', щ: 'sh', ъ: 'ʼ', ы: 'i', ь: '', э: 'e', ю: 'yu', я: 'ya', ў: 'oʻ', қ: 'q', ғ: 'gʻ', ҳ: 'h',
+const LATN2026_BACK: Array<[RegExp, string]> = [
+  [/Ş/g, 'Sh'],
+  [/ş/g, 'sh'],
+  [/Ç/g, 'Ch'],
+  [/ç/g, 'ch'],
+  [/Ö/g, 'Oʻ'],
+  [/ö/g, 'oʻ'],
+  [/Ğ/g, 'Gʻ'],
+  [/ğ/g, 'gʻ'],
+]
+
+/** 2026 Latin → canonical Uzbek Latin (1995). Text without 2026 letters is returned unchanged. */
+export function latn2026ToLatn(text: string): string {
+  let out = text
+  for (const [pattern, replacement] of LATN2026_BACK) out = out.replace(pattern, replacement)
+  return out
 }
-const CYR_VOWELS = new Set(Array.from('аеёиоуэюяўАЕЁИОУЭЮЯЎ'))
 
 /**
- * Uzbek Cyrillic → canonical Uzbek Latin (1995), so typed Cyrillic Uzbek can be spoken by an Uzbek voice.
- * `е` is `ye` at the start of a word and after a vowel or a separator sign, otherwise `e`.
+ * Whatever the person typed (any Uzbek script, or Russian) → canonical Uzbek Latin 1995 with ʻ ʼ.
+ * Works on the text itself, not on the active layout, so mixed or older text (history) is handled too.
  */
-export function uzCyrlToLatn(text: string): string {
-  let out = ''
-  const chars = Array.from(text)
-  chars.forEach((ch, i) => {
-    const lower = ch.toLowerCase()
-    const upper = ch !== lower
-    let mapped: string | undefined
-    if (lower === 'е') {
-      const prev = chars[i - 1]
-      const atStart = !prev || !/\p{L}/u.test(prev)
-      mapped = atStart || CYR_VOWELS.has(prev) || prev === 'ъ' || prev === 'ь' || prev === 'Ъ' || prev === 'Ь' ? 'ye' : 'e'
-    } else mapped = CYR[lower]
-    if (mapped === undefined) {
-      out += ch
-      return
-    }
-    if (!upper || !mapped) {
-      out += mapped
-      return
-    }
-    // Whole word in capitals → keep digraphs capital too (SH), otherwise title case (Sh).
-    const next = chars[i + 1]
-    const nextUpper = next !== undefined && next !== next.toLowerCase()
-    out += nextUpper ? mapped.toUpperCase() : mapped.charAt(0).toUpperCase() + mapped.slice(1)
-  })
-  return out
+export function toCanonicalUz(text: string): string {
+  return normalizeUz(uzCyrlToLatn(latn2026ToLatn(text)))
 }

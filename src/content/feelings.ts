@@ -18,11 +18,11 @@ export const HELPERS: Helper[] = [
   { id: 'headphones', uz: 'Quloqchin', ru: 'Наушники', ruTts: 'Н+аушники', symbol: 'headphone' },
   { id: 'breathe', uz: 'Nafas olish', ru: 'Подышать', ruTts: 'Подыш+ать', symbol: 'face_exhaling' },
   { id: 'rest', uz: 'Dam olish', ru: 'Отдохнуть', ruTts: 'Отдохн+уть', symbol: 'couch_and_lamp' },
-  { id: 'with_mom', uz: 'Onam bilan', ru: 'С мамой', ruTts: 'С м+амой', symbol: 'woman' },
+  { id: 'with_mom', uz: 'Yaqin odam bilan', ru: 'С близким человеком', ruTts: 'С бл+изким чел+овеком', symbol: 'person' },
   { id: 'toy', uz: 'Oʻyinchoq', ru: 'Игрушка', ruTts: 'Игр+ушка', symbol: 'teddy_bear' },
   { id: 'music', uz: 'Musiqa', ru: 'Музыка', ruTts: 'М+узыка', symbol: 'musical_notes' },
   { id: 'walk', uz: 'Sayr', ru: 'Погулять', ruTts: 'Погул+ять', symbol: 'footprints' },
-  { id: 'tell_adult', uz: 'Kattaga aytish', ru: 'Сказать взрослому', ruTts: 'Сказ+ать взр+ослому', symbol: 'speaking_head' },
+  { id: 'tell_adult', uz: 'Kattaga aytish', ru: 'Сказать взрослому', ruTts: 'Сказ+ать взр+ослому', symbol: 'person_raising_hand' },
   { id: 'doctor', uz: 'Shifokor', ru: 'Врач', ruTts: 'Врач', symbol: 'health_worker' },
 ]
 
@@ -30,9 +30,9 @@ export const FEELINGS: Feeling[] = [
   { id: 'happy', uz: 'Xursandman', ru: 'Мне весело', ruTts: 'Мне в+есело', symbol: 'beaming_face_with_smiling_eyes', helps: ['music', 'toy', 'hug', 'walk'] },
   { id: 'calm', uz: 'Tinchman', ru: 'Мне спокойно', ruTts: 'Мне спок+ойно', symbol: 'relieved_face', helps: ['music', 'toy', 'rest'] },
   { id: 'sad', uz: 'Xafaman', ru: 'Мне грустно', ruTts: 'Мне гр+устно', symbol: 'frowning_face', helps: ['hug', 'with_mom', 'toy', 'music'] },
-  { id: 'angry', uz: 'Jahlim chiqdi', ru: 'Я злюсь', ruTts: 'Я злюсь', symbol: 'angry_face', helps: ['breathe', 'quiet_place', 'water', 'walk'] },
+  { id: 'angry', uz: 'Jahlim chiqdi', ru: 'Я злюсь', ruTts: 'Я злюсь', symbol: 'face_with_steam_from_nose', helps: ['breathe', 'quiet_place', 'water', 'walk'] },
   { id: 'scared', uz: 'Qoʻrqyapman', ru: 'Мне страшно', ruTts: 'Мне стр+ашно', symbol: 'fearful_face', helps: ['with_mom', 'hug', 'breathe', 'tell_adult'] },
-  { id: 'tired', uz: 'Charchadim', ru: 'Я устал', ruTts: 'Я уст+ал', symbol: 'sleepy_face', helps: ['rest', 'quiet_place', 'water'] },
+  { id: 'tired', uz: 'Charchadim', ru: 'Я устаю', ruTts: 'Я уста+ю', symbol: 'sleepy_face', helps: ['rest', 'quiet_place', 'water'] },
   { id: 'hurts', uz: 'Ogʻriyapti', ru: 'Мне больно', ruTts: 'Мне б+ольно', symbol: 'face_with_head_bandage', helps: ['tell_adult', 'with_mom', 'doctor', 'rest'] },
   { id: 'noise', uz: 'Shovqin bezovta qilyapti', ru: 'Мне мешает шум', ruTts: 'Мне меш+ает шум', symbol: 'hear_no_evil_monkey', helps: ['headphones', 'quiet_place', 'breathe', 'rest'] },
 ]

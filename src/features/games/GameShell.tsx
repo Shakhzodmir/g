@@ -6,12 +6,11 @@ import { useMotionPreset } from '../../design/motion'
 import { useLabel, useStrings } from '../../i18n'
 import { useDevice } from '../../store/device'
 import { Button } from '../../ui/Button'
-import { Segmented } from '../../ui/controls'
 import { Musicha } from '../../ui/mascot/Musicha'
 import { Reward } from '../../ui/misc'
 import { PageHeader } from '../../ui/PageHeader'
 import { SymbolImg } from '../../ui/SymbolImg'
-import { LEVELS, type Level } from './logic/rounds'
+import { LevelControl } from './LevelPicker'
 import type { GameSession } from './session'
 import styles from './Games.module.css'
 import { S } from './strings'
@@ -29,7 +28,6 @@ export interface GameShellProps {
 
 /** Shared frame of every game: header, level, progress beads, stage, then a calm reward. */
 export function GameShell({ session, title, symbol, toolbar, showLevel = true, showProgress = true, children }: GameShellProps) {
-  const t = useStrings(S)
   const board = useDevice((s) => s.boardMode)
 
   return (
@@ -41,19 +39,7 @@ export function GameShell({ session, title, symbol, toolbar, showLevel = true, s
           {toolbar && <div className={styles.toolbarStart}>{toolbar}</div>}
           <div className={styles.meta}>
             {showProgress && <Progress done={session.done} total={session.total} />}
-            {showLevel && (
-              <div className={styles.level}>
-                <span className={styles.levelLabel} aria-hidden="true">
-                  {t('level')}
-                </span>
-                <Segmented<string>
-                  label={t('level')}
-                  options={LEVELS.map((l) => ({ value: String(l), label: String(l) }))}
-                  value={String(session.level)}
-                  onChange={(v) => session.setLevel(Number(v) as Level)}
-                />
-              </div>
-            )}
+            {showLevel && <LevelControl session={session} />}
           </div>
         </div>
       )}

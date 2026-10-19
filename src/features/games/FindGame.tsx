@@ -94,7 +94,7 @@ function TopicChooser({ onPick }: { onPick: (t: TopicId) => void }) {
   return (
     <section className={styles.chooser} aria-label={t('chooseTopic')}>
       <h2 className={styles.chooserTitle}>{t('chooseTopic')}</h2>
-      <ul className={styles.topicGrid} role="list">
+      <ul className={styles.topicGrid} role="list" data-reach>
         {FIND_TOPICS.map((id) => {
           const def = TOPICS.find((x) => x.id === id)!
           return (
@@ -166,7 +166,7 @@ function Seek({ session, topic }: { session: GameSession; topic: TopicId }) {
   return (
     <div className={styles.seek}>
       <PromptBar text={label(askText(cur.target))} listenLabel={t('listenAgain')} onListen={ask} />
-      <ul className={styles.choices} role="list" data-n={cur.options.length} data-many={cur.options.length > 4 || undefined} style={{ '--n': cur.options.length } as React.CSSProperties}>
+      <ul className={styles.choices} role="list" data-reach data-n={cur.options.length} data-many={cur.options.length > 4 || undefined} style={{ '--n': cur.options.length } as React.CSSProperties}>
         {cur.options.map((o) => {
           const right = o.id === cur.target.id
           return (

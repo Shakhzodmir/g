@@ -53,6 +53,7 @@
       'title title title title';
   }
   .title {
-    font-size: 1.5rem;
+    /* 24 px at the default text size; follows the screen, not the text-size setting, so a long word still fits */
+    font-size: min(1.5rem, 9vw);
   }
 }

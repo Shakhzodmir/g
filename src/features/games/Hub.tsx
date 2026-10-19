@@ -1,15 +1,13 @@
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router'
 import { STICKERS } from '../../content/stickers'
 import { useStrings } from '../../i18n'
 import { shy } from '../../lib/hyphenate'
-import { db } from '../../store/db'
 import { useDevice } from '../../store/device'
-import { useProfileStore } from '../../store/profile'
 import { PageHeader } from '../../ui/PageHeader'
 import { SymbolImg } from '../../ui/SymbolImg'
 import { Tile } from '../../ui/Tile'
 import styles from './Games.module.css'
+import { useStickers } from './stickers'
 import { S } from './strings'
 
 const GAMES = [
@@ -18,23 +16,6 @@ const GAMES = [
   { id: 'memory', path: 'memory', symbol: 'puzzle_piece', tone: 'secondary' },
   { id: 'syllables', path: 'syllables', symbol: 'drum', tone: 'calm' },
 ] as const
-
-/** Stickers of one profile, newest first (empty while loading or without IndexedDB). */
-export function useStickers(): Array<{ stickerId: string; ts: number }> {
-  const profileId = useProfileStore((s) => s.profile.id)
-  return (
-    useLiveQuery(
-      async () => {
-        try {
-          return (await db.stickers.where('profileId').equals(profileId).toArray()).sort((a, b) => b.ts - a.ts)
-        } catch {
-          return []
-        }
-      },
-      [profileId],
-    ) ?? []
-  )
-}
 
 export function Hub() {
   const t = useStrings(S)
@@ -47,7 +28,7 @@ export function Hub() {
   return (
     <div className={styles.page} data-board={board || undefined}>
       <PageHeader title={t('title')} back="/" symbol={<SymbolImg id="puzzle" />} />
-      <div className={styles.hub}>
+      <div className={styles.hub} data-reach>
         <ul className={styles.hubGrid} role="list">
           {GAMES.map((g) => (
             <li key={g.id}>

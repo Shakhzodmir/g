@@ -5,7 +5,7 @@ export const TOPICS: Topic[] = [
   { id: 'core', uz: 'Asosiy soʻzlar', ru: 'Главные слова', symbol: 'glowing_star', fitz: 'misc' },
   { id: 'food', uz: 'Ovqat', ru: 'Еда', symbol: 'shallow_pan_of_food', fitz: 'thing' },
   { id: 'drinks', uz: 'Ichimliklar', ru: 'Питьё', symbol: 'cup_with_straw', fitz: 'thing' },
-  { id: 'people', uz: 'Oila va odamlar', ru: 'Семья и люди', symbol: 'busts_in_silhouette', fitz: 'people' },
+  { id: 'people', uz: 'Oila va odamlar', ru: 'Семья и люди', symbol: 'people_hugging', fitz: 'people' },
   { id: 'feelings', uz: 'Hissiyotlar', ru: 'Чувства', symbol: 'slightly_smiling_face', fitz: 'describe' },
   { id: 'body', uz: 'Tana', ru: 'Тело', symbol: 'flexed_biceps', fitz: 'thing' },
   { id: 'toys', uz: 'Oʻyinchoqlar', ru: 'Игрушки', symbol: 'teddy_bear', fitz: 'thing' },

@@ -8,6 +8,8 @@ Model: https://models.silero.ai/models/tts/ru/v5_cis_base_nostress.pt (MIT, see 
 Voices: Uzbek `uzb_saida`, Russian `ru_saida` (the same persona speaks both languages).
 Output: public/audio/<lang>/<key>.mp3 (mono, 24 kHz, 40 kbit/s, loudness-normalized, trimmed)
         src/content/audio-index.json  ({"uz": [keys], "ru": [keys]})
+        src/content/audio-versions.json  ({"uz": {key: 8-hex}, "ru": {...}}): the clip URL carries ?v=<8-hex> so a
+        regenerated clip is a new URL and reaches installed devices (the service worker cache is CacheFirst).
 """
 import hashlib
 import json
@@ -76,6 +78,12 @@ def main() -> None:
 
     index = {lang: sorted(p.stem for p in (out_root / lang).glob("*.mp3")) for lang in ("uz", "ru")}
     (repo / "src" / "content" / "audio-index.json").write_text(json.dumps(index, ensure_ascii=False), encoding="utf-8")
+    versions = {
+        lang: {k: hashes[f"{lang}:{k}"][:8] for k in index[lang] if f"{lang}:{k}" in hashes} for lang in ("uz", "ru")
+    }
+    (repo / "src" / "content" / "audio-versions.json").write_text(
+        json.dumps(versions, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+    )
     hashes_path.write_text(json.dumps(hashes, ensure_ascii=False, indent=0, sort_keys=True), encoding="utf-8")
     print(f"audio: {made} generated, {kept} unchanged, {len(failed)} failed; index uz={len(index['uz'])} ru={len(index['ru'])}")
     for f in failed:

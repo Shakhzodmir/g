@@ -1,5 +1,8 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import symbolMap from '../../scripts/symbol-map.json'
+import { isKeptLatin, uzLatnToCyrl } from '../i18n/orthography'
+import { shy, syllablesOf } from '../lib/hyphenate'
 import * as animals from './animals'
 import { SOUND_MAKERS } from './animals'
 import * as exercises from './exercises'
@@ -23,6 +26,11 @@ import * as vocab from './vocab'
 import { WORDS, wordById, wordsByTopic } from './vocab'
 import * as voiceLines from './voiceLines'
 import { NUMBER_LINES, VOICE_LINES } from './voiceLines'
+import { S as EXERCISE_STRINGS } from '../features/exercises/strings'
+import { S as GAME_STRINGS } from '../features/games/strings'
+import { S as PARENT_STRINGS } from '../features/parent/strings'
+import { S as TIMER_STRINGS } from '../features/timer/strings'
+import { S as TOKEN_STRINGS } from '../features/tokens/strings'
 
 const MODULES: Record<string, unknown> = {
   vocab,
@@ -218,7 +226,7 @@ describe('symbols', () => {
   it('symbol-map values are Fluent 3D PNG paths or custom SVGs', () => {
     for (const [id, path] of Object.entries(SYMBOLS)) {
       expect(id).toMatch(/^[a-z0-9_]+$/)
-      expect(path, id).toMatch(/^(custom:[a-z0-9_]+\.svg|assets\/[^/]+\/(?:(?:Medium-Light)\/)?3D\/[^/]+_3d(?:_medium-light)?\.png)$/)
+      expect(path, id).toMatch(/^(custom:[a-z0-9_]+\.svg|assets\/[^/]+\/(?:(?:Medium-Light|Medium)\/)?3D\/[^/]+_3d(?:_medium-light|_medium)?\.png)$/)
     }
   })
 })
@@ -297,5 +305,452 @@ describe('other modules', () => {
   it('voice lines have unique ids', () => {
     const ids = [...VOICE_LINES, ...NUMBER_LINES].map((l) => l.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+})
+
+
+/* ------------------------------------------------------------------ L-12 symbols ------------------------------------------------------------------ */
+
+const ROOT = process.cwd().split(String.fromCharCode(92)).join('/')
+const SYMBOL_DIR = `${ROOT}/public/symbols/`
+const SRC_DIR = `${ROOT}/src/`
+
+function sourceFiles(dir: string): string[] {
+  const out: string[] = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = `${dir}${entry.name}`
+    if (entry.isDirectory()) out.push(...sourceFiles(`${full}/`))
+    else if (/\.(ts|tsx)$/.test(entry.name) && !/\.test\./.test(entry.name)) out.push(full)
+  }
+  return out
+}
+
+describe('symbol files', () => {
+  it('every symbol-map entry has its image in public/symbols', () => {
+    const missing: string[] = []
+    for (const [id, src] of Object.entries(SYMBOLS)) {
+      const file = src.startsWith('custom:') ? `${SYMBOL_DIR}custom/${src.slice(7)}` : `${SYMBOL_DIR}${id}.webp`
+      if (!existsSync(file)) missing.push(`${id} → ${file}`)
+    }
+    expect(missing).toEqual([])
+  })
+
+  it('every symbol id written anywhere in src (symbol: "x", <SymbolImg id="x">) is in the map', () => {
+    const unknown = new Set<string>()
+    for (const file of sourceFiles(SRC_DIR)) {
+      const text = readFileSync(file, 'utf8')
+      for (const m of text.matchAll(/\bsymbol:\s*'([a-z0-9_]+)'/g)) if (!(m[1] in SYMBOLS)) unknown.add(`${file.replace(SRC_DIR, '')}: ${m[1]}`)
+      for (const m of text.matchAll(/<SymbolImg\s+id="([a-z0-9_]+)"/g)) if (!(m[1] in SYMBOLS)) unknown.add(`${file.replace(SRC_DIR, '')}: ${m[1]}`)
+    }
+    expect([...unknown]).toEqual([])
+  })
+
+  it('custom symbols in the map are registered in SymbolImg', () => {
+    const text = readFileSync(`${SRC_DIR}ui/SymbolImg.tsx`, 'utf8')
+    const registered = new Set([...(/CUSTOM_SYMBOLS = new Set\(\[([^\]]*)\]/.exec(text)?.[1] ?? '').matchAll(/'([a-z0-9_]+)'/g)].map((m) => m[1]))
+    for (const [id, src] of Object.entries(SYMBOLS)) if (src.startsWith('custom:')) expect(registered.has(id), id).toBe(true)
+  })
+})
+
+describe('opposite meanings never share a symbol (L-12)', () => {
+  const symbolOfWord = (id: string) => wordById(id)?.symbol
+  const symbolOfPhrase = (id: string) => PHRASES.find((p) => p.id === id)?.symbol
+  const WORD_PAIRS: Array<[string, string]> = [
+    ['yes', 'no'],
+    ['good', 'bad'],
+    ['big', 'small'],
+    ['open', 'close'],
+    ['hot_drink', 'cold_drink'],
+    ['hot', 'cold'],
+    ['come', 'go'],
+    ['like', 'dislike'],
+    ['up', 'down'],
+    ['happy', 'sad'],
+    ['more', 'finished'],
+    ['stop', 'go'],
+  ]
+  it.each(WORD_PAIRS)('%s differs from %s', (a, b) => {
+    expect(symbolOfWord(a), a).toBeTruthy()
+    expect(symbolOfWord(a), `${a} vs ${b}`).not.toBe(symbolOfWord(b))
+  })
+
+  it('phrase opposites differ too', () => {
+    expect(symbolOfPhrase('cold')).not.toBe(symbolOfPhrase('hot'))
+    expect(symbolOfPhrase('no_thanks')).not.toBe(symbolOfPhrase('thank_you'))
+  })
+
+  it('no two core words share an image (a grid cell must be recognisable)', () => {
+    const seen = new Map<string, string>()
+    const dup: string[] = []
+    for (const w of WORDS.filter((x) => x.topic === 'core')) {
+      const other = seen.get(w.symbol)
+      if (other) dup.push(`${other} / ${w.id}: ${w.symbol}`)
+      seen.set(w.symbol, w.id)
+    }
+    expect(dup).toEqual([])
+  })
+
+  it('the roles of kindergarten teacher, teacher, speech therapist, doctor and nurse look different', () => {
+    const roles = ['kg_teacher', 'teacher', 'speech_therapist', 'doctor', 'nurse'].map((id) => symbolOfWord(id))
+    expect(new Set(roles).size).toBe(roles.length)
+  })
+
+  it('no bright-red lead symbols for the question word, waking up, love and anger (spec: no bright red)', () => {
+    for (const bad of ['red_question_mark', 'alarm_clock', 'red_heart', 'angry_face']) {
+      const used = [...WORDS, ...PHRASES, ...FEELINGS].filter((x) => x.symbol === bad).map((x) => x.id)
+      expect(used, bad).toEqual([])
+    }
+  })
+
+  it('the misleading symbols found by the language QA are gone', () => {
+    const banned = new Set([
+      'bubble_tea', 'brick', 'fire', 'thong_sandal', 'cook', 'water_wave', 'children_crossing', 'door',
+      'counterclockwise_arrows_button', 'clockwise_vertical_arrows', 'leftwards_hand', 'detective', 'large_orange_diamond',
+      'small_orange_diamond', 'locked', 'unlocked', 'nesting_dolls', 'woman_dancing', 'speech_balloon',
+    ])
+    const used = [...WORDS, ...PHRASES].filter((x) => banned.has(x.symbol)).map((x) => `${x.id}: ${x.symbol}`)
+    expect(used).toEqual([])
+    expect(symbolOfWord('lagman')).toBe('spaghetti')
+    expect(symbolOfWord('compote')).toBe('jar')
+  })
+})
+
+/* ------------------------------------------------------------------ L-09 stress, second pass ------------------------------------------------------------------ */
+
+describe('ruTts stress (second pass over every multi-syllable word)', () => {
+  /** Verified stress of words that are easy to get wrong (loanwords, Central-Asian food, endings). */
+  const STRESS: Record<string, string> = {
+    манты: 'мант+ы',
+    какао: 'кака+о',
+    лагман: 'лагм+ан',
+    самса: 'самс+а',
+    арбуз: 'арб+уз',
+    банан: 'бан+ан',
+    гранат: 'гран+ат',
+    виноград: 'виногр+ад',
+    помидор: 'помид+ор',
+    огурец: 'огур+ец',
+    компот: 'комп+от',
+    лимонад: 'лимон+ад',
+    стакан: 'стак+ан',
+    компьютер: 'компь+ютер',
+    телефон: 'телеф+он',
+    магазин: 'магаз+ин',
+    велосипед: 'велосип+ед',
+    вертолёт: 'вертол+ёт',
+    самолёт: 'самол+ёт',
+    барабан: 'бараб+ан',
+    красиво: 'крас+иво',
+    молоко: 'молок+о',
+    верблюд: 'вербл+юд',
+    тюбетейка: 'тюбет+ейка',
+    накидкой: 'н+акидкой',
+    больница: 'больн+ица',
+    большой: 'больш+ой',
+    температура: 'температ+ура',
+    сестра: 'сестр+а',
+    мамочка: 'м+амочка',
+    папочка: 'п+апочка',
+    тишина: 'тишин+а',
+    нужна: 'нужн+а',
+    фонендоскопом: 'фонендоск+опом',
+    близкий: 'бл+изкий',
+    близким: 'бл+изким',
+    человеком: 'чел+овеком',
+    замечательно: 'замеч+ательно',
+    попытка: 'поп+ытка',
+    держать: 'держ+ать',
+    кушать: 'куш+ать',
+    горячее: 'гор+ячее',
+    холодное: 'хол+одное',
+    старший: 'ст+арший',
+    младший: 'мл+адший',
+    устаю: 'уста+ю',
+  }
+
+  function ttsTokens(): Array<{ id: string; token: string }> {
+    const out: Array<{ id: string; token: string }> = []
+    const push = (id: string, tts?: string) => {
+      for (const t of (tts ?? '').toLowerCase().split(/[^а-яё+]+/).filter(Boolean)) out.push({ id, token: t })
+    }
+    for (const w of WORDS) push(`w.${w.id}`, w.ruTts)
+    for (const p of PHRASES) push(`p.${p.id}`, p.ruTts)
+    for (const l of [...VOICE_LINES, ...NUMBER_LINES]) push(`ui.${l.id}`, l.ruTts)
+    for (const f of FEELINGS) push(`feel.${f.id}`, f.ruTts)
+    for (const h of HELPERS) push(`help.${h.id}`, h.ruTts)
+    for (const st of STORIES) st.pages.forEach((pg, i) => push(`story.${st.id}.${i}`, pg.ruTts))
+    for (const x of ARTICULATION) push(`x.${x.id}`, x.ruInstructionTts)
+    return out
+  }
+
+  it('the verified words carry the right stress everywhere they are spoken', () => {
+    const bad: string[] = []
+    for (const { id, token } of ttsTokens()) {
+      const expected = STRESS[token.replace(/\+/g, '')]
+      if (expected && token !== expected) bad.push(`${id}: ${token} -> ${expected}`)
+    }
+    expect(bad).toEqual([])
+  })
+
+  it('manty and kakao (found by the QA) are fixed', () => {
+    expect(wordById('manti')?.ruTts).toBe('мант+ы')
+    expect(wordById('cocoa')?.ruTts).toBe('кака+о')
+  })
+
+  it('one word is never stressed in two different ways', () => {
+    const seen = new Map<string, string>()
+    const conflicts: string[] = []
+    for (const { id, token } of ttsTokens()) {
+      const bare = token.replace(/\+/g, '')
+      if ((bare.match(/[аеёиоуыэюя]/g) ?? []).length < 2) continue
+      const prev = seen.get(bare)
+      if (prev && prev !== token) conflicts.push(`${bare}: ${prev} vs ${token} (${id})`)
+      else seen.set(bare, token)
+    }
+    expect(conflicts).toEqual([])
+  })
+
+  it('owl, bee and helicopter sounds are pronounceable by the Russian voice (vowels present)', () => {
+    const sound = (id: string) => SOUND_MAKERS.find((s) => s.id === id)!
+    expect(sound('owl').sound.ru).toBe('у-ху')
+    expect(sound('bee').ruSoundTts).toBe('жу-жу')
+    expect(sound('helicopter').ruSoundTts).toBe('тр+а-та-та')
+    for (const s of SOUND_MAKERS) expect(s.ruSoundTts ?? s.sound.ru, s.id).toMatch(/[аеёиоуыэюя]/i)
+    expect(sound('chicken').sound.uz).toBe('qoʻq-qoʻq')
+  })
+})
+
+/* ------------------------------------------------------------------ L-05 Russian gender ------------------------------------------------------------------ */
+
+type Dict = { uz: Record<string, string>; ru: Record<string, string> }
+const STRING_MODULES = import.meta.glob<Record<string, unknown>>(['../i18n/common.ts', '../**/strings.ts'], { eager: true })
+
+function allRussian(): Array<{ where: string; text: string }> {
+  const out: Array<{ where: string; text: string }> = []
+  for (const [path, mod] of Object.entries(STRING_MODULES))
+    for (const [name, value] of Object.entries(mod)) {
+      const d = value as Partial<Dict>
+      if (d && typeof d === 'object' && d.uz && d.ru) for (const [key, text] of Object.entries(d.ru)) out.push({ where: `${path}#${name}.${key}`, text })
+    }
+  for (const { key, value, path } of allStrings()) if (key === 'ru' || key === 'ruSoundTts') out.push({ where: path, text: value })
+  return out
+}
+
+describe('Russian is gender-neutral (L-05)', () => {
+  const GENDERED: Array<[string, RegExp]> = [
+    ['slash form like «готов(а)»', /[А-Яа-яЁё]\((?:а|ла|ся|лась|на|ая)\)/],
+    ['«Я» + masculine/feminine past verb', /(?:^|[\s«"(—-])[Яя]\s+(?:не\s+|уже\s+|очень\s+|сам\s+|сама\s+)?[а-яё]+(?:л|ла|лся|лась)(?![а-яё])/],
+    ['«Ты» + past verb', /(?:^|[\s«"(—-])[Тт]ы\s+(?:не\s+|уже\s+|сам\s+|сама\s+)?[а-яё]+(?:л|ла|лся|лась)(?![а-яё])/],
+    ['short adjective after «Я»', /(?:^|[\s«"(—-])[Яя]\s+(?:очень\s+)?(?:готов|рад|должен|уверен|согласен|голоден|прав)(?![а-яё])/],
+    ['«сам выбрал» style', /\bсам\s+(?:выбрал|попросил|сказал|сделал|нажал)/i],
+    ['gendered praise', /(?:^|[^а-яё])(?:умница|умник|молодец|молодчина)(?![а-яё])/i],
+  ]
+
+  it('no gendered first/second-person forms and no gendered praise in any Russian string', () => {
+    const bad: string[] = []
+    for (const { where, text } of allRussian())
+      for (const [label, re] of GENDERED) if (re.test(text)) bad.push(`${where}: «${text}» (${label})`)
+    expect(bad).toEqual([])
+  })
+
+  it('the former offenders are rewritten', () => {
+    expect(wordById('tired')?.ru).toBe('устаю')
+    expect(PHRASES.find((p) => p.id === 'tired')?.ru).toBe('Я устаю')
+    expect(FEELINGS.find((f) => f.id === 'tired')?.ru).toBe('Я устаю')
+    expect(wordById('surprised')?.ru).toBe('удивительно')
+    expect(PARENT_STRINGS.ru.lineTopWord).not.toContain('(а)')
+    expect(PARENT_STRINGS.ru.lineFeelings).not.toContain('(а)')
+  })
+
+  it('progress lines never put a capital letter in the middle of a sentence', () => {
+    for (const key of ['lineTopWord', 'lineFeelings', 'lineSpoken', 'lineExercises', 'lineDays'] as const) {
+      const text = PARENT_STRINGS.ru[key].replace(/\{\w+\}/g, 'x')
+      expect(/[а-яё,]\s+[А-ЯЁ]/.test(text), key).toBe(false)
+    }
+  })
+})
+
+describe('Russian praise / retry lines never scold or command (L-07, L-18)', () => {
+  const FORBIDDEN = /хватит|нельзя|не трогай|неправильно|ошибк|неверно|плохо получ|опять|снова не/i
+  const calm = [
+    ...VOICE_LINES.filter((l) => /^(praise_|retry_|break_|round_|rest|enough_today)/.test(l.id)).map((l) => `${l.id}: ${l.ru}`),
+    `exercises.sceneDone: ${EXERCISE_STRINGS.ru.sceneDone}`,
+    `exercises.restText: ${EXERCISE_STRINGS.ru.restText}`,
+    `exercises.exerciseDone: ${EXERCISE_STRINGS.ru.exerciseDone}`,
+    `games.restText: ${GAME_STRINGS.ru.restText}`,
+  ]
+  it.each(calm)('%s', (line) => {
+    expect(line).not.toMatch(FORBIDDEN)
+  })
+
+  it('"enough" and "quiet" are first-person needs, not orders', () => {
+    const enough = PHRASES.find((p) => p.id === 'enough')!
+    expect(enough.uz).not.toBe('Boʻldi')
+    expect(enough.ru).not.toBe('Хватит')
+    expect(wordById('quiet')).toBeUndefined() // the order-like word «jim / тихо» is gone
+    expect(PHRASES.find((p) => p.id === 'need_quiet')?.ru).toBe('Мне нужна тишина')
+    expect(EXERCISE_STRINGS.uz.restText).not.toMatch(/aylan/i)
+    expect(EXERCISE_STRINGS.ru.restText).not.toMatch(/кружил/i)
+  })
+
+  it('effort praise is the same idea in both languages', () => {
+    const line = VOICE_LINES.find((l) => l.id === 'praise_harakat')!
+    expect(line.uz).toMatch(/harakat/)
+    expect(line.ru).toMatch(/попытка/)
+  })
+})
+
+/* ------------------------------------------------------------------ L-07/L-10/L-11/L-17/L-18/L-20 wording ------------------------------------------------------------------ */
+
+describe('terminology is one-to-one (L-10)', () => {
+  it('the exercises section is «Разминка» everywhere in Russian and «Koʻzgu» for the mirror in Uzbek', () => {
+    expect(EXERCISE_STRINGS.ru.allExercises).toBe('Вся разминка')
+    expect(EXERCISE_STRINGS.ru.toExercises).toBe('К разминке')
+    expect(EXERCISE_STRINGS.ru.mirror).toBe('Зеркальце')
+    for (const [key, text] of Object.entries(EXERCISE_STRINGS.ru)) expect(text, key).not.toMatch(/Все упражнения|К упражнениям|Зеркало\b/)
+    for (const [key, text] of Object.entries(EXERCISE_STRINGS.uz)) expect(text, key).not.toMatch(/\bOyna|\boyna|razminka/i)
+    expect(EXERCISE_STRINGS.uz.mirrorTitle).toBe('Koʻzgu')
+    expect(PARENT_STRINGS.ru.lineExercises).not.toMatch(/упражнений/)
+  })
+
+  it('"reset" is «Заново», never «Сначала» (that is the first-then board word)', () => {
+    expect(TIMER_STRINGS.ru.reset).toBe('Заново')
+    expect(TOKEN_STRINGS.ru.reset).toBe('Заново')
+  })
+
+  it('one Uzbek term for ready-made sentences, one adult-profile kind, one avatar name', () => {
+    expect(PARENT_STRINGS.uz.kindAdult).toBe('Katta yoshli')
+    expect(PARENT_STRINGS.ru.av_dove).toBe('Муся')
+    for (const mod of Object.values(STRING_MODULES))
+      for (const value of Object.values(mod)) {
+        const d = value as Partial<Dict>
+        if (d && typeof d === 'object' && d.uz) for (const text of Object.values(d.uz)) expect(text).not.toMatch(/Tayyor iboralar/)
+      }
+  })
+
+  it('tips hint does not state a wrong count', () => {
+    for (const lang of ['uz', 'ru'] as const) {
+      const digits = PARENT_STRINGS[lang].secTipsHint.match(/\d+/g) ?? []
+      for (const d of digits) expect(Number(d)).toBe(TIPS.length)
+    }
+  })
+})
+
+describe('Uzbek wording fixes (L-11, L-18, L-20)', () => {
+  it('imperatives', () => {
+    expect(wordById('dance')?.uz).toBe('raqsga tush')
+    expect(wordById('draw')?.uz).toBe('rasm chiz')
+    expect(wordById('go')?.uz).toBe('boramiz')
+  })
+
+  it('older/younger siblings keep their distinction in Russian', () => {
+    expect(wordById('older_brother')?.ru).toBe('старший брат')
+    expect(wordById('younger_brother')?.ru).toBe('младший брат')
+    expect(wordById('older_sister')?.ru).toBe('старшая сестра')
+    expect(wordById('younger_sister')?.ru).toBe('младшая сестра')
+  })
+
+  it('colloquial oyi / dada exist next to ona / ota; tish is singular in both languages; vehicles live together; no duplicate song/music', () => {
+    expect(wordById('mother')?.uz).toBe('ona')
+    expect(wordById('mother_oyi')?.uz).toBe('oyi')
+    expect(wordById('father_dada')?.uz).toBe('dada')
+    expect(wordById('teeth')?.ru).toBe('зуб')
+    for (const id of ['bus', 'car', 'train', 'airplane', 'helicopter', 'bicycle', 'ambulance']) expect(wordById(id)?.topic, id).toBe('toys')
+    expect(wordById('song')).toBeUndefined()
+    expect(wordById('music')).toBeDefined()
+  })
+
+  it('core eat is a child-directed «кушать», not the ambiguous «есть»', () => {
+    expect(wordById('eat')?.ru).toBe('кушать')
+  })
+
+  it('hot / cold drink words agree', () => {
+    expect(wordById('hot_drink')?.ru).toBe('горячее')
+    expect(wordById('cold_drink')?.ru).toBe('холодное')
+  })
+})
+
+describe('social stories keep to the Carol Gray rules (L-17)', () => {
+  const all = STORIES.flatMap((s) => s.pages.map((p, i) => ({ id: `${s.id}.${i}`, ...p })))
+
+  it('assume no particular parent', () => {
+    for (const p of all) {
+      expect(p.uz, p.id).not.toMatch(/\bonam/i)
+      expect(p.ru, p.id).not.toMatch(/\bмам[аыуе]|\bмамой/i)
+    }
+  })
+
+  it('make no promise about pain', () => {
+    for (const p of all) {
+      if (/ogʻrimaydi/i.test(p.uz)) expect(p.uz, p.id).toMatch(/Odatda ogʻrimaydi/)
+      if (/не больно/i.test(p.ru)) expect(p.ru, p.id).toMatch(/Обычно не больно/)
+    }
+    expect(all.find((p) => p.id === 'haircut.4')?.uz).toContain('Odatda ogʻrimaydi')
+    expect(all.find((p) => p.id === 'haircut.4')?.ru).toContain('Обычно не больно')
+  })
+
+  it('the stethoscope has one name in both languages and holding a hand is not a handshake', () => {
+    const page = all.find((p) => p.id === 'doctor.5')!
+    expect(page.uz).toMatch(/fonendoskop/i)
+    expect(page.ru).toMatch(/фонендоскоп/i)
+    expect(all.find((p) => p.id === 'doctor.7')?.symbol).not.toBe('handshake')
+  })
+
+  it('the helper "with mum" no longer assumes who comes along', () => {
+    const h = HELPERS.find((x) => x.id === 'with_mom')!
+    expect(h.uz).toBe('Yaqin odam bilan')
+    expect(h.ru).toBe('С близким человеком')
+  })
+})
+
+/* ------------------------------------------------------------------ L-04 / L-06 on the real content ------------------------------------------------------------------ */
+
+describe('hyphenation of the whole vocabulary (L-04)', () => {
+  const texts: Array<[string, 'uz' | 'ru']> = []
+  for (const w of WORDS) texts.push([w.uz, 'uz'], [uzLatnToCyrl(w.uz), 'uz'], [w.ru, 'ru'])
+  for (const p of PHRASES) texts.push([p.uz, 'uz'], [uzLatnToCyrl(p.uz), 'uz'], [p.ru, 'ru'])
+
+  it('no fragment ever starts with ь ъ й ʼ ʻ, and the text is unchanged without the soft hyphens', () => {
+    const SHY = '­'
+    const bad: string[] = []
+    for (const [text, lang] of texts) {
+      const out = shy(text, lang, 4)
+      if (out.replaceAll(SHY, '') !== text) bad.push(`changed: ${text}`)
+      // a word may START with й (йўқ); only the continuation fragments of a wrapped word matter
+      for (const word of out.split(/\s+/)) for (const frag of word.split(SHY).slice(1)) if (/^[ьъйЬЪЙʼʻ]/.test(frag)) bad.push(`${text} -> ${out}`)
+    }
+    expect(bad).toEqual([])
+  })
+
+  it('the QA examples split cleanly', () => {
+    for (const w of ['большой', 'маленький', 'платье', 'одеться', 'больница', 'обезьяна', 'умыться', 'спальня', 'мультик'])
+      for (const part of syllablesOf(w, 'ru')) expect(part[0]).not.toMatch(/[ьъй]/)
+  })
+})
+
+describe('transliteration of the real content (L-06)', () => {
+  it('every Uzbek string converts without Latin leftovers (except protected tokens) and keeps loanword spellings', () => {
+    const bad: string[] = []
+    for (const { key, value, path } of allStrings()) {
+      if (key !== 'uz') continue
+      const out = uzLatnToCyrl(value)
+      const leftovers = out.match(/[A-Za-z]+/g)?.filter((t) => !isKeptLatin(t)) ?? []
+      if (leftovers.length) bad.push(`${path}: ${value} -> ${out}`)
+    }
+    expect(bad).toEqual([])
+    expect(uzLatnToCyrl(wordById('cartoon')!.uz)).toBe('мультфильм')
+  })
+
+  it('protected acronyms never appear inside a SPOKEN Uzbek text (the synthesizer only reads Cyrillic)', () => {
+    const spoken = [
+      ...WORDS.map((w) => w.uzTts ?? w.uz),
+      ...PHRASES.map((p) => p.uzTts ?? p.uz),
+      ...VOICE_LINES.map((l) => l.uz),
+      ...FEELINGS.map((f) => f.uz),
+      ...HELPERS.map((h) => h.uz),
+      ...STORIES.flatMap((st) => st.pages.map((p) => p.uz)),
+      ...SOUND_MAKERS.map((m) => m.sound.uz),
+    ]
+    for (const text of spoken) for (const token of text.match(/[A-Za-z0-9ʻʼ]+/g) ?? []) expect(isKeptLatin(token), `${text} :: ${token}`).toBe(false)
   })
 })

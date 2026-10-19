@@ -1,6 +1,10 @@
 .shell {
   /* Width kept free on the right of page headers for the fixed Break button / teacher panel */
   --header-reserve: 0px;
+  /* Height of the bottom navigation that overlays the viewport edge (sticky bars sit above it) */
+  --nav-bottom: calc(6rem + var(--safe-bottom));
+  /* Switch scanning must not highlight anything hidden behind the bottom bar (see design/global.css) */
+  --scan-inset-bottom: calc(var(--nav-bottom) + var(--s-2));
   min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr;
@@ -23,7 +27,7 @@
   position: sticky;
   bottom: 0;
   z-index: 20;
-  padding: var(--s-2) var(--s-2) calc(var(--s-2) + var(--safe-bottom));
+  padding: var(--s-2) calc(var(--s-2) + var(--safe-right)) calc(var(--s-2) + var(--safe-bottom)) calc(var(--s-2) + var(--safe-left));
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter: blur(10px);
   box-shadow: 0 -1px 0 var(--outline-soft);
@@ -36,7 +40,8 @@
 .navList {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  /* minmax(0, 1fr): a long label can never widen its column, so the bar never overflows (large text, 360 px) */
+  grid-auto-columns: minmax(0, 1fr);
   gap: var(--s-1);
   margin: 0;
   padding: 0;
@@ -56,7 +61,8 @@
   background: transparent;
   color: var(--text-muted);
   font-weight: 700;
-  font-size: var(--fs-nav);
+  /* 13 px floor; shrinks with the viewport (not with the text-size setting) so five labels still fit at 200% */
+  font-size: min(var(--fs-nav), max(13px, 4.2vw));
   line-height: 1.1;
 }
 
@@ -79,27 +85,62 @@
   text-align: center;
   overflow-wrap: normal;
   hyphens: manual;
+  text-wrap: balance;
 }
 
-/* Tablets, laptops, desktops: a calm fixed rail on the left */
-@media (min-width: 840px) {
+/*
+ * Phones in landscape (and any very short window): the rail would be taller than the screen and clip its last
+ * items, so the bar stays at the bottom with icon and label side by side.
+ */
+@media (max-height: 520px) {
   .shell {
-    grid-template-columns: var(--rail-w) 1fr;
+    --nav-bottom: calc(3.75rem + var(--safe-bottom));
+  }
+  .nav {
+    padding-top: var(--s-1);
+    padding-bottom: calc(var(--s-1) + var(--safe-bottom));
+  }
+  .navItem {
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    min-height: 3.25rem;
+    padding: var(--s-1) var(--s-2);
+  }
+  .navIcon {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: none;
+  }
+}
+
+/*
+ * Tablets, laptops, desktops: a calm fixed rail on the left. Only when the window is tall enough to hold it,
+ * and not with large text (the rail would clip or scroll): then the bottom bar stays.
+ */
+@media (min-width: 840px) and (min-height: 521px) {
+  :global(html:not([data-tscale='big'])) .shell {
+    --nav-bottom: 0px;
+    grid-template-columns: calc(var(--rail-w) + var(--safe-left)) 1fr;
     grid-template-rows: 1fr;
     grid-template-areas: 'nav main';
   }
-  .nav {
+  :global(html:not([data-tscale='big'])) .nav {
     position: sticky;
     top: 0;
     bottom: auto;
     height: 100dvh;
-    padding: calc(var(--s-4) + var(--safe-top)) var(--s-2) var(--s-4);
+    padding: calc(var(--s-4) + var(--safe-top)) var(--s-2) var(--s-4) calc(var(--s-2) + var(--safe-left));
     box-shadow: 1px 0 0 var(--outline-soft);
+    /* If the rail is still taller than the screen (very large text), it scrolls instead of clipping an item */
+    overflow-y: auto;
+    overscroll-behavior: contain;
     display: grid;
     align-content: start;
     gap: var(--s-4);
   }
-  .brand {
+  :global(html:not([data-tscale='big'])) .brand {
     display: block;
     text-align: center;
     font-weight: 900;
@@ -107,39 +148,102 @@
     color: var(--primary);
     letter-spacing: 0.01em;
   }
-  .navList {
+  :global(html:not([data-tscale='big'])) .navList {
     grid-auto-flow: row;
     gap: var(--s-2);
   }
-  .navItem {
+  :global(html:not([data-tscale='big'])) .navItem {
     min-height: 5rem;
     font-size: 0.875rem;
   }
-  .navIcon {
+  :global(html:not([data-tscale='big'])) .navLabel {
+    hyphens: manual;
+  }
+  :global(html:not([data-tscale='big'])) .navIcon {
     width: 2.5rem;
     height: 2.5rem;
   }
-  .main {
+  :global(html:not([data-tscale='big'])) .main {
     padding-bottom: var(--s-8);
   }
 }
 
-/* Interactive whiteboard: navigation is a big row at the bottom, inside the children's reach. */
-.shell[data-board] {
-  grid-template-columns: 1fr;
+/*
+ * Interactive whiteboard. Layout contract (see the `data-reach` utility below):
+ *  - the teacher tools live in a rail OUTSIDE <main> (own grid column), so they can never cover content;
+ *  - navigation is a big, opaque row at the bottom, inside the children's reach;
+ *  - --reach-h is the calibrated reach zone: the bottom `--reach` share of the screen above the navigation
+ *    (never smaller than 10rem, so one row of big tiles always fits). Each screen's primary controls sit in an
+ *    element marked data-reach; it is bottom-aligned, capped at --reach-h and scrolls INSIDE the zone.
+ */
+/* html[data-board] in front: beats the (more specific) rail rules of the desktop layout above. */
+:global(html[data-board='true']) .shell[data-board] {
+  --header-reserve: 0px;
+  --board-nav-h: 7rem;
+  --teacher-w: 6.5rem;
+  --nav-bottom: var(--board-nav-h);
+  --board-main-h: calc(100dvh - var(--board-nav-h));
+  /* Vertical space is scarce on a board (the bottom bar is tall): tighter rhythm between sections. */
+  --section-gap: var(--s-4);
+  --reach-h: max(10rem, calc(var(--board-main-h) * var(--reach)));
+  grid-template-columns: minmax(0, 1fr) var(--teacher-w);
   grid-template-rows: 1fr auto;
   grid-template-areas:
-    'main'
-    'nav';
+    'main teacher'
+    'nav nav';
+}
+
+/*
+ * <main> is exactly the space above the bottom bar and is the only thing that can scroll: the document itself never
+ * does in board mode, so the bar and the teacher rail stay put whatever a screen holds.
+ */
+.shell[data-board] .main {
+  /* positioned: absolutely placed children (visually-hidden text, badges) are clipped here, not by the document */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: var(--board-main-h);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 0;
+}
+
+/* Zero specificity on purpose: a screen's own board rules (feature CSS) override these defaults. */
+:where(.shell[data-board] .main) > * {
+  flex: none;
+}
+
+/* Page bodies (fragment pages: header + <Page>) fill the rest and keep their content at the bottom. */
+:where(.shell[data-board] .main) > :global([data-pw][data-pw]) {
+  flex: 1 0 auto;
+  align-content: end;
+  padding-bottom: 0;
+}
+
+/* The reach zone: bottom-aligned, as tall as the children can reach, scrolling inside instead of growing. */
+.shell[data-board] :global([data-reach]) {
+  position: relative;
+  margin-top: auto;
+  margin-bottom: var(--s-3);
+  /* never so tall that the header above it is pushed off a short screen */
+  max-height: min(calc(var(--reach-h) - var(--s-3)), calc(var(--board-main-h) - 12.5rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-width: 0;
 }
 
 .shell[data-board] .nav {
   position: sticky;
   top: auto;
   bottom: 0;
-  height: auto;
+  height: var(--board-nav-h);
   display: block;
-  padding: var(--s-2) var(--s-6) var(--s-3);
+  padding: var(--s-2) var(--s-6) var(--s-2);
+  /* Opaque: the translucent bar of the other layouts shows ghost content through it on a big screen. */
+  background: var(--surface);
+  backdrop-filter: none;
   box-shadow: 0 -1px 0 var(--outline-soft);
 }
 
@@ -154,7 +258,7 @@
 }
 
 .shell[data-board] .navItem {
-  min-height: 5.5rem;
+  min-height: 5.25rem;
   grid-auto-flow: column;
   align-items: center;
   justify-content: center;
@@ -196,23 +300,79 @@
   height: 2rem;
 }
 
+/* Board: the Break button lives in the right-hand column (under the teacher rail), so it never covers content. */
 .shell[data-board] .breakBtn {
   top: auto;
-  right: var(--s-6);
-  bottom: calc(var(--s-6) + 6.5rem);
+  right: var(--s-3);
+  bottom: calc(var(--board-nav-h) + var(--s-3));
+  width: calc(var(--teacher-w) - var(--s-3));
+  min-height: 5.5rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--s-2) var(--s-1);
+  border-radius: var(--r-cell);
+  font-size: 0.9375rem;
+  line-height: 1.1;
+  text-align: center;
 }
 
+/* Teacher tools: a slim rail beside the page (its own grid column), never over the content. */
 .teacher {
-  position: fixed;
-  z-index: 30;
+  grid-area: teacher;
+  position: sticky;
   top: var(--s-3);
-  right: var(--s-3);
+  z-index: 30;
+  align-self: start;
   display: flex;
+  flex-direction: column;
   gap: var(--s-2);
+  margin: var(--s-3) var(--s-3) 0 0;
   padding: var(--s-2);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-card);
   background: var(--surface);
   box-shadow: var(--elev-2);
+}
+
+.railBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 4.5rem;
+  padding: var(--s-2) 2px;
+  border: 0;
+  border-radius: var(--r-cell);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-weight: 800;
+  font-size: var(--fs-nav);
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: normal;
+  hyphens: manual;
+}
+
+.railBtn[aria-pressed='true'] {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.railBtn[data-pressed='true'] {
+  transform: scale(0.97);
+}
+
+.railIcon {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.railIcon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .loading {
@@ -226,11 +386,60 @@
 }
 
 .shell[data-break] {
-  --header-reserve: 9.5rem;
+  --header-reserve: min(9.5rem, 40vw);
 }
 
-.shell[data-board] {
-  --header-reserve: 26rem;
+/* Large text on a phone: the Break button keeps its icon and its accessible name, the label would not fit */
+@media (max-width: 480px) {
+  :global(html[data-tscale='big']) .shell[data-break] {
+    --header-reserve: 4.5rem;
+  }
+  :global(html[data-tscale='big']) .breakBtn {
+    padding: 0 var(--s-2);
+  }
+  :global(html[data-tscale='big']) .breakLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Board: the Break button sits at the bottom right, so page headers need no reserve */
+.shell[data-board][data-break] {
+  --header-reserve: 0px;
+}
+
+/* Skip link: carries .visually-hidden until it receives keyboard focus, then it is the first thing on the page */
+.skip {
+  z-index: 60;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 800;
+}
+
+.skip:focus-visible {
+  position: fixed !important;
+  top: var(--s-2);
+  left: var(--s-2);
+  width: auto !important;
+  height: auto !important;
+  min-height: var(--touch-min);
+  margin: 0 !important;
+  padding: 0 var(--s-5) !important;
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+  white-space: normal !important;
+}
+
+/* <main> is focus target of the skip link only; it is not interactive, so no ring. */
+.main:focus {
+  outline: none;
 }
 
 /* Headings receive programmatic focus on navigation; they are not interactive, so no ring. */

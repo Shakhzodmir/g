@@ -21,6 +21,6 @@ export const S = defineStrings({
     start: 'Дышим вместе',
     stop: 'Остановить',
     helpersTitle: 'Что мне нужно?',
-    ready: 'Я готов(а)',
+    ready: 'Готово',
   },
 })

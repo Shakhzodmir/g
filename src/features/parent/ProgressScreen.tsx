@@ -1,5 +1,5 @@
 import { Leaf } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useI18n, useLabel } from '../../i18n'
 import type { EventRow } from '../../store/db'
@@ -11,39 +11,62 @@ import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import styles from './parent.module.css'
 import { calendar, pluralRu, summarize, supportLines, windowStart, type Counted, type SupportLine } from './progress'
-import { RefVisual, resolveRef, Section, shortDate, useCustomCards, useProfileName, useT } from './shared'
+import { pruneOldEvents } from './retention'
+import { resolveRef, type RefHint } from './refs'
+import { RefVisual, Section, shortDate, StorageBanner, useCustomCards, useProfileName, useT } from './shared'
 
+/** Events of the window, re-read (with a fresh clock) when the screen mounts and whenever the tab becomes visible again. */
 function useEvents(profileId: string) {
-  const [events, setEvents] = useState<EventRow[] | null>(null)
-  useEffect(() => {
+  const [state, setState] = useState<{ events: EventRow[]; now: number } | null>(null)
+  const load = useCallback(() => {
+    const now = Date.now()
     let alive = true
-    setEvents(null)
-    void queryEvents(profileId, windowStart(Date.now())).then((rows) => alive && setEvents(rows))
+    void pruneOldEvents(now)
+      .then(() => queryEvents(profileId, windowStart(now)))
+      .then((rows) => alive && setState({ events: rows, now }))
     return () => {
       alive = false
     }
   }, [profileId])
-  return events
+  useEffect(() => {
+    setState(null)
+    let stop = load()
+    const again = () => {
+      if (document.visibilityState === 'hidden') return
+      stop()
+      stop = load()
+    }
+    document.addEventListener('visibilitychange', again)
+    window.addEventListener('focus', again)
+    return () => {
+      stop()
+      document.removeEventListener('visibilitychange', again)
+      window.removeEventListener('focus', again)
+    }
+  }, [load])
+  return state
 }
 
-function RankList({ items, empty }: { items: Array<Counted | { ref: string; count?: undefined }>; empty: string }) {
+function RankList({ items, empty, hint, limit = 10 }: { items: Array<Counted | { ref: string; count?: undefined }>; empty: string; hint?: RefHint; limit?: number }) {
   const cards = useCustomCards()
   const label = useLabel()
   const t = useT()
   const { uiLang } = useI18n()
-  if (!items.length) return <p className={styles.muted}>{empty}</p>
+  // Refs that cannot be named (deleted custom cards, ids from other versions) are hidden, never shown raw.
+  const rows = items
+    .map((it) => ({ it, info: resolveRef(it.ref, cards, hint) }))
+    .filter((r): r is { it: (typeof items)[number]; info: NonNullable<typeof r.info> } => r.info !== null)
+    .slice(0, limit)
+  if (!rows.length) return <p className={styles.muted}>{empty}</p>
   return (
     <ol className={styles.rank}>
-      {items.map((it) => {
-        const info = resolveRef(it.ref, cards)
-        return (
-          <li key={it.ref} className={styles.rankItem}>
-            <RefVisual info={info} className={styles.rankSym} />
-            <span>{label(info.label)}</span>
-            <span className={styles.rankCount}>{it.count ? t('times', { n: it.count, times: uiLang === 'ru' ? pluralRu(it.count, 'раз', 'раза', 'раз') : '' }) : ''}</span>
-          </li>
-        )
-      })}
+      {rows.map(({ it, info }) => (
+        <li key={it.ref} className={styles.rankItem}>
+          <RefVisual info={info} className={styles.rankSym} />
+          <span>{label(info.label)}</span>
+          <span className={styles.rankCount}>{it.count ? t('times', { n: it.count, times: uiLang === 'ru' ? pluralRu(it.count, 'раз', 'раза', 'раз') : '' }) : ''}</span>
+        </li>
+      ))}
     </ol>
   )
 }
@@ -55,22 +78,29 @@ export default function Progress() {
   const label = useLabel()
   const pid = useProfileStore((s) => s.profile.id)
   const name = useProfileName()
-  const events = useEvents(pid)
+  const loaded = useEvents(pid)
   const cards = useCustomCards()
-  const now = useMemo(() => Date.now(), [])
-  const summary = useMemo(() => (events ? summarize(events, now) : null), [events, now])
-  const cal = useMemo(() => (events ? calendar(events, now) : []), [events, now])
+  const summary = useMemo(() => (loaded ? summarize(loaded.events, loaded.now) : null), [loaded])
+  const cal = useMemo(() => (loaded ? calendar(loaded.events, loaded.now) : []), [loaded])
   const ru = uiLang === 'ru'
   const times = (n: number) => (ru ? pluralRu(n, 'раз', 'раза', 'раз') : '')
   const days = (n: number) => (ru ? pluralRu(n, 'день', 'дня', 'дней') : '')
-  const wordOf = (ref: string) => label(resolveRef(ref, cards).label)
+  /** Display name of a ref, or null when it cannot be named. */
+  const wordOf = (ref: string): string | null => {
+    const info = resolveRef(ref, cards)
+    return info ? label(info.label) : null
+  }
 
   const lineText = (l: SupportLine): string => {
     switch (l.id) {
-      case 'topWord':
-        return t('lineTopWord', { name, word: wordOf(l.refs[0]), n: l.n, times: times(l.n) })
-      case 'newWords':
-        return t('lineNewWords', { n: l.n, words: l.refs.map(wordOf).join(', ') })
+      case 'topWord': {
+        const word = wordOf(l.refs[0])
+        return word ? t('lineTopWord', { name, word, n: l.n, times: times(l.n) }) : ''
+      }
+      case 'newWords': {
+        const words = l.refs.map(wordOf).filter((w): w is string => !!w)
+        return words.length ? t('lineNewWords', { n: words.length, words: words.join(', ') }) : ''
+      }
       case 'spoken':
         return t('lineSpoken', { n: l.n, times: times(l.n) })
       case 'feelings':
@@ -91,6 +121,7 @@ export default function Progress() {
       <PageHeader title={t('secProgress')} back="/parent" />
       <Page width="normal">
         <p className={styles.intro}>{t('periodNote')}</p>
+        <StorageBanner />
         {!summary ? (
           <p className={styles.muted} aria-busy="true">
             …
@@ -110,14 +141,17 @@ export default function Progress() {
           <>
             <Section title={t('supportTitle')}>
               <ul className={styles.lines}>
-                {supportLines(summary).map((l) => (
-                  <li key={l.id} className={styles.line}>
-                    <span className={styles.lineIcon} aria-hidden="true">
-                      <Leaf />
-                    </span>
-                    <span>{lineText(l)}</span>
-                  </li>
-                ))}
+                {supportLines(summary)
+                  .map((l) => ({ l, text: lineText(l) }))
+                  .filter((x) => x.text)
+                  .map(({ l, text }) => (
+                    <li key={l.id} className={styles.line}>
+                      <span className={styles.lineIcon} aria-hidden="true">
+                        <Leaf />
+                      </span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
               </ul>
               <div className={styles.stats}>
                 <div className={styles.stat}>
@@ -213,13 +247,13 @@ export default function Progress() {
 
             <div className={styles.threeCol}>
               <Section title={t('gamesTitle')}>
-                <RankList items={summary.games} empty={t('noneYet')} />
+                <RankList items={summary.games} empty={t('noneYet')} hint="game" />
               </Section>
               <Section title={t('exercisesTitle')}>
-                <RankList items={summary.exercises} empty={t('noneYet')} />
+                <RankList items={summary.exercises} empty={t('noneYet')} hint="exercise" />
               </Section>
               <Section title={t('feelingsTitle')}>
-                <RankList items={summary.feelings} empty={t('noneYet')} />
+                <RankList items={summary.feelings} empty={t('noneYet')} hint="feeling" />
               </Section>
             </div>
           </>

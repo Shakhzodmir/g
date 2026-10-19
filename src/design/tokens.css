@@ -67,12 +67,19 @@
 
   /* Layout */
   --nav-h: 96px;
-  --rail-w: 104px;
+  --rail-w: max(104px, 6.5rem); /* grows with the text-size setting so labels never overflow the rail */
   --content-max: 1200px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
+
+  /* Switch scanning: the highlighted element must never land under the bottom bar or the fixed Break button */
+  --scan-inset-top: 4.5rem;
+  --scan-inset-bottom: calc(var(--nav-h) + var(--safe-bottom));
+
+  /* User text size (Profile.textScale), applied to the root font-size in global.css */
+  --text-scale: 1;
 }
 
 @media (min-width: 600px) {
@@ -113,6 +120,7 @@ html[data-theme='bolajon'] {
   --on-warm: #3a2a00;
   --warm-container: #fff0c9;
   --outline: #7a8494;
+  --outline-strong: #6b7686; /* component boundaries (switch, inputs, chips): >= 3:1 */
   --outline-soft: #d3dfdd;
   --focus-outer: #1e2633;
   --focus-inner: #ffffff;
@@ -164,6 +172,7 @@ html[data-theme='tun'] {
   --on-warm: #2e2000;
   --warm-container: #3d3014;
   --outline: #7e8ba3;
+  --outline-strong: #7e8ba3;
   --outline-soft: #2a3a57;
   --focus-outer: #ffd84d;
   --focus-inner: #0e1726;
@@ -200,7 +209,7 @@ html[data-theme='tinch'] {
   --surface-2: #eceeed;
   --text: #283140;
   --text-muted: #556070;
-  --primary: #3c7a82;
+  --primary: #336d75; /* >= 4.5:1 as text on every tinch surface */
   --on-primary: #ffffff;
   --primary-container: #dbeaec;
   --on-primary-container: #1f454a;
@@ -215,6 +224,7 @@ html[data-theme='tinch'] {
   --on-warm: #2f2410;
   --warm-container: #f4ead4;
   --outline: #7d8590;
+  --outline-strong: #6e7681;
   --outline-soft: #d9dddc;
   --focus-outer: #283140;
   --focus-inner: #ffffff;
@@ -268,6 +278,7 @@ html[data-theme='kattalar'] {
   --on-warm: #2e2000;
   --warm-container: #fbf0d6;
   --outline: #7a8494;
+  --outline-strong: #6b7686;
   --outline-soft: #dde1e0;
   --focus-outer: #1f2328;
   --focus-inner: #ffffff;
@@ -323,6 +334,7 @@ html[data-theme='hc-light'] {
   --on-warm: #ffffff;
   --warm-container: #ffffff;
   --outline: #000000;
+  --outline-strong: #000000;
   --outline-soft: #000000;
   --focus-outer: #a0006e;
   --focus-inner: #ffffff;
@@ -373,6 +385,7 @@ html[data-theme='hc-dark'] {
   --on-warm: #000000;
   --warm-container: #000000;
   --outline: #ffffff;
+  --outline-strong: #ffffff;
   --outline-soft: #ffffff;
   --focus-outer: #ffe500;
   --focus-inner: #000000;

@@ -27,7 +27,7 @@ function StoryList() {
   return (
     <div className={styles.page}>
       <PageHeader title={t('title')} />
-      <ul className={styles.list} role="list">
+      <ul className={styles.list} role="list" data-reach>
         {STORIES.map((s) => {
           const title = label(s.title)
           return (
@@ -164,7 +164,7 @@ function StoryReader({ story }: { story: SocialStory }) {
           </div>
         )}
 
-        <div className={styles.controls}>
+        <div className={styles.controls} data-reach>
           <Button
             size="xl"
             variant="secondary"

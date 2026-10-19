@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import type { UiLang, UzScript } from '../i18n/types'
@@ -54,7 +55,12 @@ export const useDevice = create<DeviceState>()(
       setUzScript: (uzScript) => set({ uzScript }),
       setOnboarded: (onboarded) => set({ onboarded }),
       setActiveProfileId: (activeProfileId) => set({ activeProfileId }),
-      setBoardMode: (boardMode) => set({ boardMode }),
+      setBoardMode: (boardMode) =>
+        set((st) => ({
+          boardMode,
+          // Switching on without a calibration must not run with arbitrary defaults: derive one from the viewport.
+          boardCalibration: boardMode && !st.boardCalibration ? defaultCalibration(currentViewport()) : st.boardCalibration,
+        })),
       dismissBoardHint: () => set({ boardHintDismissed: true }),
       setBoardCalibration: (boardCalibration) => set({ boardCalibration }),
       setParentPinHash: (parentPinHash) => set({ parentPinHash }),
@@ -71,21 +77,102 @@ export function screenHeightM(diagonalIn: number): number {
   return (diagonalIn * 0.0254 * 9) / Math.sqrt(16 * 16 + 9 * 9)
 }
 
-/** Fraction of screen height (from bottom) a child can reach; clamped to 0.15–0.8 so the UI stays usable. */
-export function reachFraction(c: Pick<BoardCalibration, 'diagonalIn' | 'bottomEdgeM' | 'ageGroup'>): number {
+/** Lowest / highest reach fraction the layout supports. */
+export const REACH_MIN = 0.15
+export const REACH_MAX = 0.8
+
+/** Unclamped reach fraction (can be < 0 or > 1 for odd inputs): what the physical geometry really says. */
+export function reachRaw(c: Pick<BoardCalibration, 'diagonalIn' | 'bottomEdgeM' | 'ageGroup'>): number {
   const h = screenHeightM(c.diagonalIn)
   const reachable = REACH_TOP_M[c.ageGroup] - c.bottomEdgeM
-  return Math.min(0.8, Math.max(0.15, reachable / h))
+  return reachable / h
+}
+
+/** Fraction of screen height (from bottom) a child can reach; clamped to 0.15–0.8 so the UI stays usable. */
+export function reachFraction(c: Pick<BoardCalibration, 'diagonalIn' | 'bottomEdgeM' | 'ageGroup'>): number {
+  return Math.min(REACH_MAX, Math.max(REACH_MIN, reachRaw(c)))
+}
+
+/** 'low': the children's real reach is below the minimum and was raised; 'high': above the maximum and was lowered. */
+export function reachClamp(c: Pick<BoardCalibration, 'diagonalIn' | 'bottomEdgeM' | 'ageGroup'>): 'low' | 'high' | null {
+  const r = reachRaw(c)
+  return r < REACH_MIN ? 'low' : r > REACH_MAX ? 'high' : null
+}
+
+export interface Viewport {
+  width: number
+  height: number
+}
+
+/** Interface scale limits. */
+export const SCALE_MIN = 1
+export const SCALE_MAX = 2.6
+/** The scaled layout must keep at least this many CSS px of height / width (below that, controls fall behind the nav). */
+export const MIN_EFFECTIVE_H = 700
+export const MIN_EFFECTIVE_W = 1000
+
+const round1 = (v: number) => Math.round(v * 10) / 10
+
+/** Largest scale at which the effective viewport (innerSize / scale) stays ≥ 700 px tall and ≥ 1000 px wide. */
+export function maxScaleFor(viewport: Viewport): number {
+  // ~1.5 % slack ("≈ 700 px"): keeps ×1.1 at 768 px (effective 698 px) instead of dropping to ×1.0.
+  const byFit = Math.min(viewport.height / (MIN_EFFECTIVE_H * 0.985), viewport.width / (MIN_EFFECTIVE_W * 0.985))
+  // Floor at 1: never shrink below normal size.
+  return Math.min(SCALE_MAX, Math.max(SCALE_MIN, Math.floor(byFit * 10 + 1e-6) / 10))
+}
+
+/** True when the chosen scale makes the effective viewport smaller than the usable minimum. */
+export function scaleTooLarge(scale: number, viewport: Viewport): boolean {
+  return scale > maxScaleFor(viewport) + 1e-9
 }
 
 /**
  * Suggested UI scale so that body text (≈1.125rem) has a cap height of ≈5 mm per metre of viewing distance
- * (AVIXA DISCAS basic decision making), assuming the board renders `cssHeight` CSS pixels.
+ * (AVIXA DISCAS basic decision making), assuming the board renders `viewport.height` CSS pixels.
+ * It never exceeds what the real viewport can hold (see maxScaleFor), so a laptop never gets ×1.5.
+ * A plain number is accepted as the CSS height (width unconstrained).
  */
-export function suggestedScale(diagonalIn: number, distanceM: number, cssHeight: number): number {
-  const pxPerMm = cssHeight / (screenHeightM(diagonalIn) * 1000)
+export function suggestedScale(diagonalIn: number, distanceM: number, viewport: Viewport | number): number {
+  const vp: Viewport = typeof viewport === 'number' ? { width: Infinity, height: viewport } : viewport
+  const pxPerMm = vp.height / (screenHeightM(diagonalIn) * 1000)
   const capMm = 5 * distanceM
   const fontPx = (capMm * pxPerMm) / 0.7
   const scale = fontPx / 18
-  return Math.round(Math.min(2.6, Math.max(1.2, scale)) * 10) / 10
+  const wanted = Math.min(SCALE_MAX, Math.max(1.2, scale))
+  return round1(Math.min(wanted, maxScaleFor(vp)))
+}
+
+/** Scale actually applied: the saved/default scale, clamped so the viewport stays usable. */
+export function effectiveScale(calib: Pick<BoardCalibration, 'scale'> | null, viewport: Viewport): number {
+  const wanted = calib?.scale ?? round1(Math.min(SCALE_MAX, Math.max(SCALE_MIN, viewport.height / 720)))
+  return round1(Math.min(maxScaleFor(viewport), Math.max(SCALE_MIN, wanted)))
+}
+
+/** Calibration used when board mode is switched on without one: a typical 75″ classroom board, sized from the viewport. */
+export function defaultCalibration(viewport: Viewport): BoardCalibration {
+  const base = { diagonalIn: 75, bottomEdgeM: 0.8, ageGroup: '5-8' as ReachAge, distanceM: 4 }
+  return { ...base, scale: suggestedScale(base.diagonalIn, base.distanceM, viewport), reach: reachFraction(base) }
+}
+
+export function currentViewport(): Viewport {
+  return typeof window === 'undefined' ? { width: 1920, height: 1080 } : { width: window.innerWidth, height: window.innerHeight }
+}
+
+let cachedViewport: Viewport = currentViewport()
+function readViewport(): Viewport {
+  const now = currentViewport()
+  if (now.width !== cachedViewport.width || now.height !== cachedViewport.height) cachedViewport = now
+  return cachedViewport
+}
+
+/** Live viewport size (CSS px, before the board scale); re-renders on resize / rotation / fullscreen. */
+export function useViewport(): Viewport {
+  return useSyncExternalStore(
+    (cb) => {
+      window.addEventListener('resize', cb)
+      return () => window.removeEventListener('resize', cb)
+    },
+    readViewport,
+    () => ({ width: 1920, height: 1080 }),
+  )
 }

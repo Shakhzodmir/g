@@ -1,7 +1,7 @@
 import type { ArticulationExercise } from './types'
 
 /*
- * "Oyna / Зеркальце": articulation warm-up (spec 4.4). It is a warm-up, not therapy:
+ * "Koʻzgu / Зеркальце": articulation warm-up (spec 4.4). It is a warm-up, not therapy:
  * every session ends with speech practice. Tongue exercises cannot be measured by
  * MediaPipe blendshapes, so `metric: null` = mirror only, the adult confirms.
  * Instructions use the informal "sen" form an adult uses with a child.

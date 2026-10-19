@@ -344,3 +344,62 @@
 :global(html[data-board='true']) .dial {
   width: clamp(14rem, min(30vw, 38dvh), 34rem);
 }
+
+/* Finished: the dial breathes once (no loop), in addition to the check mark, for when sound is off. */
+.pulse {
+  animation: dial-pulse 1.2s var(--ease-out) 1;
+}
+
+@keyframes dial-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ---------- Global "time is up" toast / quiet card ---------- */
+.notice {
+  position: fixed;
+  z-index: 55;
+  left: 50%;
+  bottom: calc(var(--nav-h) + var(--s-3) + var(--safe-bottom));
+  translate: -50% 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+  width: min(calc(100vw - 2 * var(--gutter)), 26rem);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--elev-dialog);
+  border: 3px solid var(--primary);
+  color: var(--text);
+}
+
+.noticeDial {
+  width: 3.75rem;
+  height: 3.75rem;
+}
+
+.noticeText {
+  margin: 0;
+  font-weight: 800;
+  font-size: var(--fs-title);
+  line-height: 1.2;
+}
+
+@media (min-width: 840px) {
+  .notice {
+    bottom: var(--s-6);
+  }
+}
+
+:global(html[data-board='true']) .notice {
+  bottom: calc(6.5rem + var(--s-3));
+}

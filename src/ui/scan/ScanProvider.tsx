@@ -2,10 +2,19 @@ import { useEffect, type ReactNode } from 'react'
 import { useProfileStore } from '../../store/profile'
 import { Scanner } from './scanner'
 
-function isTyping(target: EventTarget | null): boolean {
+const TEXT_INPUT_TYPES = new Set(['text', 'search', 'email', 'url', 'tel', 'password', 'number', ''])
+
+/**
+ * True only where Space/Enter belong to the field: text-like inputs, textarea, select, contenteditable.
+ * Radio, checkbox, range and button inputs do NOT count, otherwise one focused radio would silence scanning.
+ */
+export function isTyping(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null
-  if (!el) return false
-  return el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)
+  if (!el || !el.tagName) return false
+  if (el.isContentEditable) return true
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true
+  if (el.tagName === 'INPUT') return TEXT_INPUT_TYPES.has(((el as HTMLInputElement).getAttribute('type') ?? '').toLowerCase())
+  return false
 }
 
 /**
@@ -15,6 +24,7 @@ function isTyping(target: EventTarget | null): boolean {
 export function ScanProvider({ children, onCue }: { children: ReactNode; onCue?: (label: string) => void }) {
   const mode = useProfileStore((s) => s.profile.scanning.mode)
   const intervalMs = useProfileStore((s) => s.profile.scanning.intervalMs)
+  const ignoreRepeatMs = useProfileStore((s) => s.profile.touch.ignoreRepeatMs)
 
   useEffect(() => {
     if (mode === 'off') return
@@ -24,6 +34,7 @@ export function ScanProvider({ children, onCue }: { children: ReactNode; onCue?:
       if (timer) clearInterval(timer)
       if (mode === 'auto1') timer = setInterval(() => scanner.step(), Math.max(400, intervalMs))
     }
+    const lastAction = { space: 0, enter: 0 }
     const onKey = (e: KeyboardEvent) => {
       if (isTyping(e.target)) return
       const isSpace = e.key === ' ' || e.code === 'Space'
@@ -35,6 +46,13 @@ export function ScanProvider({ children, onCue }: { children: ReactNode; onCue?:
       if (!isSpace && !isEnter) return
       e.preventDefault()
       e.stopPropagation()
+      // A held switch auto-repeats keydown: one press is one action. Tremor re-presses are filtered by the
+      // same "ignore repeated activations" window the touch accommodations use.
+      if (e.repeat) return
+      const now = Date.now()
+      const slot = isSpace ? 'space' : 'enter'
+      if (ignoreRepeatMs > 0 && now - lastAction[slot] < ignoreRepeatMs) return
+      lastAction[slot] = now
       if (mode === 'auto1') {
         scanner.select()
         restart()
@@ -52,7 +70,7 @@ export function ScanProvider({ children, onCue }: { children: ReactNode; onCue?:
       if (timer) clearInterval(timer)
       scanner.clear()
     }
-  }, [mode, intervalMs, onCue])
+  }, [mode, intervalMs, ignoreRepeatMs, onCue])
 
   return <>{children}</>
 }

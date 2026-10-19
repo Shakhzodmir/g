@@ -773,3 +773,39 @@
 .licName {
   font-weight: 700;
 }
+
+/* "Adult area is open" strip: always visible, one tap closes and returns Home. */
+.lockBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-2) var(--gutter);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  border-bottom: 1px solid var(--outline-soft);
+}
+
+.lockInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+}
+
+.lockInfo svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+}
+
+.errorText {
+  color: var(--text);
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  font-weight: 600;
+  padding-left: var(--s-2);
+  border-left: 3px solid var(--warm);
+}

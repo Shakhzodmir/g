@@ -1,0 +1,85 @@
+.screen {
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--s-4);
+  padding: var(--s-6) var(--gutter);
+  text-align: center;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.symbol {
+  display: grid;
+  place-items: center;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.symbol svg {
+  width: 3.75rem;
+  height: 3.75rem;
+}
+
+.title {
+  font-size: var(--fs-title);
+}
+
+.text {
+  max-width: 34ch;
+  color: var(--text-muted);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+}
+
+.primary,
+.secondary,
+.ghost {
+  min-height: 3.5rem;
+  min-width: 3.5rem;
+  padding: 0 var(--s-6);
+  border: 2px solid transparent;
+  border-radius: var(--r-pill);
+  font-weight: 800;
+  font-size: var(--fs-label);
+}
+
+.primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.secondary {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--outline);
+}
+
+.confirm {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: center;
+  max-width: 34ch;
+}
+
+@media (forced-colors: active) {
+  .primary,
+  .secondary,
+  .ghost {
+    border-color: ButtonText;
+  }
+}

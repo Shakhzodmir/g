@@ -148,3 +148,60 @@
   font-weight: 600;
   line-height: 1.35;
 }
+
+/* Reason shown when the name is missing: reserved space, so the page does not jump when it appears. */
+.fieldError {
+  min-height: 1.4em;
+  color: var(--accent);
+  font-size: var(--fs-card-meta);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.age {
+  display: grid;
+  gap: var(--s-2);
+  text-align: left;
+}
+
+.ageTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.chip {
+  min-height: var(--touch-min);
+  padding: 0 var(--s-1);
+  border: 2px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 800;
+  font-size: var(--fs-label);
+  white-space: nowrap;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.chip[data-pressed='true'] {
+  transform: scale(0.97);
+}
+
+.skip {
+  justify-self: center;
+}
+
+:global(html[data-theme='hc-light']) .chip,
+:global(html[data-theme='hc-dark']) .chip {
+  border-color: var(--outline);
+}

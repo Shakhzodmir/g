@@ -94,7 +94,7 @@ export default function Schedule() {
                 {t('edit')}
               </Button>
             )}
-            <Button variant="ghost" icon={<Printer />} onActivate={() => window.print()}>
+            <Button variant="ghost" icon={<Printer />} onActivate={() => requestUnlock(() => setTimeout(() => window.print(), 400))}>
               {t('print')}
             </Button>
           </div>

@@ -1,20 +1,21 @@
-import { Check, MonitorSmartphone, Volume2 } from 'lucide-react'
-import { useState } from 'react'
+import { Check, MonitorSmartphone, RotateCcw, Volume2 } from 'lucide-react'
+import { Component, useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { speak } from '../../audio/speech'
 import { wordById } from '../../content/vocab'
 import { COMMON } from '../../i18n/common'
-import { useStrings, type SpeechLang, type UiLang, type UzScript } from '../../i18n'
+import { useStrings, type SpeechLang, type UiLang } from '../../i18n'
 import { useDevice } from '../../store/device'
-import { useProfileStore, type ScanMode, type Sensory, type ThemeId } from '../../store/profile'
+import { defaultProfile, useProfileStore, type ScanMode, type Sensory, type ThemeId } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Segmented, Slider, Toggle } from '../../ui/controls'
+import { Dialog } from '../../ui/Dialog'
 import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { hashPin } from '../../ui/ParentGate'
 import { Pressable } from '../../ui/Pressable'
 import styles from './parent.module.css'
-import { Section, useProfileTitle, useT, useTk } from './shared'
+import { ConfirmDialog, Section, StorageBanner, useProfileTitle, useT, useTk } from './shared'
 
 const THEMES: ThemeId[] = ['bolajon', 'tun', 'tinch', 'kattalar', 'hc-light', 'hc-dark']
 
@@ -68,11 +69,14 @@ function PinSettings() {
   const setPinHash = useDevice((s) => s.setParentPinHash)
   const [a, setA] = useState('')
   const [b, setB] = useState('')
-  const [msg, setMsg] = useState<'mismatch' | 'saved' | 'cleared' | null>(null)
-  const valid = /^\d{4,6}$/.test(a)
+  const [msg, setMsg] = useState<'mismatch' | 'short' | 'saved' | 'cleared' | null>(null)
+  const digits = (v: string) => v.replace(/\D/g, '').slice(0, 6)
 
   const save = async () => {
-    if (!valid) return
+    if (!/^\d{4,6}$/.test(a)) {
+      setMsg('short')
+      return
+    }
     if (a !== b) {
       setMsg('mismatch')
       return
@@ -98,16 +102,38 @@ function PinSettings() {
       >
         <label className={styles.field}>
           <span className={styles.fieldLabel}>{t('pinNew')}</span>
-          <input className={styles.input} type="password" inputMode="numeric" autoComplete="new-password" maxLength={6} value={a} onChange={(e) => (setA(e.target.value.replace(/\D/g, '')), setMsg(null))} />
+          <input
+            className={styles.input}
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="new-password"
+            maxLength={6}
+            value={a}
+            aria-describedby="pin-rules"
+            onChange={(e) => (setA(digits(e.target.value)), setMsg(null))}
+          />
         </label>
         <label className={styles.field}>
           <span className={styles.fieldLabel}>{t('pinRepeat')}</span>
-          <input className={styles.input} type="password" inputMode="numeric" autoComplete="new-password" maxLength={6} value={b} onChange={(e) => (setB(e.target.value.replace(/\D/g, '')), setMsg(null))} />
+          <input
+            className={styles.input}
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="new-password"
+            maxLength={6}
+            value={b}
+            onChange={(e) => (setB(digits(e.target.value)), setMsg(null))}
+          />
         </label>
-        <Button onActivate={() => void save()} disabled={!valid || b.length < 4}>
+        <Button onActivate={() => void save()} disabled={a.length === 0 || b.length === 0}>
           {t('pinSave')}
         </Button>
       </form>
+      <p id="pin-rules" className={styles.hint}>
+        {t('pinRules')}
+      </p>
       {pinHash && (
         <div className={styles.row}>
           <Button
@@ -122,15 +148,139 @@ function PinSettings() {
         </div>
       )}
       {msg && (
-        <p className={msg === 'mismatch' ? styles.notice : styles.status} role="status">
-          {msg === 'mismatch' ? t('pinMismatch') : msg === 'saved' ? t('pinSaved') : t('pinCleared')}
+        <p className={msg === 'mismatch' || msg === 'short' ? styles.notice : styles.status} role="status">
+          {msg === 'mismatch' ? t('pinMismatch') : msg === 'short' ? t('pinShort') : msg === 'saved' ? t('pinSaved') : t('pinCleared')}
         </p>
       )}
     </Section>
   )
 }
 
-export default function Settings() {
+/** Speech language that matches an interface language (Uzbek Latin and Cyrillic are both spoken as `uz`). */
+const speechFor = (ui: UiLang): SpeechLang => (ui === 'ru' ? 'ru' : 'uz')
+
+/**
+ * ONE language control. The script follows the interface language (Latin / Cyrillic / Russian), so the screens can
+ * never end up half in one script; the 2026 Latin alphabet is an extra experimental switch shown only for Uzbek.
+ */
+function InterfaceLanguage() {
+  const t = useT()
+  const uiLang = useDevice((s) => s.uiLang)
+  const uzScript = useDevice((s) => s.uzScript)
+  const setUiLang = useDevice((s) => s.setUiLang)
+  const setUzScript = useDevice((s) => s.setUzScript)
+  const speechLang = useProfileStore((s) => s.profile.speechLang)
+  const update = useProfileStore((s) => s.update)
+  const [ask, setAsk] = useState<SpeechLang | null>(null)
+
+  // Old saved states could pair a language with the wrong script (uz + Cyrillic, uzc + Latin): derive it again.
+  useEffect(() => {
+    const want = uiLang === 'uzc' ? 'cyrl' : uiLang === 'uz' && uzScript === 'latn2026' ? 'latn2026' : 'latn'
+    if (uzScript !== want) setUzScript(want)
+  }, [uiLang, uzScript, setUzScript])
+
+  const change = (next: UiLang) => {
+    if (next === uiLang) return
+    setUiLang(next) // also derives the script
+    const wanted = speechFor(next)
+    if (wanted !== speechLang) setAsk(wanted)
+  }
+
+  return (
+    <>
+      <Segmented<UiLang>
+        label={t('uiLang')}
+        value={uiLang}
+        onChange={change}
+        wrap
+        options={[
+          // Language names stay in their own script whatever the current interface language is.
+          { value: 'uz', label: 'Oʻzbekcha (lotin)' },
+          { value: 'uzc', label: 'Ўзбекча (кирилл)' },
+          { value: 'ru', label: 'Русский' },
+        ]}
+      />
+      {uiLang === 'uz' && <Toggle label={t('script2026')} hint={t('script2026Hint')} checked={uzScript === 'latn2026'} onChange={(v) => setUzScript(v ? 'latn2026' : 'latn')} />}
+      <p className={styles.hint}>{t('uiLangHint')}</p>
+      <Dialog
+        open={ask !== null}
+        onClose={() => setAsk(null)}
+        title={t('followSpeechTitle')}
+        footer={
+          <>
+            <Button variant="ghost" onActivate={() => setAsk(null)}>
+              {t('followSpeechNo')}
+            </Button>
+            <Button
+              onActivate={() => {
+                if (ask) void update({ speechLang: ask })
+                setAsk(null)
+              }}
+            >
+              {ask === 'ru' ? t('followSpeechYesRu') : t('followSpeechYesUz')}
+            </Button>
+          </>
+        }
+      >
+        <p>{ask === 'ru' ? t('followSpeechQRu') : t('followSpeechQUz')}</p>
+      </Dialog>
+    </>
+  )
+}
+
+/** Recovery path: restores every setting on this screen to its default, whatever state the controls below are in. */
+function ResetDefaults({ onReset }: { onReset: () => void }) {
+  const t = useT()
+  const kind = useProfileStore((s) => s.profile.kind)
+  const update = useProfileStore((s) => s.update)
+  const [open, setOpen] = useState(false)
+  const [done, setDone] = useState(false)
+  const reset = async () => {
+    setOpen(false)
+    const d = defaultProfile({ kind })
+    await update({
+      theme: d.theme,
+      sensory: d.sensory,
+      textScale: d.textScale,
+      touch: d.touch,
+      scanning: d.scanning,
+      voice: d.voice,
+      aac: { level: d.aac.level, showLabels: d.aac.showLabels, labelPos: d.aac.labelPos, colorCoding: d.aac.colorCoding },
+    })
+    setDone(true)
+    onReset()
+  }
+  return (
+    <Section>
+      <div className={styles.spread}>
+        <p className={styles.hint}>{t('resetHint')}</p>
+        <Button variant="soft" icon={<RotateCcw />} onActivate={() => setOpen(true)}>
+          {t('resetDefaults')}
+        </Button>
+      </div>
+      {done && (
+        <p className={styles.status} role="status">
+          {t('resetDone')}
+        </p>
+      )}
+      <ConfirmDialog open={open} title={t('resetDefaults')} text={t('resetQ')} confirm={t('resetDo')} onConfirm={() => void reset()} onClose={() => setOpen(false)} />
+    </Section>
+  )
+}
+
+/** A render error in one of the controls must not blank the screen: the reset button above stays reachable. */
+class SettingsBoundary extends Component<{ message: string; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    if (this.state.failed) return <p className={styles.notice}>{this.props.message}</p>
+    return this.props.children
+  }
+}
+
+function SettingsBody() {
   const t = useT()
   const tk = useTk()
   const tc = useStrings(COMMON)
@@ -138,10 +288,6 @@ export default function Settings() {
   const name = useProfileTitle()
   const p = useProfileStore((s) => s.profile)
   const update = useProfileStore((s) => s.update)
-  const uiLang = useDevice((s) => s.uiLang)
-  const uzScript = useDevice((s) => s.uzScript)
-  const setUiLang = useDevice((s) => s.setUiLang)
-  const setUzScript = useDevice((s) => s.setUzScript)
   const boardMode = useDevice((s) => s.boardMode)
   const ms = (v: number) => (v === 0 ? t('off') : v >= 1000 ? t('sec', { n: String(v / 1000) }) : t('ms', { n: v }))
   const pct = (v: number) => `${Math.round(v * 100)}%`
@@ -150,114 +296,107 @@ export default function Settings() {
 
   return (
     <>
-      <PageHeader title={t('secSettings')} back="/parent" />
-      <Page width="narrow">
-        <Section title={t('deviceSection')}>
-          <p className={styles.hint}>{t('deviceNote')}</p>
-          <Segmented<UiLang>
-            label={t('uiLang')}
-            value={uiLang}
-            onChange={setUiLang}
-            wrap
-            options={[
-              { value: 'uz', label: 'Oʻzbekcha' },
-              { value: 'uzc', label: 'Ўзбекча' },
-              { value: 'ru', label: 'Русский' },
-            ]}
-          />
-          <Segmented<UzScript>
-            label={t('uzScript')}
-            value={uzScript}
-            onChange={setUzScript}
-            wrap
-            options={[
-              { value: 'latn', label: t('scriptLatn') },
-              { value: 'cyrl', label: t('scriptCyrl') },
-              { value: 'latn2026', label: t('scriptLatn2026') },
-            ]}
-          />
-          <p className={styles.hint}>{t('scriptHint')}</p>
-        </Section>
+      <Section title={t('deviceSection')}>
+        <p className={styles.hint}>{t('deviceNote')}</p>
+        <InterfaceLanguage />
+      </Section>
 
-        <Section title={t('profileSection', { name })}>
-          <Segmented<SpeechLang>
-            label={t('speechLang')}
-            value={p.speechLang}
-            onChange={(v) => void update({ speechLang: v })}
-            options={[
-              { value: 'uz', label: t('langUz') },
-              { value: 'ru', label: t('langRu') },
-            ]}
-          />
-          <ThemePicker />
-          <Segmented<Sensory>
-            label={t('sensory')}
-            value={p.sensory}
-            onChange={(v) => void update({ sensory: v })}
-            wrap
-            options={(['calm', 'normal', 'festive'] as const).map((v) => ({ value: v, label: tk(`sensory_${v}`) }))}
-          />
-          <p className={styles.hint}>{t('sensoryHint')}</p>
-        </Section>
+      <Section title={t('profileSection', { name })}>
+        <ThemePicker />
+        <Segmented<Sensory>
+          label={t('sensory')}
+          value={p.sensory}
+          onChange={(v) => void update({ sensory: v })}
+          wrap
+          options={(['calm', 'normal', 'festive'] as const).map((v) => ({ value: v, label: tk(`sensory_${v}`) }))}
+        />
+        <p className={styles.hint}>{t('sensoryHint')}</p>
+      </Section>
 
-        <Section title={t('touchSection')}>
-          <Toggle label={t('activateOnRelease')} hint={t('aorHint')} checked={p.touch.activateOnRelease} onChange={(v) => void update({ touch: { activateOnRelease: v } })} />
-          <Slider label={t('holdMs')} hint={t('holdHint')} value={p.touch.holdMs} min={0} max={1500} step={100} format={ms} onChange={(v) => void update({ touch: { holdMs: v } })} />
-          <Slider label={t('ignoreRepeat')} hint={t('ignoreRepeatHint')} value={p.touch.ignoreRepeatMs} min={0} max={2000} step={100} format={ms} onChange={(v) => void update({ touch: { ignoreRepeatMs: v } })} />
-          <Slider label={t('dwell')} hint={t('dwellHint')} value={p.touch.dwellMs} min={0} max={2000} step={250} format={ms} onChange={(v) => void update({ touch: { dwellMs: v } })} />
-        </Section>
+      <Section title={t('touchSection')}>
+        <Toggle label={t('activateOnRelease')} hint={t('aorHint')} checked={p.touch.activateOnRelease} onChange={(v) => void update({ touch: { activateOnRelease: v } })} />
+        <Slider label={t('holdMs')} hint={t('holdHint')} value={p.touch.holdMs} min={0} max={1500} step={100} format={ms} onChange={(v) => void update({ touch: { holdMs: v } })} />
+        <Slider label={t('ignoreRepeat')} hint={t('ignoreRepeatHint')} value={p.touch.ignoreRepeatMs} min={0} max={2000} step={100} format={ms} onChange={(v) => void update({ touch: { ignoreRepeatMs: v } })} />
+        <Slider label={t('dwell')} hint={t('dwellHint')} value={p.touch.dwellMs} min={0} max={2000} step={250} format={ms} onChange={(v) => void update({ touch: { dwellMs: v } })} />
+        <p className={styles.hint}>{t('adultZoneNote')}</p>
+      </Section>
 
-        <Section title={t('scanSection')}>
-          <Segmented<ScanMode>
-            label={t('scanMode')}
-            value={p.scanning.mode}
-            onChange={(v) => void update({ scanning: { mode: v } })}
-            wrap
-            options={(['off', 'auto1', 'step2'] as const).map((v) => ({ value: v, label: tk(`scan_${v}`) }))}
-          />
-          <p className={styles.hint}>{t('scanHint')}</p>
-          {p.scanning.mode === 'auto1' && (
-            <Slider label={t('scanInterval')} value={p.scanning.intervalMs} min={500} max={5000} step={250} format={ms} onChange={(v) => void update({ scanning: { intervalMs: v } })} />
-          )}
-          <Toggle label={t('scanAudio')} checked={p.scanning.audioCue} onChange={(v) => void update({ scanning: { audioCue: v } })} />
-        </Section>
+      <Section title={t('scanSection')}>
+        <Segmented<ScanMode>
+          label={t('scanMode')}
+          value={p.scanning.mode}
+          onChange={(v) => void update({ scanning: { mode: v } })}
+          wrap
+          options={(['off', 'auto1', 'step2'] as const).map((v) => ({ value: v, label: tk(`scan_${v}`) }))}
+        />
+        <p className={styles.hint}>{t('scanHint')}</p>
+        {p.scanning.mode === 'auto1' && (
+          <Slider label={t('scanInterval')} value={p.scanning.intervalMs} min={500} max={5000} step={250} format={ms} onChange={(v) => void update({ scanning: { intervalMs: v } })} />
+        )}
+        <Toggle label={t('scanAudio')} checked={p.scanning.audioCue} onChange={(v) => void update({ scanning: { audioCue: v } })} />
+      </Section>
 
-        <Section title={t('voiceSection')}>
-          <Slider label={t('rate')} value={p.voice.rate} min={0.6} max={1.4} step={0.1} format={(v) => `${v.toFixed(1)}×`} onChange={(v) => void update({ voice: { rate: Math.round(v * 10) / 10 } })} />
-          <Toggle label={t('preferSystem')} hint={t('preferSystemHint')} checked={p.voice.preferSystem} onChange={(v) => void update({ voice: { preferSystem: v } })} />
-          <Slider label={t('volume')} value={p.voice.volume} min={0} max={1} step={0.05} format={pct} onChange={(v) => void update({ voice: { volume: v } })} />
-          <Slider label={t('sfxVolume')} value={p.voice.sfxVolume} min={0} max={1} step={0.05} format={pct} onChange={(v) => void update({ voice: { sfxVolume: v } })} />
-          {sample && (
-            <div className={styles.row}>
-              <Button variant="soft" icon={<Volume2 />} onActivate={() => void speak({ key: `w.${sample.id}`, text: sample })}>
-                {t('testVoice')}
-              </Button>
-            </div>
-          )}
-        </Section>
-
-        <Section title={t('aacSection')}>
-          <Segmented<'off' | 'top' | 'bottom'>
-            label={t('labels')}
-            value={labelsValue}
-            onChange={(v) => void update({ aac: v === 'off' ? { showLabels: false } : { showLabels: true, labelPos: v } })}
-            wrap
-            options={(['off', 'top', 'bottom'] as const).map((v) => ({ value: v, label: tk(`labels_${v}`) }))}
-          />
-          <Toggle label={t('colorCoding')} hint={t('colorHint')} checked={p.aac.colorCoding} onChange={(v) => void update({ aac: { colorCoding: v } })} />
-        </Section>
-
-        <Section title={tc('boardMode')}>
-          <p className={styles.hint}>{t('boardHint')}</p>
-          <div className={styles.spread}>
-            <span className={boardMode ? styles.badgeOn : styles.badge}>{boardMode ? t('on') : t('off')}</span>
-            <Button variant="soft" icon={<MonitorSmartphone />} onActivate={() => navigate('/board-setup')}>
-              {t('boardOpen')}
+      <Section title={t('voiceSection')}>
+        <Segmented<SpeechLang>
+          label={t('speechLang')}
+          value={p.speechLang}
+          onChange={(v) => void update({ speechLang: v })}
+          options={[
+            { value: 'uz', label: t('langUz') },
+            { value: 'ru', label: t('langRu') },
+          ]}
+        />
+        <Slider label={t('rate')} value={p.voice.rate} min={0.6} max={1.4} step={0.1} format={(v) => `${v.toFixed(1)}×`} onChange={(v) => void update({ voice: { rate: Math.round(v * 10) / 10 } })} />
+        <Toggle label={t('preferSystem')} hint={t('preferSystemHint')} checked={p.voice.preferSystem} onChange={(v) => void update({ voice: { preferSystem: v } })} />
+        <Slider label={t('volume')} value={p.voice.volume} min={0} max={1} step={0.05} format={pct} onChange={(v) => void update({ voice: { volume: v } })} />
+        <Slider label={t('sfxVolume')} value={p.voice.sfxVolume} min={0} max={1} step={0.05} format={pct} onChange={(v) => void update({ voice: { sfxVolume: v } })} />
+        {sample && (
+          <div className={styles.row}>
+            <Button variant="soft" icon={<Volume2 />} onActivate={() => void speak({ key: `w.${sample.id}`, text: sample })}>
+              {t('testVoice')}
             </Button>
           </div>
-        </Section>
+        )}
+      </Section>
 
-        <PinSettings />
+      <Section title={t('aacSection')}>
+        <Segmented<'off' | 'top' | 'bottom'>
+          label={t('labels')}
+          value={labelsValue}
+          onChange={(v) => void update({ aac: v === 'off' ? { showLabels: false } : { showLabels: true, labelPos: v } })}
+          wrap
+          options={(['off', 'top', 'bottom'] as const).map((v) => ({ value: v, label: tk(`labels_${v}`) }))}
+        />
+        <Toggle label={t('colorCoding')} hint={t('colorHint')} checked={p.aac.colorCoding} onChange={(v) => void update({ aac: { colorCoding: v } })} />
+      </Section>
+
+      <Section title={tc('boardMode')}>
+        <p className={styles.hint}>{t('boardHint')}</p>
+        <div className={styles.spread}>
+          <span className={boardMode ? styles.badgeOn : styles.badge}>{boardMode ? t('on') : t('off')}</span>
+          <Button variant="soft" icon={<MonitorSmartphone />} onActivate={() => navigate('/board-setup')}>
+            {t('boardOpen')}
+          </Button>
+        </div>
+      </Section>
+
+      <PinSettings />
+    </>
+  )
+}
+
+export default function Settings() {
+  const t = useT()
+  const [epoch, setEpoch] = useState(0)
+  return (
+    <>
+      <PageHeader title={t('secSettings')} back="/parent" />
+      <Page width="narrow">
+        <StorageBanner />
+        <ResetDefaults onReset={() => setEpoch((n) => n + 1)} />
+        <SettingsBoundary key={epoch} message={t('settingsBroken')}>
+          <SettingsBody />
+        </SettingsBoundary>
       </Page>
     </>
   )

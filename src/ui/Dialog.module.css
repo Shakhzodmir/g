@@ -33,9 +33,28 @@
   }
 }
 
-.title {
-  font-size: var(--fs-title);
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-3);
   margin-bottom: var(--s-4);
+}
+
+.title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--fs-title);
+  padding-top: var(--s-2);
+}
+
+.close {
+  flex: none;
+  margin-inline-start: auto;
+  margin-top: calc(var(--s-2) * -1);
+  margin-inline-end: calc(var(--s-2) * -1);
+  padding-inline: var(--s-3);
+  color: var(--text-muted);
 }
 
 .body {

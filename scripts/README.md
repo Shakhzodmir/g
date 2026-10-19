@@ -5,7 +5,7 @@
 node scripts/fetch-symbols.mjs          # скачивает то, чего ещё нет
 node scripts/fetch-symbols.mjs --force  # перекачать всё
 ```
-Соответствие «id символа → путь в репозитории microsoft/fluentui-emoji» лежит в `scripts/symbol-map.json`. Собственные узбекские символы (`custom:*.svg`) находятся в `public/symbols/custom/`.
+Соответствие «id символа → путь в репозитории microsoft/fluentui-emoji» лежит в `scripts/symbol-map.json`. Собственные символы (`custom:*.svg`) находятся в `public/symbols/custom/`; их рисует `node scripts/gen-custom-symbols.mjs`, а id нужно добавить в `CUSTOM_SYMBOLS` (`src/ui/SymbolImg.tsx`). Для людей используется оттенок кожи Medium (тёмные волосы).
 
 ## Озвучка (Silero v5_cis_base_nostress, MIT)
 1. `npx tsx scripts/build-audio-manifest.ts` собирает все тексты в `scripts/.cache/audio-manifest.json`.

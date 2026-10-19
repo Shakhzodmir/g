@@ -5,14 +5,15 @@
 }
 
 html {
-  font-size: 16px;
+  /* Follows the browser's own default size, times the user's text-size setting */
+  font-size: calc(100% * var(--text-scale, 1));
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   background: var(--bg);
 }
 
 html[data-board='true'] {
-  font-size: calc(16px * var(--ui-scale));
+  font-size: calc(100% * var(--ui-scale) * var(--text-scale, 1));
 }
 
 body {
@@ -164,5 +165,79 @@ html[data-sensory='calm'] *::after {
   }
   [data-no-print] {
     display: none !important;
+  }
+}
+
+/* Switch scanning: keep the highlighted element clear of the bottom bar / Break button (see ui/scan/scanner.ts) */
+[data-scan] {
+  scroll-margin-top: var(--scan-inset-top);
+  scroll-margin-bottom: var(--scan-inset-bottom);
+}
+
+/* One progress cue for every Pressable: hold-to-press and dwell fill a bar along the bottom edge. */
+:where([data-pressable][data-dwell='true'], [data-pressable][data-holding='true']) {
+  position: relative;
+}
+
+.pressable-progress {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 5px;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pressable-progress::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  transform-origin: left center;
+  animation: pressable-fill var(--dwell-ms, 1s) linear forwards;
+}
+
+.pressable-progress[data-kind='hold']::after {
+  animation-duration: var(--hold-ms, 1s);
+}
+
+@keyframes pressable-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Calm / reduced motion: no animation, a static bar says "this is working" */
+html[data-sensory='calm'] .pressable-progress::after {
+  animation: none !important;
+  transform: scaleX(0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable-progress::after {
+    animation: none !important;
+    transform: scaleX(0.5);
+  }
+}
+
+@media (forced-colors: active) {
+  .pressable-progress {
+    background: GrayText;
+  }
+  .pressable-progress::after {
+    background: Highlight;
+  }
+  [aria-current='page'],
+  [aria-pressed='true'] {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
   }
 }

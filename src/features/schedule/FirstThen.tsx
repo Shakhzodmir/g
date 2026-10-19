@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowRight, RotateCcw } from 'lucide-react'
+import { ArrowRight, RotateCcw, Undo2 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useRef } from 'react'
 import { playSfx } from '../../audio/sfx'
@@ -12,6 +12,7 @@ import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import { voice, type CardView } from './cards'
 import { CardArt } from './CardPicker'
+import { DoneBar } from './DoneBar'
 import { allDone, currentIndex, resetDone, setDone } from './logic'
 import styles from './Schedule.module.css'
 import { S } from './strings'
@@ -54,6 +55,7 @@ export function FirstThen({
   const focusThen = useRef(false)
   const cur = currentIndex(items)
   const finished = allDone(items)
+  const bar = !editing && !finished && cur >= 0
 
   useEffect(() => {
     if (focusThen.current && cur === 1) {
@@ -65,6 +67,12 @@ export function FirstThen({
   }, [cur, preset.movement])
 
   const slotWord = (i: number) => voice(i === 0 ? 'sched_first' : 'sched_then')
+
+  // A finished slot can be taken back with one gentle tap (no confirmation): a slip of the finger is not final.
+  const undo = (i: number) => {
+    onUpdate((list) => setDone(list, i, false))
+    playSfx('soft')
+  }
 
   const markDone = (i: number) => {
     const card = cards[i]
@@ -94,6 +102,7 @@ export function FirstThen({
           label={`${head}: ${name}`}
           scanGroup="first-then"
           onActivate={() => {
+            if (state === 'done' && !editing) undo(i)
             if (card) void speakSequence([slotWord(i), card.speech])
           }}
         >
@@ -107,12 +116,10 @@ export function FirstThen({
           <Button variant="soft" onActivate={() => onChange(i)}>
             {t('change')}
           </Button>
-        ) : state === 'active' ? (
-          <Button size="lg" onActivate={() => markDone(i)} label={t('doneFor', { name })} scanGroup="first-then">
-            {t('done')}
-          </Button>
         ) : state === 'done' ? (
-          <p className={styles.doneNote}>{t('doneMark')}</p>
+          <Button variant="ghost" icon={<Undo2 />} label={t('undoFor', { name })} scanGroup="first-then" onActivate={() => undo(i)}>
+            {t('undo')}
+          </Button>
         ) : (
           <span className={styles.slotSpacer} aria-hidden="true" />
         )}
@@ -121,15 +128,15 @@ export function FirstThen({
   }
 
   return (
-    <div className={styles.ftWrap}>
+    <div className={styles.ftWrap} data-bar={bar || undefined} data-reach>
       <div className={styles.ft}>
         {slot(0)}
         <span className={styles.ftArrow} aria-hidden="true">
-          <ArrowDown className={styles.arrowDown} />
-          <ArrowRight className={styles.arrowRight} />
+          <ArrowRight />
         </span>
         {slot(1)}
       </div>
+      {bar && <DoneBar name={cards[cur] ? label(cards[cur].label) : ''} scanGroup="first-then" onDone={() => markDone(cur)} />}
       {finished && !editing && (
         <div className={styles.finished} role="status">
           <p className={styles.finishedText}>{t('allDone')}</p>

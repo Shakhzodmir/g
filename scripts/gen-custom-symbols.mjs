@@ -343,4 +343,104 @@ ${meat}
 <ellipse cx="50" cy="150" rx="18" ry="6" transform="rotate(-25 50 150)" fill="url(#spec)"/>`
   writeFileSync(`${OUT}/palov.svg`, svg(body, defs))
 }
+/* ---------------- size_big / size_small (katta / kichik): one shape, two sizes ---------------- */
+{
+  const sh = shadow(128, 226, 70, 11, 0.2)
+  const ball = (id) => `<radialGradient id="${id}" cx="0.36" cy="0.3" r="0.85">
+  <stop offset="0" stop-color="#a9d3f5"/>
+  <stop offset="0.5" stop-color="#5aa0de"/>
+  <stop offset="1" stop-color="#2f6fb3"/>
+</radialGradient>`
+  const spec = `<radialGradient id="spec" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ffffff" stop-opacity="0.8"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>`
+  writeFileSync(
+    `${OUT}/size_big.svg`,
+    svg(
+      `${sh.body}
+<circle cx="128" cy="122" r="100" fill="url(#ball)"/>
+<ellipse cx="96" cy="78" rx="34" ry="20" transform="rotate(-30 96 78)" fill="url(#spec)"/>`,
+      `${sh.defs}\n${ball('ball')}\n${spec}`,
+    ),
+  )
+  writeFileSync(
+    `${OUT}/size_small.svg`,
+    svg(
+      `<circle cx="128" cy="122" r="100" fill="none" stroke="#9fb4c8" stroke-width="5" stroke-dasharray="3 14" stroke-linecap="round"/>
+<ellipse cx="128" cy="160" rx="26" ry="5" fill="#3b2f2c" opacity="0.14"/>
+<circle cx="128" cy="122" r="30" fill="url(#ball)"/>
+<ellipse cx="117" cy="108" rx="11" ry="6.5" transform="rotate(-30 117 108)" fill="url(#spec)"/>`,
+      `${ball('ball')}\n${spec}`,
+    ),
+  )
+}
+
+/* ---------------- different (boshqa / другое): one of three is another ---------------- */
+{
+  const sh = shadow(128, 232, 90, 9, 0.16)
+  const defs = `${sh.defs}
+<radialGradient id="blue" cx="0.36" cy="0.3" r="0.85"><stop offset="0" stop-color="#a9d3f5"/><stop offset="0.55" stop-color="#5aa0de"/><stop offset="1" stop-color="#2f6fb3"/></radialGradient>
+<linearGradient id="amber" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd37a"/><stop offset="1" stop-color="#e8962e"/></linearGradient>
+<radialGradient id="spec" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ffffff" stop-opacity="0.75"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>`
+  const body = `${sh.body}
+<circle cx="82" cy="84" r="42" fill="url(#blue)"/>
+<ellipse cx="68" cy="68" rx="14" ry="8" transform="rotate(-30 68 68)" fill="url(#spec)"/>
+<circle cx="174" cy="84" r="42" fill="url(#blue)"/>
+<ellipse cx="160" cy="68" rx="14" ry="8" transform="rotate(-30 160 68)" fill="url(#spec)"/>
+<rect x="88" y="142" width="80" height="80" rx="20" fill="url(#amber)"/>
+<rect x="98" y="151" width="40" height="11" rx="5.5" fill="#ffffff" opacity="0.35"/>`
+  writeFileSync(`${OUT}/different.svg`, svg(body, defs))
+}
+
+/* ---------------- doll (qoʻgʻirchoq / кукла): a rag doll, neutral and friendly ---------------- */
+{
+  const sh = shadow(128, 232, 70, 10, 0.2)
+  const defs = `${sh.defs}
+<radialGradient id="skin" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#f6cfa6"/><stop offset="1" stop-color="#dba274"/></radialGradient>
+<linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a4332"/><stop offset="1" stop-color="#3d2519"/></linearGradient>
+<linearGradient id="dress" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58b8b0"/><stop offset="1" stop-color="#2f8f8a"/></linearGradient>
+<radialGradient id="spec" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ffffff" stop-opacity="0.7"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>`
+  const body = `${sh.body}
+<path d="M84 150C66 150 56 168 62 188C66 198 78 196 82 186C86 174 92 164 98 156Z" fill="url(#skin)"/>
+<path d="M172 150C190 150 200 168 194 188C190 198 178 196 174 186C170 174 164 164 158 156Z" fill="url(#skin)"/>
+<path d="M104 196L96 230H128V196Z" fill="#8a6bb8"/>
+<path d="M152 196L160 230H128V196Z" fill="#7a5aa8"/>
+<ellipse cx="94" cy="232" rx="20" ry="9" fill="#4a3a66"/>
+<ellipse cx="162" cy="232" rx="20" ry="9" fill="#4a3a66"/>
+<path d="M92 148C92 138 108 132 128 132C148 132 164 138 164 148L184 210C150 222 106 222 72 210Z" fill="url(#dress)"/>
+<path d="M104 150C116 160 140 160 152 150" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+<path d="M62 96C54 58 80 28 128 28C176 28 202 58 194 96C190 110 182 118 176 120L80 120C74 118 66 110 62 96Z" fill="url(#hair)"/>
+<path d="M64 100C50 108 48 136 62 150C72 156 80 148 78 138C76 128 74 114 78 104Z" fill="url(#hair)"/>
+<path d="M192 100C206 108 208 136 194 150C184 156 176 148 178 138C180 128 182 114 178 104Z" fill="url(#hair)"/>
+<ellipse cx="128" cy="100" rx="52" ry="54" fill="url(#skin)"/>
+<path d="M78 84C90 58 166 58 178 84C162 76 94 76 78 84Z" fill="url(#hair)"/>
+<circle cx="108" cy="104" r="6.5" fill="#3a2a22"/>
+<circle cx="148" cy="104" r="6.5" fill="#3a2a22"/>
+<circle cx="110" cy="102" r="2" fill="#fff"/>
+<circle cx="150" cy="102" r="2" fill="#fff"/>
+<path d="M114 124C122 132 134 132 142 124" fill="none" stroke="#9a4a3a" stroke-width="4" stroke-linecap="round"/>
+<ellipse cx="94" cy="118" rx="9" ry="6" fill="#f09a86" opacity="0.5"/>
+<ellipse cx="162" cy="118" rx="9" ry="6" fill="#f09a86" opacity="0.5"/>
+<ellipse cx="106" cy="76" rx="20" ry="8" transform="rotate(-18 106 76)" fill="url(#spec)"/>`
+  writeFileSync(`${OUT}/doll.svg`, svg(body, defs))
+}
+/* ---------------- blocks (kubiklar / кубики): three toy cubes ---------------- */
+{
+  const sh = shadow(128, 226, 92, 11, 0.2)
+  const cube = (cx, cy, [top, left, right]) => {
+    const w = 42
+    const h = 21
+    const d = 46
+    return `<path d="M${cx - w} ${cy}L${cx} ${cy + h}L${cx} ${cy + h + d}L${cx - w} ${cy + d}Z" fill="${left}"/>
+<path d="M${cx + w} ${cy}L${cx} ${cy + h}L${cx} ${cy + h + d}L${cx + w} ${cy + d}Z" fill="${right}"/>
+<path d="M${cx} ${cy - h}L${cx + w} ${cy}L${cx} ${cy + h}L${cx - w} ${cy}Z" fill="${top}"/>
+<path d="M${cx - w + 3} ${cy + 2}L${cx} ${cy + h - 2}" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>`
+  }
+  const blue = ['#9fcbf0', '#5aa0de', '#3a78b8']
+  const amber = ['#ffd98c', '#f2b04a', '#d4872a']
+  const green = ['#a6dcb4', '#6cbf84', '#469a62']
+  const body = `${sh.body}
+${cube(84, 150, blue)}
+${cube(172, 150, amber)}
+${cube(128, 98, green)}`
+  writeFileSync(`${OUT}/blocks.svg`, svg(body, sh.defs))
+}
 console.log('ok')

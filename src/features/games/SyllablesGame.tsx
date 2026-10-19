@@ -142,7 +142,7 @@ function Clap({ session }: { session: GameSession }) {
         </div>
       </div>
 
-      <div className={styles.clapControls}>
+      <div className={styles.clapControls} data-reach>
         <Pressable
           className={styles.drum}
           label={t('drum')}

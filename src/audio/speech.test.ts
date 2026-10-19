@@ -37,3 +37,25 @@ describe('pickVoice', () => {
     expect(pickVoice([v('en-US'), v('ru_RU')], 'ru')?.lang).toBe('ru_RU')
   })
 })
+
+describe('first word is never delayed by the voice list (C4)', () => {
+  it('plays the bundled clip at once when the device has no voices at all', async () => {
+    const { vi } = await import('vitest')
+    vi.resetModules()
+    const playUrl = vi.fn(() => Promise.resolve())
+    vi.doMock('./player', () => ({ playUrl, stopPlayback: vi.fn(), emitLevel: vi.fn(), onLevel: vi.fn() }))
+    // The browser never reports a voice and never fires voiceschanged.
+    Object.defineProperty(globalThis, 'speechSynthesis', {
+      configurable: true,
+      value: { getVoices: () => [], addEventListener: () => undefined, removeEventListener: () => undefined, cancel: () => undefined, speak: vi.fn() },
+    })
+    const { speak } = await import('./speech')
+    const started = performance.now()
+    const r = await speak({ key: 'w.i', text: { uz: 'Men', ru: 'Я' } }, 'uz')
+    expect(r.source).toBe('clip')
+    expect(performance.now() - started).toBeLessThan(400)
+    expect(playUrl).toHaveBeenCalledTimes(1)
+    expect(String((playUrl.mock.calls as unknown[][])[0][0])).toContain('audio/uz/w.i.mp3')
+    vi.doUnmock('./player')
+  })
+})

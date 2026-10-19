@@ -10,7 +10,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': a new version waits in the background; src/lib/swUpdate.ts applies it only when idle on Home or at next launch.
+      registerType: 'prompt',
       injectRegister: null,
       includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
@@ -41,7 +42,6 @@ export default defineConfig({
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
         runtimeCaching: [
           {
             // Speech clips: cached on first play and by the background language pack (src/audio/offlinePack.ts).

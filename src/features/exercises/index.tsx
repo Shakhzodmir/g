@@ -26,7 +26,7 @@ function Hub() {
     <div className={styles.frame}>
       <PageHeader title={t('title')} />
       <Page width="normal" className={styles.hub}>
-      <ul className={styles.hubGrid} role="list">
+      <ul className={styles.hubGrid} role="list" data-reach>
         <li>
           <Tile
             art={<Candles progress={0.4} blowing={false} strength={0} movement={false} />}

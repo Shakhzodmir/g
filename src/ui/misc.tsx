@@ -18,11 +18,25 @@ export function Card({ children, className, as: As = 'section' }: { children: Re
 }
 
 /** Empty screens invite an action instead of just saying "nothing here". */
-export function EmptyState({ symbol, title, text, action }: { symbol: string; title: string; text?: string; action?: ReactNode }) {
+export function EmptyState({
+  symbol,
+  title,
+  text,
+  action,
+  heading,
+}: {
+  symbol: string
+  title: string
+  text?: string
+  action?: ReactNode
+  /** Render the title as a real heading (use 1 when the empty state IS the screen, e.g. a 404 page). */
+  heading?: 1 | 2 | 3
+}) {
+  const Heading = heading ? (`h${heading}` as 'h1' | 'h2' | 'h3') : 'p'
   return (
     <div className={styles.empty}>
       <SymbolImg id={symbol} size={96} />
-      <p className={styles.emptyTitle}>{title}</p>
+      <Heading className={styles.emptyTitle}>{title}</Heading>
       {text && <p className={styles.emptyText}>{text}</p>}
       {action}
     </div>

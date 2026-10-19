@@ -4,8 +4,9 @@ import { normalizeUz } from '../i18n/orthography'
 import type { Bi, SpeechLang } from '../i18n/types'
 import { db, dbAvailable } from '../store/db'
 import { getProfile } from '../store/profile'
+import { versionedClipUrl } from './packLogic'
 import { emitLevel, onLevel, playUrl, stopPlayback } from './player'
-import { systemVoiceFor } from './voices'
+import { preloadVoices, systemVoiceFor, systemVoiceNow } from './voices'
 
 export type SpeakSource = 'recording' | 'clip' | 'system' | 'none'
 
@@ -25,7 +26,7 @@ export function hasClip(key: AudioKey, lang: SpeechLang): boolean {
 }
 
 export function clipUrl(key: AudioKey, lang: SpeechLang): string {
-  return `${import.meta.env.BASE_URL}audio/${lang}/${encodeURIComponent(key)}.mp3`
+  return versionedClipUrl(import.meta.env.BASE_URL, key, lang)
 }
 
 /** Decision table for where a spoken item comes from (pure; unit-tested). */
@@ -52,10 +53,17 @@ async function findRecording(key: AudioKey, lang: SpeechLang): Promise<Blob | nu
 }
 
 let speakToken = 0
-const noneListeners = new Set<(text: string) => void>()
 
-/** Notified when nothing could be spoken, so the UI can show the text big and suggest recording. */
-export function onUnspoken(cb: (text: string) => void): () => void {
+/** What could not be spoken: canonical text (uz Latin 1995 or ru), the audio key and the language. */
+export interface UnspokenInfo {
+  text: string
+  key: AudioKey
+  lang: SpeechLang
+}
+const noneListeners = new Set<(info: UnspokenInfo) => void>()
+
+/** Notified when nothing could be spoken, so the UI can show the text big (and suggest recording for custom cards). */
+export function onUnspoken(cb: (info: UnspokenInfo) => void): () => void {
   noneListeners.add(cb)
   return () => noneListeners.delete(cb)
 }
@@ -84,6 +92,9 @@ function speakSystem(text: string, lang: SpeechLang, voice: SpeechSynthesisVoice
 
 let sequence = 0
 
+// Fill the voice cache in the background as soon as the app loads (non-blocking; first tap never waits for it).
+preloadVoices()
+
 async function speakOne(item: SpeakItem, lang: SpeechLang): Promise<{ source: SpeakSource }> {
   const token = ++speakToken
   stopPlayback()
@@ -94,9 +105,17 @@ async function speakOne(item: SpeakItem, lang: SpeechLang): Promise<{ source: Sp
   }
   const { voice: v } = getProfile()
   const text = lang === 'uz' ? normalizeUz(item.text.uz) : item.text.ru
-  const [recording, system] = await Promise.all([findRecording(item.key, lang), systemVoiceFor(lang)])
+  const clip = hasClip(item.key, lang)
+  const recording = await findRecording(item.key, lang)
   if (token !== speakToken) return { source: 'none' }
-  const source = resolveSource({ hasRecording: !!recording, hasClip: hasClip(item.key, lang), hasSystemVoice: !!system, preferSystem: v.preferSystem })
+  // Never make a child wait for the voice list when a recording or a bundled clip will be played:
+  // on devices with no voices at all the list only "arrives" after a 1.5 s timeout.
+  let system = systemVoiceNow(lang)
+  if (!recording && !system && (!clip || v.preferSystem)) {
+    system = await systemVoiceFor(lang)
+    if (token !== speakToken) return { source: 'none' }
+  }
+  const source = resolveSource({ hasRecording: !!recording, hasClip: clip, hasSystemVoice: !!system, preferSystem: v.preferSystem })
   try {
     if (source === 'recording' && recording) {
       const url = URL.createObjectURL(recording)
@@ -110,16 +129,18 @@ async function speakOne(item: SpeakItem, lang: SpeechLang): Promise<{ source: Sp
     } else if (source === 'system' && system) {
       await speakSystem(text, lang, system, v.rate, v.volume)
     } else {
-      noneListeners.forEach((l) => l(text))
+      noneListeners.forEach((l) => l({ text, key: item.key, lang }))
     }
   } catch {
     if (token !== speakToken) return { source: 'none' }
     // A clip failed (e.g. not cached yet while offline): try the system voice, then show the text.
-    if (system && source !== 'system') {
-      await speakSystem(text, lang, system, v.rate, v.volume)
+    const fallback = system ?? (source !== 'system' ? await systemVoiceFor(lang) : null)
+    if (token !== speakToken) return { source: 'none' }
+    if (fallback && source !== 'system') {
+      await speakSystem(text, lang, fallback, v.rate, v.volume)
       return { source: 'system' }
     }
-    noneListeners.forEach((l) => l(text))
+    noneListeners.forEach((l) => l({ text, key: item.key, lang }))
     return { source: 'none' }
   }
   return { source }
@@ -128,12 +149,14 @@ async function speakOne(item: SpeakItem, lang: SpeechLang): Promise<{ source: Sp
 /** Speaks one item (defaults to the profile's speech language). Cancels anything currently speaking. */
 export function speak(item: SpeakItem, lang: SpeechLang = getProfile().speechLang): Promise<{ source: SpeakSource }> {
   sequence++
+  generation++
   return speakOne(item, lang)
 }
 
 /** Speaks items one after another (message bar). Any new speak/stop cancels the sequence. */
 export async function speakSequence(items: SpeakItem[], lang: SpeechLang = getProfile().speechLang): Promise<void> {
   const mine = ++sequence
+  generation++
   for (const item of items) {
     if (mine !== sequence) return
     await speakOne(item, lang)
@@ -142,7 +165,23 @@ export async function speakSequence(items: SpeakItem[], lang: SpeechLang = getPr
   }
 }
 
+/** Counts every speak / speakSequence / stopSpeaking call, so a screen can tell whether it is still the last one that spoke. */
+let generation = 0
+export function speechGeneration(): number {
+  return generation
+}
+
+/**
+ * Stops speech only when nothing has been started since `gen` (a value of speechGeneration()).
+ * A screen uses it when it is left: its own half-spoken sentence stops, but a phrase that someone else started
+ * on the way out (e.g. the "I need a break" button speaks and then navigates) is left alone.
+ */
+export function stopSpeakingIfUnchanged(gen: number): void {
+  if (gen === generation) stopSpeaking()
+}
+
 export function stopSpeaking(): void {
+  generation++
   sequence++
   speakToken++
   stopPlayback()

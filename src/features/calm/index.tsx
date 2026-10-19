@@ -1,7 +1,7 @@
-import { Check, Volume2, VolumeX, Wind, Square } from 'lucide-react'
+import { ArrowLeft, Check, Volume2, VolumeX, Wind, Square } from 'lucide-react'
 import { useReducedMotion } from 'motion/react'
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { speak, stopSpeaking } from '../../audio/speech'
 import { HELPERS } from '../../content/feelings'
 import { VOICE_LINES } from '../../content/voiceLines'
@@ -11,12 +11,14 @@ import { useDevice } from '../../store/device'
 import { logEvent } from '../../store/events'
 import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
-import { PageHeader } from '../../ui/PageHeader'
+import headerStyles from '../../ui/PageHeader.module.css'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import { breathAt, type BreathPhase } from './breath'
 import styles from './Calm.module.css'
+import { calmExit } from './leave'
 import { S } from './strings'
+import { COMMON } from '../../i18n/common'
 
 /** Helpers offered in the calm corner, most common first. */
 const CALM_HELPER_IDS = ['hug', 'water', 'quiet_place', 'headphones', 'rest', 'with_mom', 'toy', 'music']
@@ -47,8 +49,10 @@ function Lotus() {
 
 export default function Calm() {
   const t = useStrings(S)
+  const tc = useStrings(COMMON)
   const label = useLabel()
   const navigate = useNavigate()
+  const location = useLocation()
   const sensory = useProfileStore((s) => s.profile.sensory)
   const lang = useProfileStore((s) => s.profile.speechLang)
   const reduced = useReducedMotion() ?? false
@@ -110,6 +114,14 @@ export default function Calm() {
     void speak(voiceLine('breathe_in'))
   }
 
+  // "I am ready" and the back arrow both return to where the Break button was pressed (one step back in history).
+  const leave = () => {
+    stopGuide()
+    const exit = calmExit({ idx: (window.history.state as { idx?: unknown } | null)?.idx, from: (location.state as { from?: unknown } | null)?.from })
+    if (exit.kind === 'back') navigate(-1)
+    else navigate(exit.path, { replace: true })
+  }
+
   const toggleVoice = () => {
     if (voiceOn) stopGuide()
     setVoiceOn(!voiceOn)
@@ -131,9 +143,13 @@ export default function Calm() {
         </div>
       )}
 
-      <PageHeader
-        title={t('title')}
-        actions={
+      {/* Same markup and styles as PageHeader, but the back arrow leaves the way "I am ready" does. */}
+      <header className={headerStyles.header} data-no-print>
+        <Button className={headerStyles.back} variant="soft" iconOnly icon={<ArrowLeft />} label={tc('back')} onActivate={leave}>
+          {tc('back')}
+        </Button>
+        <h1 className={headerStyles.title}>{t('title')}</h1>
+        <div className={headerStyles.actions}>
           <Button
             variant={voiceOn ? 'primary' : 'soft'}
             iconOnly
@@ -144,8 +160,8 @@ export default function Calm() {
           >
             {t('voiceGuide')}
           </Button>
-        }
-      />
+        </div>
+      </header>
 
       <div className={styles.body}>
         <section className={styles.stage}>
@@ -169,6 +185,8 @@ export default function Calm() {
           </div>
         </section>
 
+        {/* Everything a child presses: one block, bottom-aligned in the reach zone on a whiteboard. */}
+        <div className={styles.reach} data-reach>
         <section className={styles.helpersBox} aria-labelledby="calm-helpers">
           <h2 id="calm-helpers" className={styles.helpersTitle}>
             {t('helpersTitle')}
@@ -203,13 +221,11 @@ export default function Calm() {
             size={board ? 'lg' : 'xl'}
             block
             icon={<SymbolImg id="thumbs_up" size={36} />}
-            onActivate={() => {
-              stopGuide()
-              navigate('/')
-            }}
+            onActivate={leave}
           >
             {t('ready')}
           </Button>
+        </div>
         </div>
       </div>
     </div>

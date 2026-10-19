@@ -1,7 +1,6 @@
 import { Eye } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { speak } from '../../audio/speech'
 import { TOPICS } from '../../content/topics'
 import type { TopicId } from '../../content/types'
 import { wordById } from '../../content/vocab'
@@ -22,6 +21,8 @@ import { wordEntry, type Entry } from './entry'
 import { KeyboardPanel } from './KeyboardPanel'
 import { MessageBar } from './MessageBar'
 import { PainPanel, PhrasesPanel } from './Phrases'
+import { aacSpeak, stopAacSpeech } from './speak'
+import { isFull } from './message'
 import { useMessage } from './store'
 import { S } from './strings'
 
@@ -45,7 +46,10 @@ function useView(): [View, (v: View) => void] {
   const topic = params.get('topic')
   const view: View = MODES.includes(mode as Mode)
     ? { kind: mode as Mode }
-    : { kind: 'topic', topic: topic && TOPIC_IDS.has(topic) ? (topic as TopicId) : 'core' }
+    : {
+        kind: 'topic',
+        topic: topic && TOPIC_IDS.has(topic) ? (topic as TopicId) : 'core',
+      }
   const select = useCallback(
     (v: View) => {
       const next = new URLSearchParams()
@@ -79,9 +83,14 @@ export default function Aac() {
   const adult = profile.kind === 'adult'
   const reader = adult || profile.ageGroup === '8-12' || profile.ageGroup === '13+'
 
-  useEffect(() => () => {
-    if (glowTimer.current) clearTimeout(glowTimer.current)
-  }, [])
+  useEffect(
+    () => () => {
+      if (glowTimer.current) clearTimeout(glowTimer.current)
+    },
+    [],
+  )
+  // Leaving the communicator ends whatever it is saying (a half-spoken sentence must not follow the child away).
+  useEffect(() => stopAacSpeech, [])
 
   /** Modeling: the adult's tap lights the cell up for the child (steady glow, no flashing). */
   const flash = useCallback((key: string) => {
@@ -93,14 +102,31 @@ export default function Aac() {
   /** Standard AAC behaviour: a tap speaks the word at once and adds it to the message (not while modeling). */
   const onTap = useCallback(
     (e: Entry) => {
-      void speak({ key: e.key, text: e.text })
       if (modeling) {
+        aacSpeak({ key: e.key, text: e.text })
         logEvent('aac_model', e.ref)
         flash(e.key)
         return
       }
+      // Full bar: the word cannot be added, so it is not spoken either (the child never hears a word that is not
+      // in the bar). The bar shows its calm "phrase is ready" state instead.
+      const { items, nextUid, noteFullTap } = useMessage.getState()
+      if (isFull({ items, nextUid })) {
+        noteFullTap()
+        return
+      }
+      aacSpeak({ key: e.key, text: e.text })
       logEvent(e.kind === 'phrase' ? 'aac_phrase' : 'aac_word', e.ref)
-      dispatch({ type: 'add', item: { key: e.key, text: e.text, symbol: e.symbol, fitz: e.fitz, src: e.src } })
+      dispatch({
+        type: 'add',
+        item: {
+          key: e.key,
+          text: e.text,
+          symbol: e.symbol,
+          fitz: e.fitz,
+          src: e.src,
+        },
+      })
     },
     [modeling, dispatch, flash],
   )
@@ -108,18 +134,46 @@ export default function Aac() {
   const tabs = useMemo(() => {
     const list: Tab[] = []
     const [core, ...rest] = TOPICS
-    list.push({ id: core.id, view: { kind: 'topic', topic: core.id }, symbol: core.symbol, label: ui(core) })
-    list.push({ id: 'phrases', view: { kind: 'phrases' }, symbol: 'speech_balloon', label: t('phrases') })
-    if (reader || view.kind === 'keyboard') list.push({ id: 'keyboard', view: { kind: 'keyboard' }, symbol: 'keyboard', label: t('keyboard') })
-    if (adult || view.kind === 'pain') list.push({ id: 'pain', view: { kind: 'pain' }, symbol: 'face_with_head_bandage', label: t('pain') })
-    for (const tp of rest) list.push({ id: tp.id, view: { kind: 'topic', topic: tp.id }, symbol: tp.symbol, label: ui(tp) })
+    list.push({
+      id: core.id,
+      view: { kind: 'topic', topic: core.id },
+      symbol: core.symbol,
+      label: ui(core),
+    })
+    list.push({
+      id: 'phrases',
+      view: { kind: 'phrases' },
+      symbol: 'speech_balloon',
+      label: t('phrases'),
+    })
+    if (reader || view.kind === 'keyboard')
+      list.push({
+        id: 'keyboard',
+        view: { kind: 'keyboard' },
+        symbol: 'keyboard',
+        label: t('keyboard'),
+      })
+    if (adult || view.kind === 'pain')
+      list.push({
+        id: 'pain',
+        view: { kind: 'pain' },
+        symbol: 'face_with_head_bandage',
+        label: t('pain'),
+      })
+    for (const tp of rest)
+      list.push({
+        id: tp.id,
+        view: { kind: 'topic', topic: tp.id },
+        symbol: tp.symbol,
+        label: ui(tp),
+      })
     return list
   }, [ui, t, reader, adult, view.kind])
 
   /** The big Yes / No pair answers at once: it speaks, but does not go into the message. */
   const answers = [wordById('yes'), wordById('no')].filter((w) => w !== undefined)
   const answer = (e: Entry) => {
-    void speak({ key: e.key, text: e.text })
+    aacSpeak({ key: e.key, text: e.text })
     logEvent(modeling ? 'aac_model' : 'aac_word', e.ref)
     if (modeling) flash(e.key)
   }
@@ -138,21 +192,21 @@ export default function Aac() {
     </Button>
   )
 
+  const panelName = tabs.find((x) => sameView(x.view, view))?.label ?? t('board')
+
   return (
     <div className={styles.screen} data-kind={profile.kind} data-board={board || undefined}>
       <div className={styles.layout}>
         <div className={styles.head}>
-          <PageHeader
-            title={t('title')}
-            symbol={wide ? <SymbolImg id="speaking_head" /> : undefined}
-            actions={roomy ? modelToggle : undefined}
-          />
+          <PageHeader title={t('title')} symbol={wide ? <SymbolImg id="speaking_head" /> : undefined} actions={roomy ? modelToggle : undefined} />
         </div>
 
         <div className={styles.barArea}>
-          <MessageBar aac={profile.aac} modeling={modeling} extra={roomy ? undefined : modelToggle} compact={!roomy} />
+          <MessageBar aac={profile.aac} modeling={modeling} compact={!roomy} />
         </div>
 
+        {/* Topics + board + Yes/No: what a child presses. One block; the reach zone on a whiteboard (display: contents elsewhere). */}
+        <div className={styles.zone} data-reach>
         <nav className={styles.tabs} aria-label={t('topics')}>
           {tabs.map((tab) => (
             <Pressable
@@ -171,37 +225,49 @@ export default function Aac() {
           ))}
         </nav>
 
-        <section className={styles.panel} aria-label={tabs.find((x) => sameView(x.view, view))?.label ?? t('board')} data-view={view.kind === 'topic' ? view.topic : view.kind}>
-          {view.kind === 'topic' && view.topic === 'core' && <CoreBoard aac={profile.aac} onTap={onTap} glowKey={glowKey} />}
+        <section className={styles.panel} aria-label={panelName} data-view={view.kind === 'topic' ? view.topic : view.kind}>
+          {view.kind === 'topic' && view.topic === 'core' && <CoreBoard aac={profile.aac} onTap={onTap} glowKey={glowKey} name={panelName} />}
           {view.kind === 'topic' && view.topic !== 'core' && (
-            <TopicBoard key={view.topic} topic={view.topic} profileId={profile.id} aac={profile.aac} onTap={onTap} glowKey={glowKey} />
+            <TopicBoard
+              key={view.topic}
+              topic={view.topic}
+              profileId={profile.id}
+              aac={profile.aac}
+              onTap={onTap}
+              glowKey={glowKey}
+              name={panelName}
+            />
           )}
-          {view.kind === 'phrases' && <PhrasesPanel adult={adult} onTap={onTap} glowKey={glowKey} />}
+          {view.kind === 'phrases' && <PhrasesPanel adult={adult} onTap={onTap} glowKey={glowKey} name={panelName} />}
           {view.kind === 'pain' && <PainPanel onTap={onTap} glowKey={glowKey} />}
           {view.kind === 'keyboard' && <KeyboardPanel />}
         </section>
 
-        <div className={styles.dock} role="group" aria-label={t('answer')}>
-          {answers.map((w) => {
-            const e = wordEntry(w)
-            return (
-              <Pressable
-                key={w.id}
-                className={styles.yn}
-                label={label(w)}
-                scanGroup="answer"
-                style={profile.aac.colorCoding ? fitzVars(w.fitz) : undefined}
-                data-color={profile.aac.colorCoding ? 'true' : 'false'}
-                data-glow={glowKey === e.key ? 'true' : undefined}
-                onActivate={() => answer(e)}
-              >
-                <span className={styles.ynSymbol} aria-hidden="true">
-                  <SymbolImg id={w.symbol} />
-                </span>
-                <span>{label(w)}</span>
-              </Pressable>
-            )
-          })}
+        <div className={styles.dock} data-extra={roomy ? undefined : 'true'}>
+          <div className={styles.dockAnswers} role="group" aria-label={t('answer')}>
+            {answers.map((w) => {
+              const e = wordEntry(w)
+              return (
+                <Pressable
+                  key={w.id}
+                  className={styles.yn}
+                  label={label(w)}
+                  scanGroup="answer"
+                  style={profile.aac.colorCoding ? fitzVars(w.fitz) : undefined}
+                  data-color={profile.aac.colorCoding ? 'true' : 'false'}
+                  data-glow={glowKey === e.key ? 'true' : undefined}
+                  onActivate={() => answer(e)}
+                >
+                  <span className={styles.ynSymbol} aria-hidden="true">
+                    <SymbolImg id={w.symbol} />
+                  </span>
+                  <span>{label(w)}</span>
+                </Pressable>
+              )
+            })}
+          </div>
+          {!roomy && modelToggle}
+        </div>
         </div>
       </div>
     </div>

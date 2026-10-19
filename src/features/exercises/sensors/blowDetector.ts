@@ -54,13 +54,36 @@ export function isBlowLike(f: AudioFeatures, floor: number, sensitivity: number)
   return f.rms >= loudnessThreshold(floor, sensitivity) && f.lowRatio >= minLowRatio(sensitivity) && f.flatness >= MIN_FLATNESS
 }
 
-/** Mean RMS of the calibration frames (≈1.5 s of quiet room). */
+/**
+ * Floor of the quiet room from the calibration frames (≈1.5 s). The lower quartile is used (a "rolling minimum"
+ * in spirit): a cough, a click or even a few blown frames at the start do not raise the floor.
+ */
 export function estimateFloor(rmsValues: number[]): number {
   if (!rmsValues.length) return MIN_FLOOR
   const sorted = [...rmsValues].sort((a, b) => a - b)
-  // Median ignores a single cough or click during calibration.
-  const mid = sorted[Math.floor(sorted.length / 2)]
-  return Math.max(MIN_FLOOR, mid)
+  const q = sorted[Math.floor((sorted.length - 1) * 0.25)]
+  return Math.max(MIN_FLOOR, q)
+}
+
+/** A calibrated floor at or above this means the room is loud (shown as «Xona shovqinli»). */
+export const NOISY_FLOOR = 0.03
+/** Frames louder than this and blow-shaped during calibration mean somebody was blowing, not a quiet room. */
+export const CALIBRATION_BLOW_RMS = 0.02
+
+export interface CalibrationResult {
+  floor: number
+  /** Most of the calibration was a blow-like sound: the child blew instead of keeping quiet. Measure again. */
+  blowing: boolean
+  /** The room itself is loud. */
+  noisy: boolean
+}
+
+/** Judges the calibration frames: the floor, whether it was spoiled by continuous blowing, whether the room is loud. */
+export function assessCalibration(frames: AudioFeatures[]): CalibrationResult {
+  const floor = estimateFloor(frames.map((f) => f.rms))
+  const blowLike = frames.filter((f) => f.rms >= CALIBRATION_BLOW_RMS && f.lowRatio >= minLowRatio(5) && f.flatness >= MIN_FLATNESS).length
+  const blowing = frames.length > 0 && blowLike / frames.length >= 0.6
+  return { floor, blowing, noisy: floor >= NOISY_FLOOR }
 }
 
 export interface BlowDetector {

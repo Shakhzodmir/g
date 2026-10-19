@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { db, resetDbAvailability } from './db'
+import { useDevice } from './device'
 import { defaultProfile, useProfileStore } from './profile'
 
 describe('defaultProfile', () => {
@@ -48,5 +49,25 @@ describe('profile store', () => {
     await useProfileStore.getState().update({ aac: { level: 3 } })
     expect(useProfileStore.getState().profile.aac.level).toBe(3)
     expect(useProfileStore.getState().profile.aac.showLabels).toBe(true)
+  })
+
+  it('treats an IndexedDB that never answers as unavailable after ~2.5 s', async () => {
+    vi.useFakeTimers()
+    vi.spyOn(db, 'open').mockReturnValue(new Promise(() => undefined) as never)
+    const loading = useProfileStore.getState().load()
+    await vi.advanceTimersByTimeAsync(2600)
+    await loading
+    vi.useRealTimers()
+    expect(useProfileStore.getState().loaded).toBe(true)
+    expect(useProfileStore.getState().persistent).toBe(false)
+  })
+
+  it('sanitizes a stored profile with an unknown theme and out-of-range values on load', async () => {
+    await db.profiles.put({ ...defaultProfile(), id: 'bad', theme: 'neon', voice: { ...defaultProfile().voice, rate: 7 } } as never)
+    useDevice.setState({ activeProfileId: 'bad' })
+    await useProfileStore.getState().load()
+    expect(useProfileStore.getState().profile.theme).toBe('bolajon')
+    expect(useProfileStore.getState().profile.voice.rate).toBe(1.4)
+    await db.profiles.delete('bad')
   })
 })

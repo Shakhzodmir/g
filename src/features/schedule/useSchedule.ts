@@ -24,6 +24,11 @@ export const useScheduleUi = create<ScheduleUi>()(
 // When IndexedDB is unavailable the schedule lives in memory for this session.
 const memory = new Map<string, ScheduleRow>()
 
+/** Forgets the in-memory schedules of one profile (or all): used when a profile or all data is deleted. */
+export function clearScheduleMemory(profileId?: string): void {
+  for (const [id, row] of memory) if (!profileId || row.profileId === profileId) memory.delete(id)
+}
+
 function defaultRow(profileId: string, kind: ScheduleKind, now: number): ScheduleRow {
   const tpl = SCHEDULE_TEMPLATES[0]
   return {

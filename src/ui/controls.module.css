@@ -39,38 +39,96 @@
 .switch {
   flex: none;
   position: relative;
-  width: 68px;
-  height: 44px;
-  border: 0;
+  /* 68 x 48 px at the default root size; scales with the root font-size (board mode, text size) */
+  width: 4.25rem;
+  height: 3rem;
+  min-width: 68px;
+  min-height: 48px;
+  border: 2px solid var(--outline-strong);
   border-radius: var(--r-pill);
-  background: var(--outline-soft);
+  background: var(--surface-2);
   transition: background-color var(--dur-fast) var(--ease-out);
 }
 
 .switch[aria-checked='true'] {
+  border-color: var(--primary);
   background: var(--primary);
 }
 
 .knob {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 36px;
-  height: 36px;
+  top: 50%;
+  left: 0.25rem;
+  width: 2.125rem;
+  height: 2.125rem;
+  margin-top: -1.0625rem;
   border-radius: 50%;
-  background: var(--surface);
-  box-shadow: var(--elev-1);
+  background: var(--outline-strong);
   transition: transform var(--dur-fast) var(--ease-out);
 }
 
 .switch[aria-checked='true'] .knob {
-  transform: translateX(24px);
+  background: var(--on-primary);
+  transform: translateX(1.25rem);
+}
+
+.sliderRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-3);
 }
 
 .range {
+  --fill: 50%;
   width: 100%;
   height: var(--touch-min);
+  margin: 0;
+  background: transparent;
   accent-color: var(--primary);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Visible track with a boundary (>= 3:1) and a filled part, so the value reads without the number */
+.range::-webkit-slider-runnable-track {
+  height: 0.75rem;
+  border: 2px solid var(--outline-strong);
+  border-radius: var(--r-pill);
+  background: linear-gradient(to right, var(--primary) var(--fill), var(--surface-2) var(--fill));
+}
+
+.range::-moz-range-track {
+  height: 0.75rem;
+  border: 2px solid var(--outline-strong);
+  border-radius: var(--r-pill);
+  background: linear-gradient(to right, var(--primary) var(--fill), var(--surface-2) var(--fill));
+  box-sizing: border-box;
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: calc((0.75rem - 4px - 1.75rem) / 2);
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.range::-moz-range-thumb {
+  width: 1.75rem;
+  height: 1.75rem;
+  box-sizing: border-box;
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.range:disabled {
+  opacity: 0.5;
 }
 
 .fieldset {
@@ -83,28 +141,37 @@
 }
 
 .segments {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  /*
+   * One row when it fits; otherwise the options wrap instead of pushing the page wider (320 px, 200 % text).
+   * Flex-wrap, not grid: its min-content width is the widest single option, not the sum of all of them.
+   */
+  display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 4px;
+  border: 2px solid var(--outline-strong);
   border-radius: var(--r-pill);
   background: var(--surface-2);
 }
 
 .wrap {
-  grid-auto-flow: row;
-  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
   border-radius: var(--r-cell);
 }
 
+.wrap .segment {
+  flex-basis: 6.5rem;
+}
+
 .segment {
+  flex: 1 1 6rem;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
-  min-height: calc(var(--touch-min) - 8px);
+  min-height: var(--touch-min);
   padding: 0 var(--s-3);
+  border: 2px solid transparent;
   border-radius: var(--r-pill);
   font-weight: 700;
   text-align: center;
@@ -120,7 +187,20 @@
 .segment[data-checked] {
   background: var(--surface);
   color: var(--text);
+  /* Selected state: a 3 px ring in the primary colour (>= 3:1 in all six themes) plus a check mark, never colour alone */
+  border-color: var(--primary);
   box-shadow: var(--elev-1);
+}
+
+.check {
+  display: none;
+  flex: none;
+  font-weight: 900;
+  color: var(--primary);
+}
+
+.segment[data-checked] .check {
+  display: inline;
 }
 
 .segment:has(:focus-visible) {
@@ -131,5 +211,29 @@
 @media (forced-colors: active) {
   .segment[data-checked] {
     border: 2px solid Highlight;
+    outline: 2px solid Highlight;
+    outline-offset: -4px;
+  }
+  .check {
+    color: Highlight;
+  }
+  .switch {
+    border: 2px solid ButtonText;
+    background: Canvas;
+  }
+  .switch[aria-checked='true'] {
+    border-color: Highlight;
+    background: Highlight;
+  }
+  .knob {
+    background: ButtonText;
+    forced-color-adjust: none;
+  }
+  .switch[aria-checked='true'] .knob {
+    background: HighlightText;
+  }
+  .range::-webkit-slider-runnable-track,
+  .range::-moz-range-track {
+    border-color: ButtonText;
   }
 }

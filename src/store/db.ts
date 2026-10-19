@@ -94,12 +94,35 @@ export const db = new GapimizDB()
 
 let available: Promise<boolean> | null = null
 
-/** Resolves false when IndexedDB is unavailable (private mode, quota, blocked); the app then runs in memory. */
+/** How long to wait for IndexedDB.open() before giving up: some broken profiles never answer (no error, no success). */
+export const DB_OPEN_TIMEOUT_MS = 2500
+
+/**
+ * Resolves false when IndexedDB is unavailable (private mode, quota, blocked, or simply never answers within
+ * ~2.5 s); the app then runs in memory instead of showing a blank page forever.
+ */
 export function dbAvailable(): Promise<boolean> {
-  available ??= db
-    .open()
-    .then(() => true)
-    .catch(() => false)
+  available ??= new Promise<boolean>((resolve) => {
+    const timer = setTimeout(() => resolve(false), DB_OPEN_TIMEOUT_MS)
+    let opened: Promise<unknown>
+    try {
+      opened = db.open()
+    } catch {
+      clearTimeout(timer)
+      resolve(false)
+      return
+    }
+    opened.then(
+      () => {
+        clearTimeout(timer)
+        resolve(true)
+      },
+      () => {
+        clearTimeout(timer)
+        resolve(false)
+      },
+    )
+  })
   return available
 }
 

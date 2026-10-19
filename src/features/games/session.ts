@@ -4,19 +4,11 @@ import { STICKERS } from '../../content/stickers'
 import type { Sticker } from '../../content/types'
 import { VOICE_LINES } from '../../content/voiceLines'
 import type { Bi } from '../../i18n/types'
-import { db, dbAvailable } from '../../store/db'
 import { logEvent } from '../../store/events'
 import { getProfile } from '../../store/profile'
-import { safeLocalStorage } from '../../store/safeStorage'
-import { HINT_DELAY_MS, isLevel, pickSticker, REST_AFTER_ROUNDS, ROUND_SIZE, type GameId, type Level } from './logic/rounds'
-
-const storage = safeLocalStorage()
-const levelKey = (id: GameId) => `gapimiz.games.level.${id}`
-
-function loadLevel(id: GameId): Level {
-  const v = Number(storage.getItem(levelKey(id)))
-  return isLevel(v) ? v : 1
-}
+import { loadLevel, saveLevel } from './logic/levelKey'
+import { HINT_DELAY_MS, pickSticker, REST_AFTER_ROUNDS, ROUND_SIZE, type GameId, type Level } from './logic/rounds'
+import { ownedStickerIds, recordSticker } from './stickers'
 
 /** A fixed voice line (VOICE_LINES) as a speakable item. */
 export function line(id: string): SpeakItem {
@@ -36,17 +28,8 @@ export function praise(): SpeakItem {
 
 async function awardSticker(): Promise<Sticker> {
   const profileId = getProfile().id
-  const ok = await dbAvailable()
-  let owned = new Set<string>()
-  if (ok) {
-    try {
-      owned = new Set((await db.stickers.where('profileId').equals(profileId).toArray()).map((r) => r.stickerId))
-    } catch {
-      /* in-memory only */
-    }
-  }
-  const s = pickSticker(STICKERS, owned)
-  if (ok) void db.stickers.add({ profileId, stickerId: s.id, ts: Date.now() }).catch(() => undefined)
+  const s = pickSticker(STICKERS, await ownedStickerIds(profileId))
+  void recordSticker(profileId, s.id)
   return s
 }
 
@@ -54,7 +37,11 @@ export type SessionPhase = 'play' | 'reward'
 
 export interface GameSession {
   gameId: GameId
+  /** Difficulty of the round on screen. It never changes in the middle of a round. */
   level: Level
+  /** The difficulty chosen for the next round (equals `level` unless it was just changed). */
+  nextLevel: Level
+  /** Remembers a new difficulty; it applies from the next round, so no progress is lost. */
   setLevel: (l: Level) => void
   /** Changes whenever a fresh round starts (use as a React key / effect dependency). */
   round: number
@@ -74,7 +61,11 @@ export interface GameSession {
 
 /** Shared round/level/reward state of a game. Stops speech when the game screen closes. */
 export function useGameSession(gameId: GameId, total: number = ROUND_SIZE): GameSession {
-  const [level, setLevelState] = useState<Level>(() => loadLevel(gameId))
+  // The level is the child's own (per profile id) and is read once per game screen.
+  const profileId = useRef(getProfile().id).current
+  const [level, setLevelState] = useState<Level>(() => loadLevel(profileId, gameId))
+  const [nextLevel, setNextLevel] = useState<Level>(level)
+  const nextLevelRef = useRef(level)
   const [round, setRound] = useState(0)
   const [done, setDone] = useState(0)
   const [phase, setPhase] = useState<SessionPhase>('play')
@@ -118,6 +109,8 @@ export function useGameSession(gameId: GameId, total: number = ROUND_SIZE): Game
   }, [finishRound, total])
 
   const restart = useCallback(() => {
+    // A level chosen during the round starts now, with the fresh round.
+    setLevelState(nextLevelRef.current)
     doneRef.current = 0
     setDone(0)
     setPhase('play')
@@ -127,12 +120,11 @@ export function useGameSession(gameId: GameId, total: number = ROUND_SIZE): Game
 
   const setLevel = useCallback(
     (l: Level) => {
-      storage.setItem(levelKey(gameId), String(l))
-      setLevelState(l)
-      stopSpeaking()
-      restart()
+      saveLevel(profileId, gameId, l)
+      nextLevelRef.current = l
+      setNextLevel(l)
     },
-    [gameId, restart],
+    [gameId, profileId],
   )
 
   const nextRound = useCallback(() => {
@@ -143,6 +135,7 @@ export function useGameSession(gameId: GameId, total: number = ROUND_SIZE): Game
   return {
     gameId,
     level,
+    nextLevel,
     setLevel,
     round,
     done,

@@ -116,9 +116,20 @@ export function countBy(events: EventRow[], key: (e: EventRow) => string | null)
   return [...m.entries()].map(([ref, count]) => ({ ref, count })).sort((a, b) => b.count - a.count || a.ref.localeCompare(b.ref))
 }
 
+/** The same thing logged under different spellings (`voice` / `exercise:voice`, `water` / `w.water`) counts once. */
+export function canonRef(ref: string): string {
+  return ref.replace(/^(exercise:|game:|w\.|p\.)/, '')
+}
+
 /** A word the person chose on the communicator themselves (not an adult modelling it). */
 export function isOwnWord(e: EventRow): boolean {
   return e.type === 'aac_word' && e.meta?.modeling !== true && e.meta?.model !== true
+}
+
+/** Something the person chose on the communicator themselves: a word they tapped or a ready phrase (feelings have their own list). */
+export function isOwnChoice(e: EventRow): boolean {
+  if (isOwnWord(e)) return true
+  return e.type === 'aac_phrase' && !e.ref.startsWith('feeling:') && !e.ref.startsWith('f.') && e.meta?.modeling !== true && e.meta?.model !== true
 }
 
 /**
@@ -176,14 +187,13 @@ export function summarize(all: EventRow[], now: number, weeks = WINDOW_WEEKS): P
   const current = events.filter((e) => e.ts >= thisStart)
   const earlier = events.filter((e) => e.ts < thisStart)
 
-  const ownWords = events.filter(isOwnWord)
   const ownThisWeek = current.filter(isOwnWord)
   const seenBefore = new Set(earlier.filter(isOwnWord).map((e) => e.ref))
   const newWords: string[] = []
   for (const e of [...ownThisWeek].sort((a, b) => a.ts - b.ts)) {
     if (!seenBefore.has(e.ref) && !newWords.includes(e.ref)) newWords.push(e.ref)
   }
-  const topThisWeek = countBy(ownThisWeek, (e) => e.ref)[0] ?? null
+  const topThisWeek = countBy(current.filter(isOwnChoice), (e) => canonRef(e.ref))[0] ?? null
 
   return {
     empty: events.length === 0,
@@ -196,11 +206,11 @@ export function summarize(all: EventRow[], now: number, weeks = WINDOW_WEEKS): P
       feelings: current.filter((e) => feelingOf(e) !== null).length,
     },
     activeDays: new Set(events.map((e) => dayKey(e.ts))).size,
-    topWords: countBy(ownWords, (e) => e.ref).slice(0, 10),
+    topWords: countBy(events.filter(isOwnChoice), (e) => canonRef(e.ref)).slice(0, 40),
     topWordThisWeek: topThisWeek,
     newWords,
-    games: countBy(events, (e) => (e.type === 'game_round' ? e.ref : null)),
-    exercises: countBy(events, (e) => (e.type === 'exercise' ? e.ref : null)),
+    games: countBy(events, (e) => (e.type === 'game_round' ? canonRef(e.ref) : null)),
+    exercises: countBy(events, (e) => (e.type === 'exercise' ? canonRef(e.ref) : null)),
     feelings: countBy(events, feelingOf),
   }
 }

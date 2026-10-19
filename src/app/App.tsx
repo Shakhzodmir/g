@@ -12,6 +12,9 @@ import { Home } from './Home'
 import { SHELL } from './strings'
 import { useApplyTheme } from './useApplyTheme'
 import { prefetchLanguagePack } from '../audio/offlinePack'
+import { speakScanCue } from './cue'
+import { Splash } from './Splash'
+import { useDocumentTitle } from './useDocumentTitle'
 
 const Onboarding = lazy(() => import('../features/onboarding/Onboarding'))
 const BoardSetup = lazy(() => import('../features/board/BoardSetup'))
@@ -21,7 +24,7 @@ const ArtPreview = import.meta.env.DEV ? lazy(() => import('../dev/ArtPreview'))
 function NotFound() {
   const t = useStrings(SHELL)
   const navigate = useNavigate()
-  return <EmptyState symbol="compass" title={t('notFound')} action={<Button onActivate={() => navigate('/')}>{t('goHome')}</Button>} />
+  return <EmptyState symbol="compass" heading={1} title={t('notFound')} action={<Button onActivate={() => navigate('/')}>{t('goHome')}</Button>} />
 }
 
 function Gate({ children }: { children: React.ReactNode }) {
@@ -31,8 +34,12 @@ function Gate({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+/** If the profile never finishes loading (broken storage), carry on in memory instead of waiting forever. */
+const LOAD_GIVE_UP_MS = 4500
+
 function Root() {
   useApplyTheme()
+  useDocumentTitle()
   const load = useProfileStore((s) => s.load)
   const loaded = useProfileStore((s) => s.loaded)
   useEffect(() => {
@@ -46,11 +53,16 @@ function Root() {
     const t = setTimeout(() => void prefetchLanguagePack(speechLang), 4000)
     return () => clearTimeout(t)
   }, [loaded, onboarded, speechLang])
-  if (!loaded) return null
+  useEffect(() => {
+    if (loaded) return
+    const t = setTimeout(() => useProfileStore.setState({ loaded: true, persistent: false }), LOAD_GIVE_UP_MS)
+    return () => clearTimeout(t)
+  }, [loaded])
+  if (!loaded) return <Splash />
   return (
-    <ScanProvider>
+    <ScanProvider onCue={speakScanCue}>
       <Gate>
-        <Suspense fallback={null}>
+        <Suspense fallback={<Splash />}>
           <Routes>
             {ArtPreview && <Route path="/dev/art" element={<ArtPreview />} />}
             <Route path="/onboarding" element={<Onboarding />} />

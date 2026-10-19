@@ -43,7 +43,7 @@ function PrintCard({ item, both, colour, top }: { item: PrintItem; both: boolean
       <div className={[ps.card, top && ps.cardTop].filter(Boolean).join(' ')} style={colour ? { borderColor: `var(--fitz-${item.fitz}-border)`, background: `color-mix(in srgb, var(--fitz-${item.fitz}-bg) 35%, #fff)` } : undefined}>
         {/* eager: lazy images outside the viewport would be missing from the printout */}
         <img className={[ps.img, photo && ps.photo].filter(Boolean).join(' ')} src={photo ?? symbolUrl(item.symbol)} alt="" loading="eager" decoding="sync" />
-        <span className={ps.label}>
+        <span className={ps.label} data-long={label(item.label).length > 14 || undefined}>
           <span>{shy(label(item.label), uiLang === 'ru' ? 'ru' : 'uz')}</span>
           {both && second && second !== label(item.label) && <span className={ps.second}>{shy(second, uiLang === 'ru' ? 'uz' : 'ru')}</span>}
         </span>

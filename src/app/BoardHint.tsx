@@ -12,7 +12,8 @@ export function BoardHint() {
   const t = useStrings(SHELL)
   const navigate = useNavigate()
   const board = useDevice((s) => s.boardMode)
-  const dismissed = useDevice((s) => s.boardHintDismissed)
+  // A saved calibration means the teacher already went through board setup: never suggest it again.
+  const dismissed = useDevice((s) => s.boardHintDismissed || s.boardCalibration !== null)
   const dismiss = useDevice((s) => s.dismissBoardHint)
   const likelyBoard = useMediaQuery('(pointer: coarse) and (any-hover: none) and (min-width: 1200px)')
   if (board || dismissed || !likelyBoard) return null

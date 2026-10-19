@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultProfile, useProfileStore, type ScanMode } from '../../store/profile'
 import { Pressable, resetRepeatGuard } from '../Pressable'
 import { ScanProvider } from './ScanProvider'
+import { isTyping } from './ScanProvider'
 import { SCAN_CLASS } from './scanner'
 
 function setScan(mode: ScanMode) {
@@ -87,5 +88,69 @@ describe('ScanProvider', () => {
     )
     act(() => vi.advanceTimersByTime(5000))
     expect(screen.getByRole('button', { name: 'A' })).not.toHaveClass(SCAN_CLASS)
+  })
+
+  it('a held switch (auto-repeat keydown) is one action', () => {
+    setScan('step2')
+    const a = vi.fn()
+    render(
+      <ScanProvider>
+        <Pressable label="A" onActivate={a}>A</Pressable>
+      </ScanProvider>,
+    )
+    act(() => {
+      fireEvent.keyDown(window, { key: 'Enter', code: 'Enter' })
+      for (let i = 0; i < 10; i++) fireEvent.keyDown(window, { key: 'Enter', code: 'Enter', repeat: true })
+    })
+    expect(a).toHaveBeenCalledTimes(1)
+  })
+
+  it('respects the ignore-repeat window for quick double presses of the same switch', () => {
+    setScan('step2')
+    const a = vi.fn()
+    render(
+      <ScanProvider>
+        <Pressable label="A" onActivate={a}>A</Pressable>
+      </ScanProvider>,
+    )
+    act(() => press('Enter'))
+    vi.advanceTimersByTime(100)
+    act(() => press('Enter'))
+    expect(a).toHaveBeenCalledTimes(1)
+    // After the window the switch works again (first press re-highlights, second selects).
+    vi.advanceTimersByTime(400)
+    act(() => press('Enter'))
+    vi.advanceTimersByTime(400)
+    act(() => press('Enter'))
+    expect(a).toHaveBeenCalledTimes(2)
+  })
+
+  it('a focused radio / checkbox / range does not silence scanning; text fields still do', () => {
+    const mk = (tag: string, type?: string) => {
+      const el = document.createElement(tag)
+      if (type) el.setAttribute('type', type)
+      return el
+    }
+    for (const t of ['radio', 'checkbox', 'range', 'button', 'submit']) expect(isTyping(mk('input', t))).toBe(false)
+    for (const t of ['text', 'search', 'email', 'url', 'tel', 'password', 'number']) expect(isTyping(mk('input', t))).toBe(true)
+    expect(isTyping(mk('input'))).toBe(true)
+    expect(isTyping(mk('textarea'))).toBe(true)
+    expect(isTyping(mk('select'))).toBe(true)
+    expect(isTyping(mk('button'))).toBe(false)
+
+    setScan('step2')
+    const a = vi.fn()
+    render(
+      <ScanProvider>
+        <input type="radio" aria-label="r" />
+        <Pressable label="A" onActivate={a}>A</Pressable>
+      </ScanProvider>,
+    )
+    const radio = screen.getByRole('radio')
+    radio.focus()
+    act(() => {
+      fireEvent.keyDown(radio, { key: 'Enter', code: 'Enter' })
+    })
+    expect(a).toHaveBeenCalledTimes(1)
   })
 })

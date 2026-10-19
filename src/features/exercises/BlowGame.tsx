@@ -1,11 +1,11 @@
-import { Hand, Mic, Volume2 } from 'lucide-react'
+import { Hand, Mic, RotateCcw, Volume2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { playSfx } from '../../audio/sfx'
 import { speak } from '../../audio/speech'
 import { useMotionPreset } from '../../design/motion'
 import { COMMON } from '../../i18n/common'
-import { useStrings } from '../../i18n'
+import { formatNumber, useI18n, useStrings } from '../../i18n'
 import { useProfileStore } from '../../store/profile'
 import { logEvent } from '../../store/events'
 import { Button } from '../../ui/Button'
@@ -14,17 +14,18 @@ import { Musicha } from '../../ui/mascot/Musicha'
 import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import styles from './exercises.module.css'
-import { AdultSettings, HoldButton, LevelMeter } from './parts'
+import { AdultSettings, HoldButton, LevelMeter, MicOverlay } from './parts'
 import { SCENES } from './scenes/Scenes'
 import { createBlowDetector } from './sensors/blowDetector'
 import { useMic } from './sensors/useMic'
+import { advanceSession, cooldownLeftMs, minutesLeft, SESSION_MS } from './sessionLimits'
 import { useExerciseSettings, type BlowScene } from './settings'
 import { bi, S } from './strings'
 
+export { SESSION_MS }
+
 /** Seconds of steady blowing a scene needs (strong blows go a bit faster). */
 const GOAL_SEC: Record<BlowScene, number> = { candles: 5, dandelion: 4.5, boat: 6 }
-/** Breathing games stop after 2 minutes so the child does not get dizzy. */
-export const SESSION_MS = 120_000
 const SCENE_IDS: BlowScene[] = ['candles', 'dandelion', 'boat']
 const SCENE_NAME = { candles: 'sceneCandles', dandelion: 'sceneDandelion', boat: 'sceneBoat' } as const
 const SCENE_INSTR = { candles: 'instrCandles', dandelion: 'instrDandelion', boat: 'instrBoat' } as const
@@ -52,11 +53,13 @@ function ScenePicker({ value, onChange }: { value: BlowScene; onChange: (s: Blow
 export default function BlowGame() {
   const t = useStrings(S)
   const tc = useStrings(COMMON)
+  const { uiLang } = useI18n()
   const navigate = useNavigate()
   const preset = useMotionPreset()
   const kind = useProfileStore((s) => s.profile.kind)
   const sensitivity = useExerciseSettings((s) => s.blowSensitivity)
   const scene = useExerciseSettings((s) => s.blowScene)
+  const lastBlowEnd = useExerciseSettings((s) => s.lastBlowEnd)
   const setSettings = useExerciseSettings((s) => s.set)
 
   const [phase, setPhase] = useState<'intro' | 'live' | 'rest'>('intro')
@@ -66,6 +69,7 @@ export default function BlowGame() {
   const [blow, setBlow] = useState({ blowing: false, strength: 0 })
   const [done, setDone] = useState(false)
   const [meter, setMeter] = useState(0)
+  const [now, setNow] = useState(() => Date.now())
 
   const detector = useRef(createBlowDetector({ sensitivity }))
   const input = useRef({ blowing: false, strength: 0 })
@@ -84,7 +88,7 @@ export default function BlowGame() {
       detector.current.reset()
     },
   )
-  const { status: micStatus, stop: stopMic, start: startMic } = mic
+  const { status: micStatus, stop: stopMic, start: startMic, noisy } = mic
 
   useEffect(() => {
     if (micStatus === 'denied' || micStatus === 'unavailable') {
@@ -95,6 +99,7 @@ export default function BlowGame() {
 
   const resetScene = useCallback(() => {
     progressRef.current = 0
+    input.current = { blowing: false, strength: 0 }
     setProgress(0)
     setDone(false)
   }, [])
@@ -105,9 +110,9 @@ export default function BlowGame() {
     if (!listening) return
     let raf = 0
     let last = performance.now()
-    const tick = (now: number) => {
-      const dt = Math.min(100, now - last)
-      last = now
+    const tick = (n: number) => {
+      const dt = Math.min(100, n - last)
+      last = n
       const inp = input.current
       if (inp.blowing) {
         progressRef.current = Math.min(1, progressRef.current + ((dt / 1000) * (0.6 + 0.8 * inp.strength)) / GOAL_SEC[scene])
@@ -118,6 +123,8 @@ export default function BlowGame() {
       if (progressRef.current >= 1) {
         setDone(true)
         setBlow({ blowing: false, strength: 0 })
+        // The scene is finished: the microphone is not needed until «Yana».
+        stopMic()
         playSfx('chime')
         logEvent('exercise', 'blow', { scene, mode })
         return
@@ -126,17 +133,37 @@ export default function BlowGame() {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [listening, scene, mode])
+  }, [listening, scene, mode, stopMic])
 
-  // Session limit (never shown as a countdown).
+  // Session limit (never shown as a countdown). Only ACTIVE play counts: the clock stands still while the page
+  // is hidden. After a full session the game rests for a while (see `cooldown` below).
   useEffect(() => {
     if (phase !== 'live') return
-    const id = setTimeout(() => {
-      stopMic()
-      setPhase('rest')
-    }, SESSION_MS)
+    let elapsed = 0
+    let last = performance.now()
+    const id = setInterval(() => {
+      const n = performance.now()
+      // At most one second per tick, so a throttled background timer cannot add the whole hidden time at once.
+      elapsed = advanceSession(elapsed, Math.min(1000, n - last), document.hidden)
+      last = n
+      if (elapsed >= SESSION_MS) {
+        clearInterval(id)
+        stopMic()
+        setSettings({ lastBlowEnd: Date.now() })
+        setNow(Date.now())
+        setPhase('rest')
+      }
+    }, 500)
+    return () => clearInterval(id)
+  }, [phase, stopMic, setSettings])
+
+  // Rest period after a full session: re-entering the game does not start a new one at once.
+  const cooldownMs = phase === 'intro' ? cooldownLeftMs(now, lastBlowEnd) : 0
+  useEffect(() => {
+    if (cooldownMs <= 0) return
+    const id = setTimeout(() => setNow(Date.now()), Math.min(cooldownMs, 30_000) + 50)
     return () => clearTimeout(id)
-  }, [phase, stopMic])
+  }, [cooldownMs])
 
   const begin = (withMic: boolean) => {
     resetScene()
@@ -150,9 +177,24 @@ export default function BlowGame() {
     }
   }
 
+  /** Switches (back) to the microphone: after a denial, or from "without microphone". */
+  const retryMic = () => {
+    resetScene()
+    setMode('mic')
+    setNoMic(false)
+    void startMic()
+  }
+
   const chooseScene = (s: BlowScene) => {
     setSettings({ blowScene: s })
     resetScene()
+    // The microphone was released when the previous scene finished.
+    if (phase === 'live' && mode === 'mic' && micStatus === 'idle') void startMic()
+  }
+
+  const again = () => {
+    resetScene()
+    if (mode === 'mic') void startMic()
   }
 
   const sayInstruction = () => {
@@ -165,18 +207,51 @@ export default function BlowGame() {
 
   const settings = (
     <AdultSettings>
-      <Slider label={t('sensitivity')} hint={t('sensitivityHint')} value={sensitivity} min={1} max={10} onChange={(v) => setSettings({ blowSensitivity: v })} />
+      {(close) => (
+        <>
+          <Slider label={t('sensitivity')} hint={t('sensitivityHint')} value={sensitivity} min={1} max={10} onChange={(v) => setSettings({ blowSensitivity: v })} />
+          {noisy && mode === 'mic' && (
+            <p className={styles.adultNote} role="status">
+              {t('noisyRoom')}
+            </p>
+          )}
+          {phase === 'live' && mode === 'mic' && micStatus === 'running' && (
+            <Button
+              variant="soft"
+              icon={<RotateCcw />}
+              onActivate={() => {
+                close()
+                again()
+              }}
+            >
+              {t('recalibrateMic')}
+            </Button>
+          )}
+          {phase === 'live' && mode === 'hold' && (
+            <Button
+              variant="soft"
+              icon={<Mic />}
+              onActivate={() => {
+                close()
+                retryMic()
+              }}
+            >
+              {t('retryMic')}
+            </Button>
+          )}
+        </>
+      )}
     </AdultSettings>
   )
 
-  if (phase === 'rest') {
+  if (phase === 'rest' || cooldownMs > 0) {
     return (
       <div className={styles.screen}>
         <PageHeader title={t('blowTitle')} back="/exercises" />
-        <div className={styles.rest} role="status">
+        <div className={styles.rest} role="status" data-reach>
           {kind === 'child' ? <Musicha state="calm" size={160} calm title="" /> : null}
           <p className={styles.restTitle}>{tc('rest')}</p>
-          <p className={styles.muted}>{t('restText')}</p>
+          <p className={styles.muted}>{cooldownMs > 0 ? t('restCooldown', { m: formatNumber(minutesLeft(cooldownMs), uiLang, 0) }) : t('restText')}</p>
           <Button size="lg" onActivate={() => navigate('/exercises')}>
             {t('toExercises')}
           </Button>
@@ -192,22 +267,30 @@ export default function BlowGame() {
       <div className={styles.stage} data-scene={scene}>
         <Scene progress={progress} blowing={blow.blowing} strength={blow.strength} movement={preset.movement} className={styles.sceneArt} />
         {calibrating && (
-          <div className={styles.overlay} role="status">
-            <p className={styles.overlayText}>{micStatus === 'asking' ? t('asking') : t('calibrating')}</p>
-            {micStatus === 'calibrating' && <span className={styles.calBar} aria-hidden="true" />}
-          </div>
+          <MicOverlay
+            status={micStatus === 'asking' ? 'asking' : 'calibrating'}
+            onNoMic={() => {
+              stopMic()
+              setMode('hold')
+              setNoMic(false)
+            }}
+            onCancel={() => {
+              stopMic()
+              setPhase('intro')
+            }}
+          />
         )}
         {done && (
           <div className={styles.overlay} role="status">
             <p className={styles.doneText}>{t('sceneDone')}</p>
-            <Button size="lg" variant="warm" onActivate={resetScene}>
+            <Button size="lg" variant="warm" onActivate={again}>
               {tc('again')}
             </Button>
           </div>
         )}
       </div>
 
-      <div className={styles.controls}>
+      <div className={styles.controls} data-reach>
         <div className={styles.instrRow}>
           <Button variant="soft" iconOnly icon={<Volume2 />} label={tc('listen')} onActivate={sayInstruction}>
             {tc('listen')}
@@ -243,11 +326,18 @@ export default function BlowGame() {
           </div>
         ) : (
           micStatus === 'running' && (
-            <p className={styles.micStatus}>
-              <Mic aria-hidden="true" className={styles.micIcon} />
-              <span>{t('micOn')}</span>
-              <LevelMeter value={meter} label={t('micOn')} />
-            </p>
+            <div className={styles.micBlock}>
+              <p className={styles.micStatus}>
+                <Mic aria-hidden="true" className={styles.micIcon} />
+                <span>{t('micOn')}</span>
+                <LevelMeter value={meter} label={t('micOn')} />
+              </p>
+              {noisy && (
+                <p className={styles.adultNote} role="status">
+                  {t('noisyRoom')}
+                </p>
+              )}
+            </div>
           )
         )}
       </div>

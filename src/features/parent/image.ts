@@ -9,6 +9,23 @@ export function fitWithin(w: number, h: number, max = MAX_PHOTO_PX): { width: nu
   return { width: Math.max(1, Math.round(w * k)), height: Math.max(1, Math.round(h * k)) }
 }
 
+/** Widest/tallest frame a card photo keeps: a 4:3 landscape or 3:4 portrait. Anything more extreme is centre-cropped. */
+export const MAX_ASPECT = 4 / 3
+
+/** Source rectangle (centre crop) so the result is never more extreme than 4:3 / 3:4. Normal photos are returned whole. */
+export function cropFrame(w: number, h: number, maxAspect = MAX_ASPECT): { sx: number; sy: number; sw: number; sh: number } {
+  if (w <= 0 || h <= 0) return { sx: 0, sy: 0, sw: Math.max(0, w), sh: Math.max(0, h) }
+  if (w / h > maxAspect) {
+    const sw = Math.round(h * maxAspect)
+    return { sx: Math.round((w - sw) / 2), sy: 0, sw, sh: h }
+  }
+  if (h / w > maxAspect) {
+    const sh = Math.round(w * maxAspect)
+    return { sx: 0, sy: Math.round((h - sh) / 2), sw: w, sh }
+  }
+  return { sx: 0, sy: 0, sw: w, sh: h }
+}
+
 async function decode(file: Blob): Promise<{ source: CanvasImageSource; width: number; height: number; close: () => void }> {
   if (typeof createImageBitmap === 'function') {
     try {
@@ -31,11 +48,13 @@ async function decode(file: Blob): Promise<{ source: CanvasImageSource; width: n
   }
 }
 
-/** Downscales a photo to ≤512 px and re-encodes it as JPEG (white behind transparency). Runs locally. */
+/** Centre-crops extreme shapes, downscales to ≤512 px and re-encodes as JPEG (white behind transparency). Runs locally. */
 export async function resizePhoto(file: Blob, max = MAX_PHOTO_PX, quality = 0.85): Promise<Blob> {
   const img = await decode(file)
   try {
-    const { width, height } = fitWithin(img.width, img.height, max)
+    // Centre-crop extreme shapes (panoramas, tall strips) to a usable frame; EXIF rotation is already applied by decode().
+    const crop = cropFrame(img.width, img.height)
+    const { width, height } = fitWithin(crop.sw, crop.sh, max)
     const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
@@ -44,7 +63,7 @@ export async function resizePhoto(file: Blob, max = MAX_PHOTO_PX, quality = 0.85
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, width, height)
     ctx.imageSmoothingQuality = 'high'
-    ctx.drawImage(img.source, 0, 0, width, height)
+    ctx.drawImage(img.source, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, height)
     return await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('encode failed'))), 'image/jpeg', quality))
   } finally {
     img.close()

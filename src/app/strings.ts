@@ -18,7 +18,7 @@ export const SHELL = defineStrings({
     parentsLock: 'Kattalar uchun boʻlim',
     adultTitle: 'Muloqot',
     adultKeyboard: 'Yozib aytish',
-    adultPhrases: 'Tayyor iboralar',
+    adultPhrases: 'Tayyor gaplar',
     adultPain: 'Ogʻriq darajasi',
     unspokenHint: 'Bu soʻz uchun ovoz yoʻq. Kattalar uni oʻz ovozida yozib olishi mumkin.',
     boardHint: 'Bu katta sensorli ekranmi? Doska rejimini yoqing.',
@@ -130,5 +130,33 @@ export const BOARD = defineStrings({
     save: 'Сохранить',
     teacher: 'Панель педагога',
     exitBoard: 'Выйти из режима доски',
+  },
+})
+
+/** Error screen, splash and shell chrome added by the platform pass. */
+export const SHELL_EXTRA = defineStrings({
+  uz: {
+    errTitle: 'Nimadir yurmadi',
+    errText: 'Hammasi joyida, maʼlumotlar saqlangan. Bosh sahifaga qayting yoki qayta yuklang.',
+    errHome: 'Bosh sahifa',
+    errReload: 'Qayta yuklash',
+    errReset: 'Sozlamalarni tiklash',
+    errResetAsk: 'Sozlamalar boshlangʻich holatga qaytadi. Kartochkalar va yozuvlar oʻchmaydi. Davom etamizmi?',
+    errResetYes: 'Ha, tiklash',
+    errResetNo: 'Yoʻq',
+    skipToMain: 'Asosiyga oʻtish',
+    splash: 'Yuklanmoqda',
+  },
+  ru: {
+    errTitle: 'Что-то пошло не так',
+    errText: 'Всё в порядке, данные сохранены. Вернитесь на главную или перезагрузите приложение.',
+    errHome: 'Главная',
+    errReload: 'Перезагрузить',
+    errReset: 'Сбросить настройки',
+    errResetAsk: 'Настройки вернутся к начальным. Карточки и записи не удалятся. Продолжить?',
+    errResetYes: 'Да, сбросить',
+    errResetNo: 'Нет',
+    skipToMain: 'К содержимому',
+    splash: 'Загрузка',
   },
 })

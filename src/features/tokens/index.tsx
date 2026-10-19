@@ -62,6 +62,10 @@ export default function Tokens() {
   const profileId = useProfileStore((s) => s.profile.id)
   const speechLang = useProfileStore((s) => s.profile.speechLang)
   const repeatMs = useProfileStore((s) => s.profile.touch.ignoreRepeatMs)
+  const holdMs = useProfileStore((s) => s.profile.touch.holdMs)
+  // On a child profile the child must not be able to award herself a star: the button needs a 1 s hold (visible fill).
+  // Keyboard and switch users activate it directly, as everywhere else. Adults get a plain button.
+  const childProfile = useProfileStore((s) => s.profile.kind === 'child')
   const board = useTokenStore((s) => s.boards[profileId]) ?? DEFAULT_BOARD
   const setBoardFor = useTokenStore((s) => s.setBoard)
   const setBoard = (b: typeof board) => setBoardFor(profileId, b)
@@ -134,15 +138,6 @@ export default function Tokens() {
           </section>
 
           <section className={styles.controls}>
-            {complete ? (
-              <Button size="xl" block variant="primary" icon={<RotateCcw />} onActivate={() => setBoard(resetBoard(board))}>
-                {t('again')}
-              </Button>
-            ) : (
-              <Button size="xl" block variant="warm" label={t('addLabel')} onActivate={add} touch={{ ignoreRepeatMs: Math.max(600, repeatMs) }}>
-                {t('add')}
-              </Button>
-            )}
             <div className={styles.tools}>
               <Button variant="ghost" icon={<Settings />} onActivate={() => requestUnlock(() => setSetupOpen(true))}>
                 {t('setup')}
@@ -152,6 +147,31 @@ export default function Tokens() {
               </Button>
             </div>
           </section>
+        </div>
+
+        {/* The main action is anchored above the navigation: it stays put when the reward card appears. */}
+        <div className={styles.anchorBar} data-no-print data-reach>
+          {complete ? (
+            <Button size="xl" block variant="primary" icon={<RotateCcw />} onActivate={() => setBoard(resetBoard(board))}>
+              {t('again')}
+            </Button>
+          ) : (
+            <Button
+              size="xl"
+              block
+              variant="warm"
+              label={t('addLabel')}
+              onActivate={add}
+              touch={childProfile ? { holdMs: Math.max(1000, holdMs), ignoreRepeatMs: Math.max(600, repeatMs) } : { ignoreRepeatMs: Math.max(600, repeatMs) }}
+            >
+              {t('add')}
+            </Button>
+          )}
+          {childProfile && (
+            <p className={styles.holdHint} data-hidden={complete || undefined} aria-hidden={complete || undefined}>
+              {t('holdHint')}
+            </p>
+          )}
         </div>
 
         <Dialog

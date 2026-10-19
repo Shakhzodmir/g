@@ -17,7 +17,13 @@
 }
 
 .screen[data-board] {
-  height: calc(100dvh - 6.875rem);
+  height: var(--board-main-h, calc(100dvh - 6.875rem));
+  margin-bottom: 0;
+}
+
+/* Tabs, board and the Yes/No pair are one block (.zone): invisible wrapper normally, the reach zone on a board. */
+.zone {
+  display: contents;
 }
 
 .layout {
@@ -80,6 +86,7 @@
   box-shadow: var(--elev-1);
   cursor: pointer;
   touch-action: pan-x;
+  position: relative;
   transition: border-color var(--dur-fast) var(--ease-out);
 }
 
@@ -90,6 +97,45 @@
 .bar[data-modeling='true'] {
   border-style: dashed;
   border-color: var(--warm);
+}
+
+/* Full bar: calm "the phrase is ready" state, not an error — a steady primary border and a small label. */
+.bar[data-full='true'] {
+  border-color: var(--primary);
+}
+.barReady {
+  position: absolute;
+  top: -0.75rem;
+  left: var(--s-3);
+  max-width: calc(100% - var(--s-6));
+  padding: 2px var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: var(--fs-nav);
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Long message: the strip shows its END; a fade and a "…" at the start say that earlier symbols are scrolled away. */
+.barMore {
+  position: absolute;
+  left: var(--s-2);
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 1;
+  color: var(--text-muted);
+  font-size: var(--fs-title);
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+}
+.chips[data-more-before] {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 2.25rem);
+  mask-image: linear-gradient(to right, transparent 0, #000 2.25rem);
 }
 
 .chips {
@@ -165,6 +211,82 @@
 .barSpeak svg {
   width: 1.6rem;
   height: 1.6rem;
+}
+
+/* While the bar is speaking, the speaker turns into a Stop square and a visible "Stop" label sits on the bar's edge. */
+.barStopLabel {
+  position: absolute;
+  top: -0.75rem;
+  right: var(--s-3);
+  padding: 2px var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: var(--fs-nav);
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.barSpeak[data-stop] svg {
+  fill: currentColor;
+}
+
+/*
+ * Phones (< 600 px): the message wraps into two rows instead of one scrolling row (a 390 px phone showed
+ * two symbols). The bar keeps a fixed height, so the board below never changes size while a sentence grows;
+ * longer messages scroll vertically and start at their end.
+ */
+@container (max-width: 599px) {
+  .bar {
+    min-height: 5.5rem;
+    touch-action: manipulation;
+  }
+  .chips {
+    flex-wrap: wrap;
+    align-content: flex-start;
+    max-height: 4.125rem;
+    row-gap: 2px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y;
+  }
+  .chips[data-more-before] {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem);
+  }
+  .barMore {
+    top: var(--s-1);
+    translate: 0 0;
+    font-size: var(--fs-body);
+  }
+  .chip {
+    grid-auto-flow: column;
+    align-items: center;
+    justify-items: start;
+    gap: var(--s-1);
+    min-width: 0;
+    min-height: 2rem;
+    padding: 0 var(--s-2) 0 var(--s-1);
+  }
+  .chipSymbol {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+  /* The strip needs every pixel: the speaker is a plain glyph, not a button-sized disc. */
+  .barSpeak {
+    width: 1.75rem;
+    height: 1.75rem;
+    background: transparent;
+    color: var(--primary);
+  }
+  .bar[data-empty='true'] .barSpeak {
+    background: transparent;
+    color: var(--text-muted);
+  }
+  .barSpeak svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
 }
 
 .barTools {
@@ -243,6 +365,18 @@
   overscroll-behavior: contain;
   container-type: inline-size;
   padding: var(--s-1) calc(var(--gutter) + var(--safe-right)) var(--s-2) calc(var(--gutter) + var(--safe-left));
+}
+
+/*
+ * Narrow phones: the 6×6 core is width-limited (6 cells + 5 gaps), so the side gutters shrink to the safe-area
+ * inset plus 4 px. That is worth ~8 px per cell (360 px: 54 instead of 46; 390 px: 60 instead of 52) while every
+ * word keeps its place. 72 px cells are not reachable in 6 columns below ~470 px wide; a 5- or 4-column
+ * reflow would move the words (motor planning), which a fixed board must not do.
+ */
+@container (max-width: 419px) {
+  .panel[data-view='core'] {
+    padding-inline: calc(4px + var(--safe-left)) calc(4px + var(--safe-right));
+  }
 }
 
 /* Fixed 6×6 core. Cells fit the panel (width and height); below 52 px the panel scrolls instead. */
@@ -573,6 +707,15 @@
   padding: var(--s-1) calc(var(--gutter) + var(--safe-right)) var(--s-2) calc(var(--gutter) + var(--safe-left));
 }
 
+/* The Yes / No pair is its own named group; on narrow phones the "show" (modeling) toggle sits beside it. */
+.dockAnswers {
+  display: contents;
+}
+.dock[data-extra] {
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+}
+
 .yn {
   --cell-bg: var(--surface);
   --cell-border: var(--outline-soft);
@@ -687,12 +830,26 @@
 
 /* Interactive whiteboard: the message is shown on top; everything a child presses sits low, in reach. */
 .screen[data-board] .layout {
-  grid-template-columns: 9rem minmax(0, 1fr) 11rem;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto minmax(0, 1fr);
   grid-template-areas:
-    'head head head'
-    'bar bar bar'
-    'tabs panel dock';
+    'head'
+    'bar'
+    'zone';
+}
+
+/* The reach zone: bottom-aligned, as tall as the children reach; its parts scroll inside it, not the zone itself. */
+.screen[data-board] .zone {
+  grid-area: zone;
+  align-self: end;
+  height: calc(var(--reach-h) - var(--s-3));
+  max-height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) 11rem;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: 'tabs panel dock';
+  margin-top: 0;
 }
 .screen[data-board] .panel {
   display: flex;
@@ -718,7 +875,7 @@
 .screen[data-board] .dock {
   grid-template-columns: 1fr;
   align-content: end;
-  padding: 0 calc(var(--gutter) + var(--safe-right)) 5.5rem var(--s-2);
+  padding: 0 calc(var(--gutter) + var(--safe-right)) 0 var(--s-2);
 }
 .screen[data-board] .yn {
   flex-direction: column;

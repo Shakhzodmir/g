@@ -9,6 +9,7 @@ let ctx: AudioContext | null = null
 let analyser: AnalyserNode | null = null
 let current: HTMLAudioElement | null = null
 let raf = 0
+let fakeLevel: ReturnType<typeof setInterval> | null = null
 
 export function onLevel(cb: LevelListener): () => void {
   listeners.add(cb)
@@ -34,6 +35,36 @@ export function audioContext(): AudioContext | null {
   return ctx
 }
 
+/**
+ * iOS / Safari create an AudioContext "suspended" unless it is made inside a user gesture, and a media element
+ * routed through a suspended context is silent. The first press, touch or key therefore creates and resumes the
+ * context and plays one silent sample; later speech (which starts after awaits, outside any gesture) finds it running.
+ */
+let unlocked = false
+function unlockAudio(): void {
+  if (unlocked) return
+  const c = audioContext()
+  if (!c) return
+  unlocked = true
+  try {
+    void c.resume().catch(() => undefined)
+    const src = c.createBufferSource()
+    src.buffer = c.createBuffer(1, 1, 22050)
+    src.connect(c.destination)
+    src.start(0)
+  } catch {
+    /* ignore */
+  }
+  for (const ev of UNLOCK_EVENTS) globalThis.removeEventListener?.(ev, unlockAudio, true)
+}
+const UNLOCK_EVENTS = ['pointerdown', 'touchend', 'keydown'] as const
+if (typeof window !== 'undefined') for (const ev of UNLOCK_EVENTS) window.addEventListener(ev, unlockAudio, { capture: true, passive: true })
+
+function stopFakeLevel(): void {
+  if (fakeLevel) clearInterval(fakeLevel)
+  fakeLevel = null
+}
+
 function trackLevel() {
   if (!analyser) return
   const buf = new Uint8Array(analyser.fftSize)
@@ -56,6 +87,7 @@ function trackLevel() {
 
 export function stopPlayback(): void {
   cancelAnimationFrame(raf)
+  stopFakeLevel()
   if (current) {
     current.pause()
     current.src = ''
@@ -77,7 +109,10 @@ export function playUrl(url: string, opts: { volume?: number; rate?: number } = 
     ;(el as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true
     current = el
     const c = audioContext()
-    if (c) {
+    analyser = null
+    // Only route through the analyser when the context is running; a suspended one would make the clip silent.
+    // Otherwise the plain element plays and the beak gets a gentle pulse (as for system speech).
+    if (c && c.state === 'running') {
       try {
         const src = c.createMediaElementSource(el)
         analyser = c.createAnalyser()
@@ -90,18 +125,28 @@ export function playUrl(url: string, opts: { volume?: number; rate?: number } = 
     }
     el.onended = () => {
       if (current === el) current = null
+      stopFakeLevel()
       emitLevel(0)
       resolve()
     }
     el.onerror = () => {
       if (current === el) current = null
+      stopFakeLevel()
       emitLevel(0)
       reject(new Error(`cannot play ${url}`))
     }
     el.play()
-      .then(() => trackLevel())
+      .then(() => {
+        if (analyser) trackLevel()
+        else if (current === el) {
+          let pulse = 0
+          stopFakeLevel()
+          fakeLevel = setInterval(() => emitLevel(0.35 + 0.35 * Math.abs(Math.sin((pulse += 0.6)))), 90)
+        }
+      })
       .catch((e: unknown) => {
         if (current === el) current = null
+        stopFakeLevel()
         reject(e instanceof Error ? e : new Error(String(e)))
       })
   })

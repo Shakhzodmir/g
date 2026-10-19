@@ -22,7 +22,8 @@
 }
 
 .page[data-board] {
-  --avail-h: calc(100dvh - var(--nav-h) - 1.5rem);
+  padding-bottom: 0;
+  --avail-h: var(--board-main-h, calc(100dvh - var(--nav-h) - 1.5rem));
   width: min(100%, 110rem);
 }
 
@@ -60,18 +61,56 @@
   color: var(--text-muted);
 }
 
-/* The visible label sits beside the switch; the legend stays for assistive technology only. */
-.level legend {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+/* Level radios: three round chips, each at least 48 px; the real name ("Daraja 2") is on the input. */
+.levelSet {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
 }
 
-.level fieldset {
-  min-width: 9.5rem;
+.levelSegs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+}
+
+.levelSeg {
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-weight: 800;
+  font-size: var(--fs-label);
+  cursor: pointer;
+}
+
+.levelSeg[data-checked] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--elev-1);
+}
+
+.levelSeg:has(:focus-visible) {
+  outline: 3px solid var(--focus-outer);
+  outline-offset: 1px;
+}
+
+.levelSegs[data-large] .levelSeg {
+  width: 4rem;
+  height: 4rem;
+  font-size: var(--fs-title);
+}
+
+.levelNote {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-weight: 700;
 }
 
 .modes {
@@ -98,7 +137,6 @@
    The side padding keeps game pieces clear of the fixed Break button. */
 .page[data-board] .stage {
   justify-content: flex-end;
-  padding-inline: 12rem;
 }
 
 /* ---------- Progress beads (how many are left: predictability, not pressure) ---------- */
@@ -246,7 +284,7 @@
 }
 
 .page[data-board] .choices {
-  --pic: min(9rem, calc(100dvh * var(--reach) - 7rem));
+  --pic: min(9rem, calc(var(--reach-h, 100dvh * var(--reach)) - 7rem));
   margin-top: 0;
 }
 
@@ -775,7 +813,12 @@
 }
 
 .page[data-board] .clapPicture {
-  width: min(8rem, 14dvh);
+  width: min(8rem, 11dvh);
+}
+
+/* The memory board lives in the reach zone: its size follows the zone, not the whole stage. */
+.page[data-board] .memoryBoard {
+  width: min(100%, calc((var(--reach-h) - 4.5rem) * var(--cols) / var(--rows)), calc(var(--cols) * 13rem));
 }
 
 .drum[data-pressed='true'] {

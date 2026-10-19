@@ -2,7 +2,7 @@ import { useState } from 'react'
 import styles from './SymbolImg.module.css'
 
 /** Symbols drawn for Uzbek realia (public/symbols/custom/*.svg); everything else is Fluent Emoji 3D WebP. */
-export const CUSTOM_SYMBOLS = new Set(['anor', 'non', 'doppi', 'somsa', 'palov', 'qorin'])
+export const CUSTOM_SYMBOLS = new Set(['anor', 'non', 'doppi', 'somsa', 'palov', 'qorin', 'size_big', 'size_small', 'different', 'doll', 'blocks'])
 
 export function symbolUrl(id: string): string {
   const base = import.meta.env.BASE_URL

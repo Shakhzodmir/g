@@ -12,6 +12,8 @@ import {
   type ReactNode,
 } from 'react'
 import { useProfileStore, type TouchSettings } from '../store/profile'
+import { isPalm } from './palm'
+import { ADULT_TOUCH, useAdultZone } from './AdultZone'
 
 export interface PressableProps extends Omit<HTMLAttributes<HTMLElement>, 'onClick'> {
   onActivate: () => void
@@ -41,7 +43,8 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
   ref,
 ) {
   const profileTouch = useProfileStore((s) => s.profile.touch)
-  const touch: TouchSettings = { ...profileTouch, ...touchOverride }
+  const adultZone = useAdultZone()
+  const touch: TouchSettings = { ...profileTouch, ...(adultZone ? ADULT_TOUCH : null), ...touchOverride }
   const [isDown, setIsDown] = useState(false)
   const [dwelling, setDwelling] = useState(false)
   const instanceId = useId()
@@ -50,6 +53,7 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
   const pointerActive = useRef(false)
   const swallowClick = useRef(false)
   const dwellSpent = useRef(false)
+  const palmDown = useRef(false)
 
   const clearTimers = useCallback(() => {
     if (holdTimer.current) clearTimeout(holdTimer.current)
@@ -75,6 +79,9 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
 
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
     if (disabled) return
+    // Board mode: a palm or sleeve on the panel is one big contact, not a press (see ui/palm.ts).
+    palmDown.current = isPalm(e)
+    if (palmDown.current) return
     pointerActive.current = true
     swallowClick.current = false
     setIsDown(true)
@@ -133,6 +140,10 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
   }
 
   const onClick = (e: ReactMouseEvent<HTMLElement>) => {
+    if (palmDown.current) {
+      palmDown.current = false
+      if (e.detail > 0) return // the click that follows a rejected palm; keyboard activation (detail 0) is never swallowed
+    }
     // Pointer presses that were already handled by hold / immediate mode end with a click we must ignore.
     if (pointerActive.current && swallowClick.current) {
       pointerActive.current = false
@@ -172,6 +183,10 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
     onClick,
   }
 
+  // One shared progress cue for hold-to-press and dwell (styled in design/global.css).
+  const progressKind = dwelling ? 'dwell' : isDown && touch.holdMs > 0 ? 'hold' : null
+  const progress = progressKind ? <span className="pressable-progress" data-kind={progressKind} aria-hidden="true" /> : null
+
   if (as === 'div') {
     return (
       <div
@@ -182,17 +197,19 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
           rest.onKeyDown?.(e)
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
-            fire(false)
+            if (!e.repeat) fire(false)
           }
         }}
       >
         {children}
+        {progress}
       </div>
     )
   }
   return (
     <button {...common} type="button" disabled={disabled}>
       {children}
+      {progress}
     </button>
   )
 })

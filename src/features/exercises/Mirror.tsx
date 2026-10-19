@@ -1,5 +1,5 @@
 import { Camera, CameraOff, Check, Volume2 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import type { FaceLandmarker } from '@mediapipe/tasks-vision'
 import { playSfx } from '../../audio/sfx'
@@ -8,6 +8,7 @@ import { ARTICULATION } from '../../content/exercises'
 import type { ArticulationExercise, OgizchaPose } from '../../content/types'
 import { COMMON } from '../../i18n/common'
 import { useLabel, useStrings } from '../../i18n'
+import { useDevice } from '../../store/device'
 import { logEvent } from '../../store/events'
 import { Button } from '../../ui/Button'
 import { Slider } from '../../ui/controls'
@@ -38,9 +39,9 @@ export function MirrorList() {
   return (
     <div className={styles.frame}>
       <PageHeader title={t('mirrorTitle')} back="/exercises" symbol={<SymbolImg id="mirror" />} />
-      <Page width="normal">
+      <Page width="normal" className={styles.hub}>
       <p className={styles.lead}>{t('mirrorIntro')}</p>
-      <ul className={styles.exGrid} role="list">
+      <ul className={styles.exGrid} role="list" data-reach>
         {ARTICULATION.map((ex) => (
           <li key={ex.id}>
             <Tile
@@ -84,6 +85,7 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
   const navigate = useNavigate()
   const threshold = useExerciseSettings((s) => s.mirrorThreshold)
   const setSettings = useExerciseSettings((s) => s.set)
+  const board = useDevice((s) => s.boardMode)
 
   const [cam, setCam] = useState<CamState>('off')
   const [det, setDet] = useState<DetState>('none')
@@ -116,7 +118,9 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
     if (video.current) video.current.srcObject = null
   }, [])
 
-  useEffect(
+  // Unmount / navigation: the camera tracks stop synchronously (layout cleanup), so the browser's camera
+  // indicator goes off at once instead of a moment later.
+  useLayoutEffect(
     () => () => {
       stopCamera()
       demo.current.forEach(clearTimeout)
@@ -147,6 +151,15 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
       return
     }
     stream.current = s
+    // The camera can stop by itself (unplugged, permission revoked, taken by another app): the picture would
+    // freeze while the tracker keeps reading stale frames. Switch off and fall back to the adult-confirm mode.
+    s.getVideoTracks()[0]?.addEventListener('ended', () => {
+      if (my !== camToken.current) return
+      stopCamera()
+      setDet('none')
+      setProgress(0)
+      setCam('unavailable')
+    })
     setCam('on')
     if (!ex.metric) return
     setDet('loading')
@@ -159,11 +172,42 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
   }
 
   const turnOff = () => {
+    resumeCamera.current = false
     stopCamera()
     setCam('off')
     setDet('none')
     setProgress(0)
   }
+
+  // Page hidden (tab switch, screen off): release the camera; on return open it again and measure the face again.
+  const resumeCamera = useRef(false)
+  const startCameraRef = useRef<() => Promise<void>>(async () => undefined)
+  startCameraRef.current = startCamera
+  useEffect(() => {
+    const hide = () => {
+      if (stream.current && !resumeCamera.current) {
+        resumeCamera.current = true
+        stopCamera()
+        setCam('off')
+        setDet('none')
+        setProgress(0)
+      }
+    }
+    const show = () => {
+      if (document.hidden || !resumeCamera.current) return
+      resumeCamera.current = false
+      void startCameraRef.current()
+    }
+    const onVis = () => (document.hidden ? hide() : show())
+    document.addEventListener('visibilitychange', onVis)
+    window.addEventListener('pagehide', hide)
+    window.addEventListener('pageshow', show)
+    return () => {
+      document.removeEventListener('visibilitychange', onVis)
+      window.removeEventListener('pagehide', hide)
+      window.removeEventListener('pageshow', show)
+    }
+  }, [stopCamera])
 
   // Attach the live stream to the mirrored <video> (shown only, never recorded).
   useEffect(() => {
@@ -247,6 +291,13 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
   else if (cam === 'on' && det === 'calibrating') status = face ? t('neutral') : t('noFace')
   else if (cam === 'on' && det === 'tracking') status = !face ? t('noFace') : progress > 0 ? t('holdIt') : ''
 
+  // Board mode: the "camera on" button moves from the picture into the reach zone, next to the other actions.
+  const cameraOnButton = (
+    <Button icon={<Camera />} disabled={cam === 'asking'} onActivate={() => void startCamera()}>
+      {t('mirrorOn')}
+    </Button>
+  )
+
   const settings = (
     <AdultSettings>
       <Slider
@@ -272,7 +323,7 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
       <PageHeader title={label(ex.title)} back="/exercises/mirror" />
 
       {done ? (
-        <div className={styles.rest} role="status">
+        <div className={styles.rest} role="status" data-reach>
           <span className={styles.doneStar} aria-hidden="true">
             <SymbolImg id="glowing_star" />
           </span>
@@ -317,21 +368,19 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
               ) : (
                 <div className={styles.mirrorOff}>
                   <SymbolImg id="mirror" size={56} />
-                  {cam === 'denied' || cam === 'unavailable' ? (
+                  {(cam === 'denied' || cam === 'unavailable') && (
                     <p className={styles.adultNote} role="status">
                       {tc('noCamera')}
                     </p>
-                  ) : (
-                    <Button icon={<Camera />} disabled={cam === 'asking'} onActivate={() => void startCamera()}>
-                      {t('mirrorOn')}
-                    </Button>
                   )}
+                  {/* Stays available after a denial or a camera that stopped: permission can be asked again. */}
+                  {!board && cameraOnButton}
                 </div>
               )}
             </figure>
           </div>
 
-          <div className={styles.controls}>
+          <div className={styles.controls} data-reach>
             <div className={styles.instrRow}>
               <Button variant="soft" iconOnly icon={<Volume2 />} label={tc('listen')} onActivate={showMe}>
                 {tc('listen')}
@@ -349,6 +398,7 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
               <Button size="lg" variant="warm" icon={<Check />} onActivate={addRep}>
                 {tc('gotIt')}
               </Button>
+              {board && cam !== 'on' && cameraOnButton}
               {cam === 'on' && (
                 <Button variant="ghost" iconOnly icon={<CameraOff />} label={t('mirrorOff')} onActivate={turnOff}>
                   {t('mirrorOff')}

@@ -1,5 +1,5 @@
 import { Lock } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { speak } from '../audio/speech'
 import { useI18n, useStrings } from '../i18n'
@@ -9,7 +9,9 @@ import { shy } from '../lib/hyphenate'
 import { Button } from '../ui/Button'
 import { Musicha } from '../ui/mascot/Musicha'
 import { Page } from '../ui/Page'
+import { Pressable } from '../ui/Pressable'
 import { useMotionPreset } from '../design/motion'
+import { markParentUnlocked } from '../features/parent/unlock'
 import { ParentGate } from '../ui/ParentGate'
 import { Tile } from '../ui/Tile'
 import { useSpeechLevel } from '../ui/useSpeechLevel'
@@ -17,6 +19,19 @@ import { BoardHint } from './BoardHint'
 import { FEATURES, type FeatureId } from './features'
 import styles from './Home.module.css'
 import { SHELL } from './strings'
+import { initTimerWatcher } from '../features/timer/watcher'
+
+/** A name this long no longer fits one line at display size: the greeting drops a size and may wrap (2 lines max). */
+export function isLongName(name: string): boolean {
+  return name.trim().length > 10
+}
+
+/** "Salom, {name}!" with the name made wrap-safe: soft hyphens at syllables, so a long name wraps cleanly. */
+function greeting(t: (k: 'greeting' | 'greetingName', v?: Record<string, string>) => string, name: string, hy: 'ru' | 'uz'): string {
+  const n = name.trim()
+  if (!n) return t('greeting')
+  return t('greetingName', { name: shy(n, /[а-яёўқғҳ]/i.test(n) ? 'ru' : hy) })
+}
 
 function ParentLock({ withText }: { withText?: boolean }) {
   const t = useStrings(SHELL)
@@ -32,6 +47,7 @@ function ParentLock({ withText }: { withText?: boolean }) {
         onCancel={() => setGate(false)}
         onUnlock={() => {
           setGate(false)
+          markParentUnlocked()
           navigate(FEATURES.parent.path)
         }}
       />
@@ -61,17 +77,21 @@ export function HomeChild() {
   return (
     <Page width="normal" className={styles.home}>
       <header className={styles.top}>
-        <button type="button" className={styles.mascotBtn} onClick={greet} aria-label={ui({ uz: 'Musicha bilan salomlashish', ru: 'Поздороваться с Мусей' })}>
+        <Pressable className={styles.mascotBtn} label={ui({ uz: 'Musicha bilan salomlashish', ru: 'Поздороваться с Мусей' })} onActivate={greet}>
           <Musicha state={state} level={level} size={112} calm={!preset.idleLoops} title="" />
-        </button>
+        </Pressable>
         <div className={styles.hello}>
-          <h1 className={styles.title}>{name ? t('greetingName', { name }) : t('greeting')}</h1>
+          <h1 className={styles.title} data-long={isLongName(name) || undefined}>
+            {greeting(t, name, hy)}
+          </h1>
           <p className={styles.slogan}>{t('slogan')}</p>
         </div>
       </header>
 
       <BoardHint />
 
+      {/* The tiles are what children press: one block, which is the reach zone on a whiteboard. */}
+      <div className={styles.zone} data-reach>
       <ul className={styles.plates} role="list">
         {MAIN.map((id, i) => (
           <li key={id}>
@@ -90,6 +110,7 @@ export function HomeChild() {
 
       <div className={styles.lock}>
         <ParentLock withText />
+      </div>
       </div>
     </Page>
   )
@@ -112,7 +133,9 @@ export function HomeAdult() {
   return (
     <Page width="normal" className={styles.home}>
       <header className={styles.topAdult}>
-        <h1 className={styles.title}>{name ? t('greetingName', { name }) : t('adultTitle')}</h1>
+        <h1 className={styles.title} data-long={isLongName(name) || undefined}>
+          {name ? greeting(t, name, hy) : t('adultTitle')}
+        </h1>
         <ParentLock />
       </header>
       <BoardHint />
@@ -128,6 +151,10 @@ export function HomeAdult() {
 }
 
 export function Home() {
+  // The timer's end signal works from every screen; the watcher is idempotent (main.tsx also starts it).
+  useEffect(() => {
+    initTimerWatcher()
+  }, [])
   const kind = useProfileStore((s) => s.profile.kind)
   useDevice((s) => s.uiLang)
   return kind === 'adult' ? <HomeAdult /> : <HomeChild />

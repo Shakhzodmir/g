@@ -19,6 +19,14 @@ function isVowel(token: string): boolean {
   return LATIN_VOWELS.has(t) || CYR_VOWELS.has(t)
 }
 
+/** Signs that never start a fragment: they are glued to the letter before them (ь ъ й and the tutuq ʼ). */
+const GLUED = new Set(['ь', 'ъ', 'й', TUTUQ, OKINA])
+
+interface Unit {
+  text: string
+  vowel: boolean
+}
+
 /** Splits a word into graphemes (digraphs and oʻ/gʻ as single tokens). */
 function tokenize(word: string): string[] {
   const out: string[] = []
@@ -41,11 +49,25 @@ function tokenize(word: string): string[] {
   return out
 }
 
+/**
+ * Tokens → syllable units. ь ъ й and ʼ are glued to the previous unit (consonant+ь is one consonant unit,
+ * vowel+й one vowel unit: «боль-шой», «пла-тье», «май-ка»), so no fragment can start with them.
+ */
+function toUnits(tokens: string[]): Unit[] {
+  const units: Unit[] = []
+  for (const t of tokens) {
+    const prev = units[units.length - 1]
+    if (prev && GLUED.has(t.toLowerCase())) prev.text += t
+    else units.push({ text: t, vowel: isVowel(t) })
+  }
+  return units
+}
+
 export function syllablesOf(word: string, _lang: Lang = 'uz'): string[] {
-  const tokens = tokenize(word)
+  const units = toUnits(tokenize(word))
   const vowelIdx: number[] = []
-  tokens.forEach((t, i) => {
-    if (isVowel(t)) vowelIdx.push(i)
+  units.forEach((u, i) => {
+    if (u.vowel) vowelIdx.push(i)
   })
   if (vowelIdx.length < 2) return [word]
   const cuts: number[] = []
@@ -53,17 +75,18 @@ export function syllablesOf(word: string, _lang: Lang = 'uz'): string[] {
     const a = vowelIdx[k]
     const b = vowelIdx[k + 1]
     const between = b - a - 1
+    const nucleusHasGlide = /й$/i.test(units[a].text) // «луй-ста»: the й already closes the syllable
     if (between === 0) cuts.push(b) // vowel + vowel: split between them
-    else if (between === 1) cuts.push(a + 1) // V-CV
-    else cuts.push(a + 2) // VC-CV…
+    else if (between === 1) cuts.push(/ъ$/i.test(units[a + 1].text) ? b : a + 1) // V-CV; «подъ-езд»
+    else cuts.push(nucleusHasGlide ? a + 1 : a + 2) // VC-CV…
   }
   const parts: string[] = []
   let start = 0
   for (const c of cuts) {
-    parts.push(tokens.slice(start, c).join(''))
+    parts.push(units.slice(start, c).map((u) => u.text).join(''))
     start = c
   }
-  parts.push(tokens.slice(start).join(''))
+  parts.push(units.slice(start).map((u) => u.text).join(''))
   // Never leave a one-letter fragment (looks like a typo when wrapped): glue it to its neighbour.
   const merged: string[] = []
   for (const p of parts) {

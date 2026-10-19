@@ -211,5 +211,80 @@
 
 /* Whiteboard: keep the first row clear of the fixed teacher panel (top right) */
 :global(html[data-board='true']) .layout {
-  padding-top: var(--s-4);
+  padding-top: 0;
+}
+
+/* ---------- Anchored main action ---------- */
+/* Fixed above the navigation: it stays exactly where it is when the reward card appears or the stars wrap. */
+.anchorBar {
+  --col: 40rem;
+  position: fixed;
+  z-index: 15;
+  left: 0;
+  right: var(--teacher-w, 0px);
+  bottom: var(--nav-bottom, calc(6rem + var(--safe-bottom)));
+  display: grid;
+  justify-items: center;
+  gap: var(--s-1);
+  padding: var(--s-6) calc(var(--gutter) + var(--safe-right)) var(--s-2) calc(var(--gutter) + var(--safe-left));
+  background: linear-gradient(to top, var(--bg) 66%, transparent);
+  pointer-events: none;
+}
+
+.anchorBar > * {
+  pointer-events: auto;
+  width: min(100%, var(--col));
+}
+
+@media (min-width: 840px) {
+  .anchorBar {
+    left: var(--rail-w);
+  }
+}
+
+:global(html[data-board='true']) .anchorBar {
+  left: 0;
+}
+
+/* Whiteboard: the main action is the reach zone itself (bottom of the page, in the flow), not an overlay. */
+/* (the zone rule makes it position: relative, so the fixed-bar offsets must go) */
+:global(html[data-board='true']) .anchorBar {
+  inset: auto;
+  position: static;
+  padding: var(--s-2) 0 0;
+  background: none;
+  pointer-events: auto;
+}
+
+:global(html[data-board='true']) .layout {
+  padding-bottom: 0;
+}
+
+.holdHint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  text-align: center;
+}
+
+.holdHint[data-hidden] {
+  visibility: hidden;
+}
+
+/* Room under the content so nothing is hidden behind the bar. */
+.layout {
+  padding-bottom: calc(var(--touch-min) * 2.4 + var(--s-8));
+}
+
+/* Short landscape screens: the bar would eat the stage, so it flows with the page there. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .anchorBar {
+    position: static;
+    padding: 0 var(--gutter);
+    background: none;
+  }
+  .layout {
+    padding-bottom: 0;
+  }
 }

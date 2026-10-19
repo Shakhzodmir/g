@@ -1,6 +1,6 @@
 import { Eye, EyeOff, Mic, Pencil, Plus, Trash2, Volume2 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { deleteRecording } from '../../audio/recorder'
 import { speak } from '../../audio/speech'
 import type { TopicId, Word } from '../../content/types'
@@ -15,10 +15,10 @@ import { Segmented } from '../../ui/controls'
 import { Dialog } from '../../ui/Dialog'
 import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
-import { CardEditor, LangPicker, useVoiceDraft } from './CardEditor'
+import { CardEditor, LangPicker, useVoiceDrafts } from './CardEditor'
 import { useObjectUrl } from './image'
 import styles from './parent.module.css'
-import { ConfirmDialog, Section, TopicChips, useCustomCards, useT } from './shared'
+import { ConfirmDialog, DiscardDialog, Section, StorageBanner, TopicChips, useCustomCards, useT } from './shared'
 import { VoiceRecorder } from './VoiceRecorder'
 import { SymbolImg } from '../../ui/SymbolImg'
 
@@ -49,22 +49,32 @@ function WordVoiceDialog({ word, onClose }: { word: Word | null; onClose: () => 
   const speechLang = useProfileStore((s) => s.profile.speechLang)
   const [lang, setLang] = useState<SpeechLang>(speechLang)
   const key = word ? `w.${word.id}` : null
-  const voice = useVoiceDraft(key, lang)
+  const voice = useVoiceDrafts(key)
   const [busy, setBusy] = useState(false)
+  const [confirmClose, setConfirmClose] = useState(false)
+  useEffect(() => {
+    if (word) {
+      setLang(speechLang)
+      setConfirmClose(false)
+    }
+  }, [word, speechLang])
   const save = async () => {
     setBusy(true)
     await voice.commit()
     setBusy(false)
     onClose()
   }
+  const requestClose = () => (voice.dirty ? setConfirmClose(true) : onClose())
+  const cur = voice.state[lang]
   return (
+    <>
     <Dialog
       open={!!word}
-      onClose={onClose}
+      onClose={confirmClose ? () => undefined : requestClose}
       title={word ? t('voiceLabel', { word: label(word) }) : ''}
       footer={
         <>
-          <Button variant="ghost" onActivate={onClose}>
+          <Button variant="ghost" onActivate={requestClose}>
             {tc('cancel')}
           </Button>
           <Button onActivate={() => void save()} disabled={!voice.dirty || busy}>
@@ -74,21 +84,30 @@ function WordVoiceDialog({ word, onClose }: { word: Word | null; onClose: () => 
       }
     >
       <p className={styles.hint}>{t('wordVoiceHint')}</p>
-      <LangPicker value={lang} onChange={setLang} />
-      <VoiceRecorder value={voice.draft} onChange={voice.setDraft} />
+      <LangPicker value={lang} onChange={setLang} has={{ uz: !!voice.state.uz.draft, ru: !!voice.state.ru.draft }} />
+      <VoiceRecorder key={lang} value={cur.draft} onChange={(b) => voice.setDraft(lang, b)} />
       {word && (
         <div className={styles.row}>
           <Button variant="ghost" icon={<Volume2 />} onActivate={() => void speak({ key: `w.${word.id}`, text: word }, lang)}>
             {t('listenNow')}
           </Button>
-          {voice.saved && <span className={styles.badgeOn}>{t('recHas')}</span>}
+          {cur.saved && <span className={styles.badgeOn}>{t('recHas')}</span>}
         </div>
       )}
     </Dialog>
+    <DiscardDialog
+      open={confirmClose}
+      onKeep={() => setConfirmClose(false)}
+      onDiscard={() => {
+        setConfirmClose(false)
+        onClose()
+      }}
+    />
+    </>
   )
 }
 
-function CustomRow({ card, hasVoice, onEdit, onDelete }: { card: CustomCard; hasVoice: boolean; onEdit: () => void; onDelete: () => void }) {
+function CustomRow({ card, voiceLangs, onEdit, onDelete }: { card: CustomCard; voiceLangs: string; onEdit: () => void; onDelete: () => void }) {
   const t = useT()
   const label = useLabel()
   const secondary = useSecondary()
@@ -102,10 +121,10 @@ function CustomRow({ card, hasVoice, onEdit, onDelete }: { card: CustomCard; has
         <span className={styles.itemMain}>{name}</span>
         <span className={styles.itemSub}>{secondary(bi)}</span>
         <span className={styles.badges}>
-          {hasVoice && (
+          {voiceLangs && (
             <span className={styles.badgeOn}>
               <Mic aria-hidden="true" />
-              {t('ownVoice')}
+              {t('ownVoice')}: {voiceLangs}
             </span>
           )}
           {card.hidden && <span className={styles.badge}>{t('hiddenBadge')}</span>}
@@ -133,7 +152,7 @@ function CustomRow({ card, hasVoice, onEdit, onDelete }: { card: CustomCard; has
   )
 }
 
-function WordRow({ word, hidden, hasVoice, onToggle, onVoice }: { word: Word; hidden: boolean; hasVoice: boolean; onToggle: () => void; onVoice: () => void }) {
+function WordRow({ word, hidden, voiceLangs, onToggle, onVoice }: { word: Word; hidden: boolean; voiceLangs: string; onToggle: () => void; onVoice: () => void }) {
   const t = useT()
   const label = useLabel()
   const secondary = useSecondary()
@@ -147,10 +166,10 @@ function WordRow({ word, hidden, hasVoice, onToggle, onVoice }: { word: Word; hi
         <span className={[styles.itemSub, styles.itemFixed].join(' ')}>{soft(secondary(word))}</span>
         <span className={styles.badges}>
           {word.core && <span className={styles.badge}>{t('levelBadge', { n: word.core.level })}</span>}
-          {hasVoice && (
+          {voiceLangs && (
             <span className={styles.badgeOn}>
               <Mic aria-hidden="true" />
-              {t('ownVoice')}
+              {t('ownVoice')}: {voiceLangs}
             </span>
           )}
           {hidden && <span className={styles.badge}>{t('hiddenBadge')}</span>}
@@ -180,7 +199,6 @@ export default function Cards() {
   const tc = useStrings(COMMON)
   const label = useLabel()
   const aac = useProfileStore((s) => s.profile.aac)
-  const persistent = useProfileStore((s) => s.persistent)
   const update = useProfileStore((s) => s.update)
   const [topic, setTopic] = useState<TopicId>('core')
   const [editing, setEditing] = useState<CustomCard | null>(null)
@@ -192,7 +210,8 @@ export default function Cards() {
   const words = useMemo(() => wordsByTopic(topic), [topic])
   const mine = (cards ?? []).filter((c) => c.topic === topic).sort((a, b) => a.createdAt - b.createdAt)
   const hidden = new Set(aac.hiddenWordIds)
-  const hasVoice = (key: string) => recKeys.has(`uz:${key}`) || recKeys.has(`ru:${key}`)
+  /** Languages that have the person's own recording for this key: `UZ`, `RU`, `UZ · RU` or empty. */
+  const voiceLangs = (key: string) => ([recKeys.has(`uz:${key}`) && 'UZ', recKeys.has(`ru:${key}`) && 'RU'].filter(Boolean) as string[]).join(' · ')
 
   const toggleWord = (id: string) => {
     const next = hidden.has(id) ? aac.hiddenWordIds.filter((x) => x !== id) : [...aac.hiddenWordIds, id]
@@ -216,7 +235,7 @@ export default function Cards() {
     <>
       <PageHeader title={t('secCards')} back="/parent" />
       <Page width="normal">
-        {!persistent && <p className={styles.notice}>{t('noStorage')}</p>}
+        <StorageBanner />
         <Section>
           <Segmented
             label={t('levelTitle')}
@@ -240,7 +259,7 @@ export default function Cards() {
           {mine.length ? (
             <ul className={styles.list}>
               {mine.map((c) => (
-                <CustomRow key={c.id} card={c} hasVoice={hasVoice(`c.${c.id}`)} onEdit={() => openEditor(c)} onDelete={() => setDeleting(c)} />
+                <CustomRow key={c.id} card={c} voiceLangs={voiceLangs(`c.${c.id}`)} onEdit={() => openEditor(c)} onDelete={() => setDeleting(c)} />
               ))}
             </ul>
           ) : (
@@ -267,7 +286,7 @@ export default function Cards() {
           </div>
           <ul className={styles.list}>
             {words.map((w) => (
-              <WordRow key={w.id} word={w} hidden={hidden.has(w.id)} hasVoice={hasVoice(`w.${w.id}`)} onToggle={() => toggleWord(w.id)} onVoice={() => setVoiceFor(w)} />
+              <WordRow key={w.id} word={w} hidden={hidden.has(w.id)} voiceLangs={voiceLangs(`w.${w.id}`)} onToggle={() => toggleWord(w.id)} onVoice={() => setVoiceFor(w)} />
             ))}
           </ul>
         </Section>

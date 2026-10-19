@@ -25,7 +25,10 @@
 }
 
 :global(html[data-board='true']) .page {
-  min-height: calc(100dvh - 6.75rem);
+  /* fills the space above the bottom bar (the gradient runs to it); the [data-reach] block sits at the bottom */
+  flex: 1 0 auto;
+  min-height: 0;
+  margin-bottom: 0;
 }
 
 /* "Lava lamp": three very slow, blurred shapes. Never in calm level or with reduced motion. */
@@ -352,18 +355,35 @@
 }
 
 /* Whiteboard: the display stays on top, everything to touch sits low, within the children's reach. */
+/* Helpers + "I am ready" form one block (.reach): beside each other on phones/desktops, the reach zone on a board. */
+.reach {
+  display: contents;
+}
+
 :global(html[data-board='true']) .body {
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr auto auto;
+  grid-template-rows: 1fr auto;
   grid-template-areas:
     'stage'
-    'helpers'
-    'ready';
+    'reach';
   max-width: 90rem;
+}
+
+:global(html[data-board='true']) .reach {
+  grid-area: reach;
+  display: grid;
+  gap: var(--s-3);
+  align-self: end;
+}
+
+:global(html[data-board='true']) .helpersBox,
+:global(html[data-board='true']) .readyRow {
+  grid-area: auto;
 }
 
 :global(html[data-board='true']) .body {
   gap: var(--s-3);
+  padding-bottom: 0;
 }
 
 :global(html[data-board='true']) .shape {

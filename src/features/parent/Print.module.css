@@ -40,7 +40,8 @@
 
 .card {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  /* the picture always keeps at least ~half of the card; a long label wraps and is clamped, never pushes the picture out */
+  grid-template-rows: minmax(0, 1fr) minmax(auto, 42%);
   justify-items: center;
   align-items: center;
   gap: 1cqi;
@@ -53,7 +54,7 @@
 }
 
 .cardTop {
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(auto, 42%) minmax(0, 1fr);
 }
 
 .cardTop .label {
@@ -85,6 +86,22 @@
   /* built-in words carry soft hyphens (shy); anywhere only catches long words typed by the adult */
   overflow-wrap: anywhere;
   hyphens: manual;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Long names get a smaller size so they fit in three lines instead of being cut. */
+.label[data-long] {
+  font-size: max(3.1cqi, var(--fs-caption));
+}
+
+.label > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  padding-block: 0.1em;
 }
 
 .second {

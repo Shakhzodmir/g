@@ -35,6 +35,37 @@ describe('syllablesOf (ru)', () => {
   })
 })
 
+describe('soft/hard sign, short i and tutuq never start a fragment (L-04)', () => {
+  const cases: Array<[string, string]> = [
+    ['большой', 'боль-шой'],
+    ['маленький', 'ма-лень-кий'],
+    ['платье', 'пла-тье'],
+    ['одеться', 'одеть-ся'],
+    ['больница', 'боль-ни-ца'],
+    ['обезьяна', 'обе-зья-на'],
+    ['умыться', 'умыть-ся'],
+    ['спальня', 'спаль-ня'],
+    ['мультик', 'муль-тик'],
+    ['подъезд', 'подъ-езд'],
+    ['taʼam', 'taʼ-am'],
+    ['maʼlumot', 'maʼ-lu-mot'],
+  ]
+  it.each(cases)('%s → %s', (word, expected) => {
+    expect(syllablesOf(word, word.match(/[а-я]/i) ? 'ru' : 'uz').join('-')).toBe(expected)
+  })
+
+  const words = [
+    'большой', 'маленький', 'платье', 'одеться', 'больница', 'обезьяна', 'умыться', 'спальня', 'мультик', 'подъезд',
+    'кийиниш', 'қийинлик', 'байроқ', 'чойнак', 'майдон', 'бўйича', 'мактабгача', 'ўқитувчи', 'шифохона', 'таъом',
+    'maʼlumot', 'taʼam', 'sheʼriyat', 'qiyinlik', 'kiyinish', 'oʻqituvchi', 'ketdik',
+  ]
+  it.each(words)('%s: no fragment starts with ь ъ й ʼ ʻ', (word) => {
+    const parts = syllablesOf(word, 'uz')
+    expect(parts.join('')).toBe(word)
+    for (const p of parts) expect(p[0], `${word} → ${parts.join('-')}`).not.toMatch(/[ьъйЬЪЙʼʻ]/)
+  })
+})
+
 describe('shy', () => {
   it('inserts soft hyphens only into long words and keeps the text identical otherwise', () => {
     const out = shy('Men xohlayman suv', 'uz')

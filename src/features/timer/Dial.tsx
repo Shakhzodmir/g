@@ -10,11 +10,16 @@ const SECTOR_R = 82
 const TICKS = Array.from({ length: 12 }, (_, i) => i)
 
 /** Visual timer: the coloured sector is the time that is left; it melts back towards 12 o'clock. */
-export function Dial({ fraction, done, label }: { fraction: number; done: boolean; label: string }) {
+export function Dial({ fraction, done, label, size }: { fraction: number; done: boolean; label: string; size?: string }) {
   const preset = useMotionPreset()
   const d = sectorPath(sectorAngle(fraction), C, C, SECTOR_R)
   return (
-    <div className={styles.dial} role="img" aria-label={label}>
+    <div
+      className={[styles.dial, done && preset.movement && styles.pulse].filter(Boolean).join(' ')}
+      style={size ? { width: size } : undefined}
+      role="img"
+      aria-label={label}
+    >
       <svg viewBox="0 0 200 200" className={styles.svg} aria-hidden="true">
         <circle cx={C} cy={C} r={FACE_R} className={styles.face} />
         <circle cx={C} cy={C} r={SECTOR_R} className={styles.track} />

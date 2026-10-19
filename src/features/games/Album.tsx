@@ -9,7 +9,7 @@ import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './Games.module.css'
-import { useStickers } from './Hub'
+import { useStickers } from './stickers'
 import { S } from './strings'
 
 /** Sticker album: what the child collected. Empty places are quiet outlines, never a "missing" count. */

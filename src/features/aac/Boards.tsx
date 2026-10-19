@@ -13,6 +13,8 @@ interface BoardProps {
   aac: AacSettings
   onTap: OnTap
   glowKey: string | null
+  /** Accessible name of the grid (the topic's name). */
+  name: string
 }
 
 const MIN_CELL = 48
@@ -62,7 +64,8 @@ function useCoreCell(ref: RefObject<HTMLElement | null>, comfortable: number): {
       const cs = getComputedStyle(el)
       const w = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
       const h = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
-      const gap = Math.round(Math.min(12, Math.max(4, Math.min(w, h) * 0.012)))
+      // Phones: the tightest gap (4 px), every pixel of width goes to the cells.
+      const gap = w < 420 ? 4 : Math.round(Math.min(12, Math.max(4, Math.min(w, h) * 0.012)))
       const cell = coreCellSize(w, h, gap, comfortable)
       const cellH = coreCellHeight(cell, h, gap)
       setDims((d) => (d.cell === cell && d.cellH === cellH && d.gap === gap ? d : { cell, cellH, gap }))
@@ -77,7 +80,7 @@ function useCoreCell(ref: RefObject<HTMLElement | null>, comfortable: number): {
 }
 
 /** Fixed 6×6 core board: words never move; masked words leave empty places of the same size. */
-export function CoreBoard({ aac, onTap, glowKey, comfortable = 72 }: BoardProps & { comfortable?: number }) {
+export function CoreBoard({ aac, onTap, glowKey, name, comfortable = 72 }: BoardProps & { comfortable?: number }) {
   const label = useLabel()
   const ref = useRef<HTMLDivElement>(null)
   const { cell, cellH, gap } = useCoreCell(ref, comfortable)
@@ -87,6 +90,7 @@ export function CoreBoard({ aac, onTap, glowKey, comfortable = 72 }: BoardProps 
       ref={ref}
       className={styles.core}
       role="group"
+      aria-label={name}
       style={{ '--cell': `${cell}px`, '--cell-h': `${cellH}px`, '--gap': `${gap}px`, gridTemplateColumns: `repeat(${CORE_SIZE}, var(--cell))` } as CSSProperties}
     >
       {cells.map((c) => {
@@ -129,7 +133,7 @@ function useGridColumns(ref: RefObject<HTMLElement | null>): number {
 }
 
 /** A topic (fringe) board: stable order of built-in words, then the profile's own cards. */
-export function TopicBoard({ topic, profileId, aac, onTap, glowKey }: BoardProps & { topic: TopicId; profileId: string }) {
+export function TopicBoard({ topic, profileId, aac, onTap, glowKey, name }: BoardProps & { topic: TopicId; profileId: string }) {
   const label = useLabel()
   const custom = useCustomCards(profileId, topic)
   const ref = useRef<HTMLDivElement>(null)
@@ -140,7 +144,7 @@ export function TopicBoard({ topic, profileId, aac, onTap, glowKey }: BoardProps
     [topic, hidden, custom],
   )
   return (
-    <div ref={ref} className={styles.topicGrid} role="group">
+    <div ref={ref} className={styles.topicGrid} role="group" aria-label={name}>
       {slots.map((e, i) => {
         if (!e) return <Placeholder key={`ph-${i}`} />
         return (

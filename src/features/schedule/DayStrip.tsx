@@ -14,7 +14,8 @@ import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import { voice, type CardView } from './cards'
 import { CardArt } from './CardPicker'
-import { allDone, currentIndex, markCurrentDone, moveItem, removeItem, resetDone } from './logic'
+import { DoneBar } from './DoneBar'
+import { allDone, currentIndex, markCurrentDone, moveItem, removeItem, resetDone, setDone } from './logic'
 import styles from './Schedule.module.css'
 import { S } from './strings'
 
@@ -70,6 +71,12 @@ export function DayStrip({
     const nextCard = cards.slice(cur + 1).find((c, k) => c && !items[cur + 1 + k]?.done)
     if (nextCard) void speakSequence([voice('sched_item_done'), voice('sched_next'), nextCard.speech])
     else void speakSequence([voice('sched_all_done')])
+  }
+
+  // A finished row can be taken back with one gentle tap (no confirmation): a slip of the finger is not final.
+  const undo = (i: number) => {
+    onUpdate((list) => setDone(list, i, false))
+    playSfx('soft')
   }
 
   if (editing) {
@@ -129,10 +136,11 @@ export function DayStrip({
     )
   }
 
+  const bar = cur >= 0 && !finished
   if (items.length === 0) return <EmptyState symbol="spiral_calendar" title={t('empty')} text={t('emptyHint')} />
 
   return (
-    <div className={styles.day}>
+    <div className={styles.day} data-bar={bar || undefined} data-reach>
       <h2 className={styles.dayTitle}>{title}</h2>
       <ol className={styles.strip}>
         {items.map((it, i) => {
@@ -153,15 +161,19 @@ export function DayStrip({
                   </span>
                   <span className={styles.currentName}>{name}</span>
                 </Pressable>
-                <Button size="xl" block onActivate={markDone} label={t('doneFor', { name })} scanGroup="day-current">
-                  {t('done')}
-                </Button>
               </li>
             )
           }
           return (
             <li key={`${it.ref}-${i}`} className={styles.rowItem} data-done={it.done || undefined}>
-              <Pressable className={styles.rowCard} label={it.done ? `${name}: ${t('doneMark')}` : name} onActivate={() => card && void speak(card.speech)}>
+              <Pressable
+                className={styles.rowCard}
+                label={it.done ? `${name}: ${t('doneMark')}. ${t('undoHint')}` : name}
+                onActivate={() => {
+                  if (it.done) undo(i)
+                  if (card) void speak(card.speech)
+                }}
+              >
                 <span className={styles.rowArt} aria-hidden="true">
                   {card && <CardArt card={card} />}
                 </span>
@@ -182,6 +194,7 @@ export function DayStrip({
           )
         })}
       </ol>
+      {bar && <DoneBar name={cards[cur] ? label(cards[cur].label) : ''} scanGroup="day-current" onDone={markDone} />}
       {finished && (
         <div className={styles.finished} role="status">
           <p className={styles.finishedText}>{t('allDone')}</p>

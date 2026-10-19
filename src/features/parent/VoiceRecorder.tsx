@@ -19,10 +19,18 @@ export function VoiceRecorder({ value, onChange }: { value: Blob | null; onChang
   const [elapsed, setElapsed] = useState(0)
   const [error, setError] = useState<RecorderError | null>(null)
   const active = useRef<ActiveRecording | null>(null)
+  const latest = useRef(onChange)
+  latest.current = onChange
 
+  // Leaving while recording (switching language, closing) keeps what was recorded so far instead of dropping it silently.
   useEffect(
     () => () => {
-      active.current?.cancel()
+      const r = active.current
+      active.current = null
+      if (r) {
+        const keep = latest.current
+        void r.stop().then((blob) => blob.size > 0 && keep(blob))
+      }
       stopPlayback()
     },
     [],

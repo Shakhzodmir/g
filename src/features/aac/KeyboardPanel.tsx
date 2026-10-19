@@ -1,23 +1,25 @@
 import { Delete, Space, Volume2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { speak } from '../../audio/speech'
 import { wordById, WORDS } from '../../content/vocab'
 import { useLabel, useStrings } from '../../i18n'
-import { normalizeUz } from '../../i18n/orthography'
+import { displayUz } from '../../i18n/orthography'
 import { useDevice } from '../../store/device'
 import { logEvent, queryEvents } from '../../store/events'
-import { useProfile } from '../../store/profile'
+import { useProfile, useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Pressable } from '../../ui/Pressable'
 import styles from './Aac.module.css'
-import { layoutFor, LAYOUTS, uzCyrlToLatn } from './keyboard'
+import { layoutFor, LAYOUTS, toCanonicalUz } from './keyboard'
 import { applyPrediction, predict } from './predict'
+import { aacSpeak } from './speak'
 import { S } from './strings'
 
 const HISTORY_DAYS = 180
 
 /** Personal words from the usage log: tapped words and sentences typed before. */
 function useHistoryWords(profileId: string, label: (bi: { uz: string; ru: string }) => string, refresh: number): string[] {
+  const speechLang = useProfileStore((s) => s.profile.speechLang)
+  const uzScript = useDevice((s) => s.uzScript)
   const [words, setWords] = useState<string[]>([])
   useEffect(() => {
     let alive = true
@@ -29,7 +31,8 @@ function useHistoryWords(profileId: string, label: (bi: { uz: string; ru: string
           const w = wordById(r.ref)
           if (w) out.push(label(w))
         } else if (r.type === 'aac_speak' && r.ref === 'kb' && typeof r.meta?.text === 'string') {
-          out.push(r.meta.text)
+          // Typed text is logged canonical (Latin 1995) but older entries are raw: show it in the keyboard's own script.
+          out.push(speechLang === 'ru' ? r.meta.text : displayUz(toCanonicalUz(r.meta.text), uzScript))
         }
       }
       setWords(out)
@@ -37,7 +40,7 @@ function useHistoryWords(profileId: string, label: (bi: { uz: string; ru: string
     return () => {
       alive = false
     }
-  }, [profileId, label, refresh])
+  }, [profileId, label, refresh, speechLang, uzScript])
   return words
 }
 
@@ -59,9 +62,10 @@ export function KeyboardPanel() {
   const say = () => {
     const typed = text.trim()
     if (!typed) return
-    const uz = layout.id === 'uz-cyrl' ? uzCyrlToLatn(typed) : normalizeUz(typed)
-    void speak({ key: 'kb', text: { uz, ru: typed } })
-    logEvent('aac_speak', 'kb', { text: typed })
+    // Canonical Uzbek Latin 1995, whatever script the keys typed (Cyrillic, 2026 Latin, ‘ ’ marks).
+    const uz = toCanonicalUz(typed)
+    aacSpeak({ key: 'kb', text: { uz, ru: typed } })
+    logEvent('aac_speak', 'kb', { text: profile.speechLang === 'ru' ? typed : uz })
     setSpoken((n) => n + 1)
   }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { WORDS } from '../../content/vocab'
 import { buildCoreBoard, CORE_SIZE } from './core'
-import { layoutFor, LAYOUTS, uzCyrlToLatn } from './keyboard'
+import { latn2026ToLatn, layoutFor, LAYOUTS, toCanonicalUz, uzCyrlToLatn } from './keyboard'
 import { EMPTY_MESSAGE, MESSAGE_LIMIT, messageReducer, type MessageState } from './message'
 import { applyPrediction, currentPrefix, predict, tokenize } from './predict'
 
@@ -111,6 +111,23 @@ describe('keyboard', () => {
     const flat = (id: keyof typeof LAYOUTS) => LAYOUTS[id].rows.flat().map((k) => k.insert)
     expect(flat('uz-latn')).toEqual(expect.arrayContaining(['o‘', 'g‘', '’']))
     expect(flat('uz-cyrl')).toEqual(expect.arrayContaining(['ў', 'қ', 'ғ', 'ҳ']))
+  })
+
+  it('offers a 2026 Latin layout (Ş Ç Ö Ğ, no ‘ keys) and digits / hyphen on every layout', () => {
+    expect(layoutFor('uz', 'latn2026')).toBe('uz-latn26')
+    const flat = (id: keyof typeof LAYOUTS) => LAYOUTS[id].rows.flat().map((k) => k.insert)
+    expect(flat('uz-latn26')).toEqual(expect.arrayContaining(['ş', 'ç', 'ö', 'ğ']))
+    expect(flat('uz-latn26').some((k) => k === 'o‘' || k === 'g‘')).toBe(false)
+    for (const id of Object.keys(LAYOUTS) as Array<keyof typeof LAYOUTS>) expect(flat(id), id).toEqual(expect.arrayContaining(['1', '0', '-']))
+    expect(flat('uz-cyrl')).toEqual(expect.arrayContaining(['щ', 'ы']))
+  })
+
+  it('normalizes whatever was typed back to canonical Latin 1995 before speaking or predicting', () => {
+    expect(latn2026ToLatn('şaftoli öğil çoy Ğalaba')).toBe('shaftoli oʻgʻil choy Gʻalaba')
+    expect(toCanonicalUz('şaftoli öyin')).toBe('shaftoli oʻyin')
+    expect(toCanonicalUz('o‘yin g‘isht ma’no')).toBe('oʻyin gʻisht maʼno')
+    expect(toCanonicalUz('ўйин')).toBe('oʻyin')
+    expect(toCanonicalUz('salom')).toBe('salom')
   })
 
   it('transliterates Uzbek Cyrillic to Latin for speech', () => {

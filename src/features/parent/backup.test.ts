@@ -59,8 +59,9 @@ describe('backup', () => {
 
     const dst = freshDb()
     await dst.events.add({ profileId: 'p-aziz', type: 'aac_word', ref: 'stale', ts: 1 }) // replaced by the import
-    const restored = await importBackup(parsed.backup, dst)
-    expect(restored.name).toBe('Aziz')
+    const result = await importBackup(parsed.backup, dst, false)
+    expect(result.profile.name).toBe('Aziz')
+    expect(result.replaced).toBe(false)
 
     expect((await dst.profiles.get('p-aziz'))?.name).toBe('Aziz')
     const card = await dst.cards.get('card1')
@@ -71,7 +72,7 @@ describe('backup', () => {
     expect((await dst.cards.get('card2'))?.image).toBeNull()
     const rec = await dst.recordings.get('p-aziz:uz:w.water')
     expect(await bytesOf(rec!.blob)).toEqual([9, 8, 7])
-    expect((await dst.schedules.get('s1'))?.items[0].ref).toBe('c.card1')
+    expect((await dst.schedules.get('p-aziz:day'))?.items[0].ref).toBe('c.card1')
     expect(await dst.stickers.where('profileId').equals('p-aziz').count()).toBe(1)
     const events = await dst.events.where('profileId').equals('p-aziz').sortBy('ts')
     expect(events.map((e) => e.ref)).toEqual(['water', 'find'])
@@ -82,8 +83,8 @@ describe('backup', () => {
     const src = freshDb()
     const backup = await exportProfile(await seed(src), '0.1', src)
     const dst = freshDb()
-    await importBackup(backup, dst)
-    await importBackup(backup, dst)
+    expect((await importBackup(backup, dst, false)).replaced).toBe(false)
+    expect((await importBackup(backup, dst, false)).replaced).toBe(true)
     expect(await dst.events.count()).toBe(2)
     expect(await dst.stickers.count()).toBe(1)
   })
@@ -94,7 +95,8 @@ describe('backup', () => {
     const base = { format: 'gapimiz-backup', version: 1, app: '0.1', exportedAt: 1, profile: defaultProfile({ id: 'x' }), cards: [], recordings: [], schedules: [], stickers: [], events: [] }
     expect(parseBackup(JSON.stringify(base)).ok).toBe(true)
     expect(parseBackup(JSON.stringify({ ...base, version: 99 }))).toEqual({ ok: false, error: 'newer' })
-    expect(parseBackup(JSON.stringify({ ...base, cards: [{ id: 'c', image: 'oops' }] }))).toEqual({ ok: false, error: 'invalid' })
+    const withBadCard = parseBackup(JSON.stringify({ ...base, cards: [{ id: 'c', uz: 'x', image: 'oops' }] }))
+    expect(withBadCard.ok && withBadCard.backup.cards).toEqual([])
     expect(parseBackup(JSON.stringify({ ...base, profile: { id: '' } }))).toEqual({ ok: false, error: 'invalid' })
   })
 
@@ -108,7 +110,12 @@ describe('backup', () => {
   })
 
   it('builds an ASCII file name', () => {
-    expect(backupFileName({ id: 'p', name: 'Aziz Karimov' }, new Date(2026, 9, 19).getTime())).toBe('gapimiz-aziz-karimov-2026-10-19.gapimiz')
-    expect(backupFileName({ id: 'p', name: 'Азиз' }, new Date(2026, 9, 19).getTime())).toBe('gapimiz-profil-2026-10-19.gapimiz')
+    const at = new Date(2026, 9, 19, 14, 32).getTime()
+    expect(backupFileName({ id: 'p', name: 'Aziz Karimov' }, at)).toBe('gapimiz-aziz-karimov-2026-10-19-1432.gapimiz')
+    // Cyrillic names are transliterated; two different profiles must not collide.
+    expect(backupFileName({ id: 'p', name: 'Азиз' }, at)).toBe('gapimiz-aziz-2026-10-19-1432.gapimiz')
+    expect(backupFileName({ id: 'p', name: 'Малика Ғуломова' }, at)).toBe('gapimiz-malika-gulomova-2026-10-19-1432.gapimiz')
+    expect(backupFileName({ id: 'p', name: 'Азиз' }, at)).not.toBe(backupFileName({ id: 'q', name: 'Малика' }, at))
+    expect(backupFileName({ id: 'p', name: '' }, at)).toBe('gapimiz-profil-2026-10-19-1432.gapimiz')
   })
 })

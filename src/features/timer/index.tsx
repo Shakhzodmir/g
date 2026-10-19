@@ -1,7 +1,6 @@
 import { Pause, Play, Plus, RotateCcw, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { playSfx } from '../../audio/sfx'
-import { speak, speakSequence, type SpeakItem } from '../../audio/speech'
+import { useEffect, useState } from 'react'
+import { speak, speakSequence } from '../../audio/speech'
 import { useMotionPreset } from '../../design/motion'
 import { useLabel, useStrings } from '../../i18n'
 import { useProfileStore } from '../../store/profile'
@@ -14,13 +13,11 @@ import { SymbolImg } from '../../ui/SymbolImg'
 import { resolveCard, useCustomCards, voice } from '../schedule/cards'
 import { CardArt, CardPicker } from '../schedule/CardPicker'
 import { Dial } from './Dial'
-import { useTimerStore } from './store'
+import { useTimer } from './store'
 import { S } from './strings'
 import styles from './Timer.module.css'
-import { clampMinutes, formatClock, fractionLeft, MAX_MINUTES, MIN_MINUTES, pause, PRESET_MINUTES, remainingMs, reset, start, tick } from './timerLogic'
-
-// If the end passed long ago (e.g. the screen was closed), finish silently instead of sounding on open.
-const LATE_MS = 5000
+import { clampMinutes, formatClock, fractionLeft, MAX_MINUTES, MIN_MINUTES, pause, PRESET_MINUTES, remainingMs, reset, start } from './timerLogic'
+import { checkTimerNow, initTimerWatcher } from './watcher'
 
 /**
  * Re-renders with the current time while the timer runs: every animation frame for a smooth sector,
@@ -61,7 +58,7 @@ export default function Timer() {
   const label = useLabel()
   const preset = useMotionPreset()
   const adult = useProfileStore((s) => s.profile.kind === 'adult')
-  const { timer, minutes, showDigits, nextRef, setTimer, setMinutes, setShowDigits, setNextRef } = useTimerStore()
+  const { timer, minutes, showDigits, nextRef, setTimer, setMinutes, setShowDigits, setNextRef } = useTimer()
   const digits = showDigits ?? adult
   const custom = useCustomCards()
   const next = nextRef ? resolveCard(nextRef, custom) : null
@@ -70,26 +67,14 @@ export default function Timer() {
   const running = timer.status === 'running'
   const now = useNow(running, preset.movement)
 
-  const finish = useCallback(
-    (late: boolean) => {
-      const s = useTimerStore.getState()
-      const done = tick(s.timer, Date.now())
-      if (done === s.timer) return
-      s.setTimer(done)
-      if (late) return
-      playSfx('soft')
-      const items: SpeakItem[] = [voice('timer_done')]
-      const n = s.nextRef ? resolveCard(s.nextRef, custom) : null
-      if (n) items.push(voice('sched_then'), n.speech)
-      // A short pause after the chime so the voice does not overlap it.
-      setTimeout(() => void speakSequence(items), 450)
-    },
-    [custom],
-  )
-
+  // The end signal (chime, voice, toast) comes from the global watcher so it also plays when this screen is closed.
+  // Here it is only nudged once the on-screen clock reaches the end, so the dial and the state never disagree.
   useEffect(() => {
-    if (running && timer.endsAt !== null && now >= timer.endsAt) finish(now - timer.endsAt > LATE_MS)
-  }, [running, now, timer.endsAt, finish])
+    initTimerWatcher()
+  }, [])
+  useEffect(() => {
+    if (running && timer.endsAt !== null && now >= timer.endsAt) checkTimerNow()
+  }, [running, now, timer.endsAt])
 
   const left = remainingMs(timer, now)
   const fraction = fractionLeft(timer, now)
@@ -138,7 +123,7 @@ export default function Timer() {
             )}
           </section>
 
-          <section className={styles.controls}>
+          <section className={styles.controls} data-reach>
             <div className={styles.mainRow}>
               <Button size="xl" icon={running ? <Pause /> : <Play />} onActivate={toggle} className={styles.mainBtn}>
                 {mainLabel}

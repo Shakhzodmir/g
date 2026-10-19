@@ -121,3 +121,21 @@ describe('Pressable', () => {
     expect(onActivate).not.toHaveBeenCalled()
   })
 })
+
+describe('AdultZone', () => {
+  it('lifts hold / repeat guard / dwell inside the adult area', async () => {
+    const { AdultZone } = await import('./AdultZone')
+    useProfileStore.setState({ profile: defaultProfile({ touch: { holdMs: 1000, ignoreRepeatMs: 2000, dwellMs: 500 } }) })
+    const onActivate = vi.fn()
+    render(
+      <AdultZone>
+        <Pressable label="ok" onActivate={onActivate}>ok</Pressable>
+      </AdultZone>,
+    )
+    const el = screen.getByRole('button', { name: 'ok' })
+    fireEvent.pointerDown(el, { pointerType: 'mouse', pointerId: 1 })
+    fireEvent.pointerUp(el, { pointerType: 'mouse', pointerId: 1 })
+    fireEvent.click(el, { detail: 1 })
+    expect(onActivate).toHaveBeenCalledTimes(1)
+  })
+})
