@@ -1,13 +1,17 @@
 /* ---------- Page frame ---------- */
 
 .page {
-  --avail-h: calc(100dvh - var(--nav-h) - var(--safe-bottom));
+  /* The phone tab bar is about 6rem tall (two-line labels), taller than --nav-h; leave room for it. */
+  --avail-h: calc(100dvh - 6rem - var(--s-4) - var(--safe-bottom));
+  /* One gutter for header, controls, stage and album: they all share the same left and right edge. */
+  --pad-l: calc(var(--gutter) + var(--safe-left));
+  --pad-r: calc(var(--gutter) + var(--safe-right));
   width: min(100%, var(--content-max));
   min-height: var(--avail-h);
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
+  gap: var(--s-4);
   padding-bottom: var(--s-4);
 }
 
@@ -22,20 +26,28 @@
   width: min(100%, 110rem);
 }
 
+/* Game controls (mode, topic), the level switch and the progress beads: one wrapping block.
+   Wide screens: modes on the left, level on the right, beads centred on their own row.
+   Phones: modes on the first row, beads (left) and the level switch (right) share the second. */
 .toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-2);
-  padding-inline: var(--s-4);
+  gap: var(--s-2) var(--s-3);
+  padding-inline: var(--pad-l) var(--pad-r);
 }
 
-/* Game controls and the level switch flow as one wrapping row. */
 .toolbarStart {
   display: contents;
 }
 
+/* Wide screens: the level joins the modes row and the beads take their own row below. */
+.meta {
+  display: contents;
+}
+
 .level {
+  order: 2;
   display: flex;
   align-items: center;
   gap: var(--s-2);
@@ -62,12 +74,6 @@
   min-width: 9.5rem;
 }
 
-@media (max-width: 479px) {
-  .levelLabel {
-    display: none;
-  }
-}
-
 .modes {
   display: flex;
   flex-wrap: wrap;
@@ -85,7 +91,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding-inline: var(--s-4);
+  padding-inline: var(--pad-l) var(--pad-r);
 }
 
 /* Whiteboard: show at the top, interact at the bottom (inside the children's reach).
@@ -104,9 +110,34 @@
   gap: var(--s-2);
 }
 
+.toolbar .progress {
+  order: 3;
+  flex: 1 1 100%;
+}
+
+/* Phones: beads (left) and level (right) share one row under the modes. */
+@media (max-width: 479px) {
+  .levelLabel {
+    display: none;
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    flex: 1 1 100%;
+  }
+  .toolbar .progress {
+    order: 1;
+    flex: 1 1 0;
+    justify-content: flex-start;
+  }
+}
+
 .dot {
   width: 0.875rem;
   height: 0.875rem;
+  flex: none;
   border-radius: 50%;
   background: var(--outline-soft);
   transition: background-color var(--dur-med) var(--ease-out);
@@ -122,7 +153,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-2);
+  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-3);
   border-radius: var(--r-card);
   background: var(--surface);
   box-shadow: var(--elev-1);
@@ -138,7 +169,8 @@
   font-weight: 800;
   font-size: var(--fs-title);
   line-height: 1.2;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 /* ---------- Choice cards ---------- */
@@ -166,27 +198,41 @@
   gap: var(--s-4);
 }
 
+/* Each list item stretches its card, so cards in one row always have the same height. */
+.choices > li,
+.exploreGrid > li,
+.topicGrid > li,
+.hubGrid > li,
+.album > li {
+  display: grid;
+  min-width: 0;
+}
+
 .choices {
-  --pic: clamp(4.5rem, 20dvh, 10rem);
+  --pic: clamp(4.5rem, 15dvh, 10rem);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   width: min(100%, calc(var(--n, 2) * 16rem));
   margin: auto auto 0;
 }
 
-.choices[data-n='4'] {
-  --pic: clamp(3.25rem, 11.5dvh, 8rem);
-  gap: var(--s-3);
-}
-
+/* Three choices sit in one row on phones (no lone card); six sit in two rows of three. */
+.choices[data-n='3'],
 .choices[data-many] {
   --pic: clamp(3.5rem, 11dvh, 8rem);
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--s-3);
 }
 
+.choices[data-n='4'] {
+  --pic: clamp(3.5rem, 11dvh, 8rem);
+  gap: var(--s-3);
+}
+
 @media (min-width: 600px) {
   .choices {
+    --pic: clamp(4.5rem, 18dvh, 10rem);
     grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr));
+    gap: var(--s-4);
   }
   .choices[data-many] {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -213,6 +259,7 @@
 @media (min-width: 840px) {
   .exploreGrid {
     grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+    gap: var(--s-4);
   }
 }
 
@@ -222,7 +269,7 @@
   place-items: center;
   width: 100%;
   min-height: var(--cell-min);
-  padding: var(--s-3) var(--s-2);
+  padding: var(--s-4) var(--s-3);
   border: 0;
   border-radius: var(--r-card);
   background: var(--surface);
@@ -233,6 +280,18 @@
     transform var(--dur-fast) var(--ease-out),
     box-shadow 900ms var(--ease-out),
     opacity var(--dur-med) var(--ease-out);
+}
+
+@media (min-width: 600px) {
+  .choice {
+    padding: var(--s-5) var(--s-4);
+  }
+}
+
+/* Dense rows (three across on a phone): tighter padding, a slightly smaller label step. */
+.choices[data-n='3'] .choice,
+.choices[data-many] .choice {
+  padding: var(--s-3) var(--s-2);
 }
 
 .choice[data-pressed='true'] {
@@ -262,6 +321,7 @@
   justify-items: center;
   gap: var(--s-2);
   width: 100%;
+  min-width: 0;
 }
 
 .choicePic {
@@ -271,11 +331,25 @@
 }
 
 .choiceCaption {
+  max-width: 100%;
   font-weight: 800;
-  font-size: 1.125rem;
+  font-size: var(--fs-card-title);
   line-height: 1.15;
   text-align: center;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  hyphens: manual;
+}
+
+.choices[data-n='3'] .choiceCaption,
+.choices[data-many] .choiceCaption {
+  font-size: var(--fs-label);
+}
+
+@media (min-width: 600px) {
+  .choices[data-n='3'] .choiceCaption,
+  .choices[data-many] .choiceCaption {
+    font-size: var(--fs-card-title);
+  }
 }
 
 /* ---------- Find: topic chooser and "say it" ---------- */
@@ -287,6 +361,7 @@
 
 .chooserTitle {
   font-size: var(--fs-body);
+  line-height: 1.3;
   color: var(--text-muted);
 }
 
@@ -309,7 +384,7 @@
 }
 
 .sayCard {
-  --pic: clamp(5rem, 22dvh, 14rem);
+  --pic: clamp(5rem, 18dvh, 14rem);
   width: min(100%, 20rem);
   margin-block: auto;
 }
@@ -338,7 +413,7 @@
 .adultWrap {
   display: grid;
   justify-items: center;
-  gap: 2px;
+  gap: var(--s-1);
 }
 
 .adultHint {
@@ -354,8 +429,8 @@
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: var(--s-3);
-  padding: var(--s-4);
+  gap: var(--s-4);
+  padding: var(--s-4) var(--pad-r) var(--s-4) var(--pad-l);
   text-align: center;
 }
 
@@ -382,6 +457,7 @@
 
 .rewardText {
   font-weight: 700;
+  line-height: 1.4;
   color: var(--text-muted);
 }
 
@@ -393,12 +469,18 @@
   padding-top: var(--s-2);
 }
 
+/* The actions stack with one shared width on phones, and sit in one row from tablets up. */
+.rewardActions > * {
+  min-width: min(100%, 14rem);
+  justify-content: center;
+}
+
 .restCard {
   display: flex;
   align-items: center;
   gap: var(--s-4);
-  max-width: 34rem;
-  padding: var(--s-4) var(--s-5);
+  width: min(100%, 34rem);
+  padding: var(--s-4);
   border-radius: var(--r-card);
   background: var(--primary-container);
   color: var(--on-primary-container);
@@ -413,6 +495,17 @@
 .restTitle {
   font-weight: 800;
   font-size: var(--fs-title);
+  line-height: 1.2;
+}
+
+.restText {
+  line-height: 1.5;
+}
+
+@media (min-width: 600px) {
+  .restCard {
+    padding: var(--s-5);
+  }
 }
 
 /* ---------- Memory ---------- */
@@ -422,7 +515,8 @@
   flex: 1 1 0px;
   display: flex;
   flex-direction: column;
-  min-height: 17rem;
+  /* Level 3 (4 x 3) keeps every card at 72 px or more, even on a landscape phone. */
+  min-height: 18rem;
   container-type: size;
 }
 
@@ -430,7 +524,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-8);
 }
 
@@ -448,6 +542,8 @@
 .playerHead {
   text-align: center;
   font-weight: 800;
+  font-size: var(--fs-card-title);
+  line-height: 1.2;
 }
 
 .playerDone {
@@ -582,7 +678,7 @@
 }
 
 .clapPicture {
-  width: clamp(4.5rem, 16dvh, 11rem);
+  width: clamp(4.5rem, 13dvh, 11rem);
   aspect-ratio: 1;
 }
 
@@ -597,8 +693,10 @@
 .clapWord {
   font-weight: 800;
   font-size: var(--fs-display);
-  line-height: 1.1;
+  line-height: 1.15;
   text-align: center;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .beadRow {
@@ -629,7 +727,8 @@
   border-radius: var(--r-pill);
   background: var(--surface);
   font-weight: 800;
-  font-size: 1.375rem;
+  font-size: var(--fs-title);
+  line-height: 1;
   color: var(--text-muted);
   transition:
     background-color var(--dur-med) var(--ease-out),
@@ -658,7 +757,7 @@
 .drum {
   display: grid;
   place-items: center;
-  width: clamp(7rem, 21dvh, 12rem);
+  width: clamp(7rem, 18dvh, 12rem);
   aspect-ratio: 1;
   padding: 0;
   border: 0;
@@ -697,19 +796,20 @@
 
 .hub {
   display: grid;
-  gap: var(--s-6);
-  padding-inline: var(--s-4);
+  gap: var(--section-gap);
+  padding-inline: var(--pad-l) var(--pad-r);
 }
 
 .hubGrid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  width: min(100%, 64rem);
+  width: min(100%, 40rem);
   margin-inline: auto;
 }
 
 @media (min-width: 900px) {
   .hubGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: min(100%, var(--width-normal));
   }
 }
 
@@ -718,6 +818,7 @@
   align-content: end;
 }
 
+/* The album card is as wide as the plates above it on phones, and a calm centred card on larger screens. */
 .albumEntry {
   width: min(100%, 26rem);
   margin-inline: auto;
@@ -725,33 +826,53 @@
 
 .albumTile {
   min-height: 0;
-  grid-template-columns: 5rem 1fr;
+  grid-template-columns: 5rem minmax(0, 1fr);
   grid-template-rows: auto auto;
+  align-content: center;
   justify-items: start;
   column-gap: var(--s-4);
-  padding: var(--s-3) var(--s-5);
+  row-gap: var(--s-1);
+  padding: var(--s-4);
 }
 
 .albumTile > :first-child {
   grid-row: 1 / span 2;
+  align-self: center;
   width: 5rem;
 }
 
+.albumTile > :nth-child(2) {
+  align-self: end;
+  text-align: start;
+}
+
+.albumTile > :nth-child(3) {
+  align-self: start;
+  text-align: start;
+}
+
 .album {
-  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
   gap: var(--s-3);
-  padding-inline: var(--s-4);
+  padding-inline: var(--pad-l) var(--pad-r);
+}
+
+@media (min-width: 600px) {
+  .album {
+    gap: var(--s-4);
+  }
 }
 
 .sticker,
 .stickerSlot {
   position: relative;
   display: grid;
+  align-content: center;
   justify-items: center;
-  gap: var(--s-1);
+  gap: var(--s-2);
   width: 100%;
-  min-height: 8rem;
-  padding: var(--s-3) var(--s-2);
+  min-height: 8.5rem;
+  padding: var(--s-3);
   border-radius: var(--r-card);
 }
 
@@ -772,10 +893,13 @@
 }
 
 .stickerName {
+  max-width: 100%;
   font-weight: 800;
-  font-size: 0.9375rem;
+  font-size: var(--fs-label);
   text-align: center;
   line-height: 1.15;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .stickerCount {
@@ -789,6 +913,7 @@
   color: var(--text);
   font-weight: 800;
   font-size: var(--fs-caption);
+  text-align: center;
 }
 
 .stickerSlot {
@@ -801,15 +926,24 @@
   .page {
     gap: var(--s-2);
   }
-  .choices {
+  .choices,
+  .choices[data-n='3'],
+  .choices[data-n='4'],
+  .choices[data-many] {
     --pic: clamp(3rem, 22dvh, 6rem);
+    gap: var(--s-3);
+  }
+  .choices {
     grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr));
     width: min(100%, calc(var(--n, 2) * 12rem));
   }
   .choices[data-many] {
     grid-template-columns: repeat(6, minmax(0, 1fr));
+    width: 100%;
   }
-  .choice {
+  .choice,
+  .choices[data-n='3'] .choice,
+  .choices[data-many] .choice {
     padding: var(--s-2);
   }
   .promptText {

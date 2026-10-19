@@ -1,7 +1,9 @@
 import { speak } from '../../audio/speech'
 import { STICKERS } from '../../content/stickers'
 import { useLabel, useStrings } from '../../i18n'
+import { shy } from '../../lib/hyphenate'
 import { useDevice } from '../../store/device'
+import { useProfileStore } from '../../store/profile'
 import { EmptyState } from '../../ui/misc'
 import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
@@ -15,15 +17,14 @@ export function Album() {
   const t = useStrings(S)
   const label = useLabel()
   const board = useDevice((s) => s.boardMode)
+  const hy = useProfileStore((s) => s.profile.speechLang) === 'ru' ? 'ru' : 'uz'
   const rows = useStickers()
   const counts = new Map<string, number>()
   for (const r of rows) counts.set(r.stickerId, (counts.get(r.stickerId) ?? 0) + 1)
 
   return (
     <div className={styles.page} data-board={board || undefined}>
-      <div className={styles.head}>
-        <PageHeader title={t('album')} back="/games" />
-      </div>
+      <PageHeader title={t('album')} back="/games" />
       {rows.length === 0 ? (
         <EmptyState symbol="glowing_star" title={t('albumEmpty')} />
       ) : (
@@ -38,7 +39,7 @@ export function Album() {
                     <span className={styles.stickerPic} aria-hidden="true">
                       <SymbolImg id={s.symbol} />
                     </span>
-                    <span className={styles.stickerName}>{name}</span>
+                    <span className={styles.stickerName}>{shy(name, hy)}</span>
                     {n > 1 && <span className={styles.stickerCount}>×{n}</span>}
                   </Pressable>
                 ) : (

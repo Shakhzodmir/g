@@ -7,6 +7,8 @@ import type { TopicId, Word } from '../../content/types'
 import { WORDS } from '../../content/vocab'
 import { useLabel, useStrings } from '../../i18n'
 import type { Bi } from '../../i18n/types'
+import { shy } from '../../lib/hyphenate'
+import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { SymbolImg } from '../../ui/SymbolImg'
 import { Tile } from '../../ui/Tile'
@@ -88,6 +90,7 @@ export default function FindGame() {
 function TopicChooser({ onPick }: { onPick: (t: TopicId) => void }) {
   const t = useStrings(S)
   const label = useLabel()
+  const lang = useProfileStore((s) => s.profile.speechLang)
   return (
     <section className={styles.chooser} aria-label={t('chooseTopic')}>
       <h2 className={styles.chooserTitle}>{t('chooseTopic')}</h2>
@@ -96,7 +99,7 @@ function TopicChooser({ onPick }: { onPick: (t: TopicId) => void }) {
           const def = TOPICS.find((x) => x.id === id)!
           return (
             <li key={id}>
-              <Tile shape="card" tone="neutral" symbol={def.symbol} title={label(def)} label={label(def)} onActivate={() => onPick(id)} />
+              <Tile shape="card" tone="neutral" symbol={def.symbol} title={shy(label(def), lang === 'ru' ? 'ru' : 'uz')} label={label(def)} onActivate={() => onPick(id)} />
             </li>
           )
         })}

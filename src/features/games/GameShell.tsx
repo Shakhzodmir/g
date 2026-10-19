@@ -34,34 +34,32 @@ export function GameShell({ session, title, symbol, toolbar, showLevel = true, s
 
   return (
     <div className={styles.page} data-board={board || undefined}>
-      <div className={styles.head}>
-        <PageHeader title={title} back="/games" symbol={<SymbolImg id={symbol} />} />
-      </div>
+      <PageHeader title={title} back="/games" symbol={<SymbolImg id={symbol} />} />
 
-      {(toolbar || showLevel) && session.phase === 'play' && (
+      {(toolbar || showLevel || showProgress) && session.phase === 'play' && (
         <div className={styles.toolbar}>
           {toolbar && <div className={styles.toolbarStart}>{toolbar}</div>}
-          {showLevel && (
-            <div className={styles.level}>
-              <span className={styles.levelLabel} aria-hidden="true">
-                {t('level')}
-              </span>
-              <Segmented<string>
-                label={t('level')}
-                options={LEVELS.map((l) => ({ value: String(l), label: String(l) }))}
-                value={String(session.level)}
-                onChange={(v) => session.setLevel(Number(v) as Level)}
-              />
-            </div>
-          )}
+          <div className={styles.meta}>
+            {showProgress && <Progress done={session.done} total={session.total} />}
+            {showLevel && (
+              <div className={styles.level}>
+                <span className={styles.levelLabel} aria-hidden="true">
+                  {t('level')}
+                </span>
+                <Segmented<string>
+                  label={t('level')}
+                  options={LEVELS.map((l) => ({ value: String(l), label: String(l) }))}
+                  value={String(session.level)}
+                  onChange={(v) => session.setLevel(Number(v) as Level)}
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {session.phase === 'play' ? (
-        <>
-          {showProgress && <Progress done={session.done} total={session.total} />}
-          <div className={styles.stage}>{children}</div>
-        </>
+        <div className={styles.stage}>{children}</div>
       ) : (
         <RewardPanel session={session} />
       )}

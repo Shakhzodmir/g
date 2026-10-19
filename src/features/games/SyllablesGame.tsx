@@ -7,6 +7,7 @@ import type { Word } from '../../content/types'
 import { WORDS } from '../../content/vocab'
 import { useMotionPreset } from '../../design/motion'
 import { useLabel, useStrings } from '../../i18n'
+import { shy } from '../../lib/hyphenate'
 import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Musicha } from '../../ui/mascot/Musicha'
@@ -116,7 +117,7 @@ function Clap({ session }: { session: GameSession }) {
           <SymbolImg id={w.symbol} />
         </div>
         <div className={styles.clapWordRow}>
-          <p className={styles.clapWord}>{label(w)}</p>
+          <p className={styles.clapWord}>{shy(label(w), lang === 'ru' ? 'ru' : 'uz')}</p>
           <Button variant="soft" icon={<Ear />} onActivate={listenFirst}>
             {t('listenFirst')}
           </Button>

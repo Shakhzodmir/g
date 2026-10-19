@@ -1,6 +1,8 @@
 import { motion, useAnimate } from 'motion/react'
 import { useEffect, type ReactNode } from 'react'
 import { useMotionPreset } from '../../design/motion'
+import { shy } from '../../lib/hyphenate'
+import { useProfileStore } from '../../store/profile'
 import { Pressable, type PressableProps } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './Games.module.css'
@@ -22,6 +24,7 @@ export interface ChoiceCardProps extends Omit<PressableProps, 'children'> {
 /** Big picture card for choice games. Never red, never a "wrong" sound: only a small wiggle. */
 export function ChoiceCard({ symbol, caption, state = 'idle', wiggle = 0, bob = 0, badge, className, ...rest }: ChoiceCardProps) {
   const preset = useMotionPreset()
+  const lang = useProfileStore((s) => s.profile.speechLang)
   const [scope, animate] = useAnimate<HTMLSpanElement>()
 
   useEffect(() => {
@@ -42,7 +45,7 @@ export function ChoiceCard({ symbol, caption, state = 'idle', wiggle = 0, bob = 
         <span className={styles.choicePic} aria-hidden="true">
           <SymbolImg id={symbol} />
         </span>
-        {caption && <span className={styles.choiceCaption}>{caption}</span>}
+        {caption && <span className={styles.choiceCaption}>{shy(caption, lang === 'ru' ? 'ru' : 'uz')}</span>}
       </motion.span>
       {badge}
     </Pressable>
