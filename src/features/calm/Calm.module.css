@@ -1,0 +1,356 @@
+/* Calm corner: one soft gradient, one slow breathing flower, helpers and "I am ready" in reach. */
+.page {
+  --petal: color-mix(in srgb, var(--primary) 34%, var(--surface));
+  --petal-inner: color-mix(in srgb, var(--primary) 52%, var(--surface));
+  --core: color-mix(in srgb, var(--primary-container) 55%, var(--surface));
+  --halo: var(--primary-container);
+  --breath: 0.6;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  /* Fill the screen down to the navigation, the gradient running under main's bottom padding. */
+  min-height: calc(100dvh - 6rem - var(--safe-bottom));
+  margin-bottom: calc(-1 * var(--s-4));
+  background:
+    radial-gradient(120% 70% at 50% 18%, color-mix(in srgb, var(--primary-container) 75%, transparent), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--primary-container) 45%, var(--bg)) 0%, var(--bg) 100%);
+}
+
+@media (min-width: 840px) {
+  .page {
+    min-height: 100dvh;
+    margin-bottom: calc(-1 * var(--s-8));
+  }
+}
+
+:global(html[data-board='true']) .page {
+  min-height: calc(100dvh - 6.75rem);
+}
+
+/* "Lava lamp": three very slow, blurred shapes. Never in calm level or with reduced motion. */
+.lava {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  width: 46vmax;
+  height: 46vmax;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary-container) 80%, var(--secondary-container));
+  opacity: 0.55;
+  filter: blur(48px);
+  animation: drift 64s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -21s);
+}
+
+.blob:nth-child(1) {
+  left: -14vmax;
+  top: 4%;
+}
+.blob:nth-child(2) {
+  right: -16vmax;
+  top: 30%;
+  background: color-mix(in srgb, var(--primary-container) 70%, var(--surface));
+}
+.blob:nth-child(3) {
+  left: 20%;
+  bottom: -22vmax;
+  background: color-mix(in srgb, var(--secondary-container) 60%, var(--primary-container));
+}
+
+@keyframes drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(8vmax, -6vmax) scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none;
+  }
+}
+
+.body {
+  flex: 1;
+  display: grid;
+  grid-template-areas:
+    'stage'
+    'helpers'
+    'ready';
+  grid-template-rows: 1fr auto auto;
+  gap: var(--s-4);
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: 0 var(--s-4) var(--s-4);
+}
+
+/* ---------- Breathing flower ---------- */
+.stage {
+  grid-area: stage;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--s-2);
+  min-height: 0;
+}
+
+.shape {
+  width: clamp(10rem, min(56vw, 30dvh), 24rem);
+  aspect-ratio: 1;
+  transform: scale(var(--breath));
+  will-change: transform;
+}
+
+/* Normal level: the flower also turns a little and its glow follows the breath. */
+.page:not([data-still]) .shape {
+  transform: scale(var(--breath)) rotate(calc((var(--breath) - 0.6) * 30deg));
+}
+
+.lotus {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.halo {
+  fill: var(--halo);
+  opacity: 0.55;
+}
+
+.page:not([data-still]) .halo {
+  opacity: calc(0.25 + (var(--breath) - 0.6) * 1.4);
+}
+
+.petal {
+  fill: var(--petal);
+  opacity: 0.85;
+}
+
+.petalInner {
+  fill: var(--petal-inner);
+  opacity: 0.8;
+}
+
+.core {
+  fill: var(--core);
+}
+
+:global(html[data-theme='hc-light']) .petal,
+:global(html[data-theme='hc-light']) .petalInner,
+:global(html[data-theme='hc-dark']) .petal,
+:global(html[data-theme='hc-dark']) .petalInner,
+:global(html[data-theme='hc-light']) .core,
+:global(html[data-theme='hc-dark']) .core {
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
+.phase {
+  margin: 0;
+  min-height: 1.4em;
+  color: var(--on-primary-container);
+  font-size: var(--fs-title);
+  font-weight: 700;
+  text-align: center;
+}
+
+:global(html[data-theme='tun']) .phase,
+:global(html[data-theme='hc-dark']) .phase {
+  color: var(--text);
+}
+
+/* Reserved space so nothing below moves when the voice button appears. */
+.guide {
+  display: grid;
+  place-items: center;
+  min-height: calc(var(--touch-min) + 0.75rem);
+}
+
+/* ---------- Helpers ---------- */
+.helpersBox {
+  grid-area: helpers;
+  display: grid;
+  gap: var(--s-2);
+  container-type: inline-size;
+}
+
+.helpersTitle {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.helpers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.helper {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  align-items: start;
+  gap: var(--s-1);
+  width: 100%;
+  height: 100%;
+  min-height: 5.5rem;
+  padding: var(--s-2) 2px;
+  border: 3px solid transparent;
+  border-radius: var(--r-cell);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--text);
+  box-shadow: var(--elev-1);
+  touch-action: manipulation;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.helper[data-pressed='true'] {
+  background: var(--surface-2);
+}
+
+.helper[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+:global(html[data-theme='hc-light']) .helper,
+:global(html[data-theme='hc-dark']) .helper {
+  border-color: var(--outline);
+}
+
+:global(html[data-theme='hc-light']) .helper[aria-pressed='true'],
+:global(html[data-theme='hc-dark']) .helper[aria-pressed='true'] {
+  border-color: var(--text);
+  border-width: 5px;
+}
+
+.helperArt {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.helperLabel {
+  font-weight: 800;
+  /* Four columns everywhere: the label follows the column width so words do not break. */
+  font-size: clamp(0.75rem, 3.3cqi, 1.0625rem);
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: break-word;
+}
+
+.check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+  stroke-width: 3;
+}
+
+.readyRow {
+  grid-area: ready;
+  display: grid;
+}
+
+/* ---------- Wide and landscape screens: flower on the left, choices on the right ---------- */
+@media (min-width: 840px) and (min-aspect-ratio: 4/3), (orientation: landscape) and (max-height: 520px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+      'stage helpers'
+      'stage ready';
+    align-items: end;
+    column-gap: var(--s-8);
+  }
+  .shape {
+    width: clamp(10rem, min(36vw, 52dvh), 26rem);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .body {
+    gap: var(--s-2);
+    column-gap: var(--s-4);
+  }
+  .shape {
+    width: clamp(8rem, 44dvh, 14rem);
+  }
+  .helper {
+    min-height: 4.75rem;
+    padding-block: var(--s-1);
+  }
+  .helperArt {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .helpersTitle {
+    font-size: var(--fs-caption);
+  }
+  .phase {
+    font-size: var(--fs-body);
+  }
+}
+
+/* Whiteboard: the display stays on top, everything to touch sits low, within the children's reach. */
+:global(html[data-board='true']) .body {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto auto;
+  grid-template-areas:
+    'stage'
+    'helpers'
+    'ready';
+  max-width: 90rem;
+}
+
+:global(html[data-board='true']) .body {
+  gap: var(--s-3);
+}
+
+:global(html[data-board='true']) .shape {
+  width: clamp(7rem, 15dvh, 16rem);
+}
+
+:global(html[data-board='true']) .stage {
+  gap: 0;
+}
+
+:global(html[data-board='true']) .helpers {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+:global(html[data-board='true']) .helperLabel {
+  font-size: 1rem;
+}
+
+:global(html[data-board='true']) .readyRow {
+  justify-items: center;
+}
+
+:global(html[data-board='true']) .readyRow > * {
+  width: min(100%, 32rem);
+}

@@ -1,0 +1,215 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 6rem - var(--s-4) - var(--safe-bottom));
+}
+
+@media (min-width: 840px) {
+  .page {
+    min-height: calc(100dvh - var(--s-8));
+  }
+}
+
+:global(html[data-board='true']) .page {
+  min-height: calc(100dvh - 9.5rem);
+}
+
+/* ---------- List ---------- */
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: var(--s-4);
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 var(--s-4) var(--s-4);
+  list-style: none;
+}
+
+@media (max-width: 599px) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
+  }
+}
+
+:global(html[data-board='true']) .list {
+  max-width: 90rem;
+  margin-top: auto;
+  padding-bottom: 4.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* ---------- Reader ---------- */
+.reader {
+  flex: 1;
+  display: grid;
+  grid-template-rows: 1fr auto auto auto;
+  gap: var(--s-3);
+  width: 100%;
+  max-width: 60rem;
+  margin-inline: auto;
+  padding: 0 var(--s-4) var(--s-4);
+}
+
+.sheet {
+  display: grid;
+  min-height: 0;
+  border-radius: var(--r-sheet);
+  background: var(--surface);
+  box-shadow: var(--elev-2);
+  touch-action: pan-y;
+  user-select: none;
+}
+
+:global(html[data-theme='hc-light']) .sheet,
+:global(html[data-theme='hc-dark']) .sheet {
+  border: 3px solid var(--outline);
+}
+
+.pageContent {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--s-4);
+  padding: var(--s-6) var(--s-4);
+}
+
+.art {
+  width: clamp(7rem, min(52vw, 30dvh), 17rem);
+  aspect-ratio: 1;
+}
+
+.text {
+  margin: 0;
+  max-width: 28ch;
+  font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2rem);
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--text);
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+}
+
+.dotList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--r-pill);
+  background: var(--outline-soft);
+  transition: width var(--dur-med) var(--ease-out);
+}
+
+.dot[data-done] {
+  background: color-mix(in srgb, var(--primary) 45%, var(--surface));
+}
+
+.dot[data-current] {
+  width: 2rem;
+  background: var(--primary);
+}
+
+:global(html[data-sensory='calm']) .dot {
+  transition: none;
+}
+
+:global(html[data-theme='hc-light']) .dot,
+:global(html[data-theme='hc-dark']) .dot {
+  border: 2px solid var(--text);
+}
+
+.end {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-2);
+}
+
+.endText {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.endActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+}
+
+/* Prev / listen / next never move: three fixed slots at the bottom. */
+.controls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.controls > :nth-child(2) {
+  justify-self: center;
+}
+
+/* Phone landscape: picture beside the sentence, controls stay in one row at the bottom. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .reader {
+    gap: var(--s-2);
+  }
+  .pageContent {
+    grid-template-columns: auto 1fr;
+    justify-items: start;
+    align-items: center;
+    padding: var(--s-3) var(--s-6);
+  }
+  .art {
+    width: clamp(5rem, 34dvh, 9rem);
+  }
+  .text {
+    text-align: start;
+    font-size: 1.375rem;
+  }
+  .end {
+    grid-auto-flow: column;
+    align-items: center;
+  }
+}
+
+/* Board: a narrower reader keeps prev/next clear of the Break button (bottom right). */
+:global(html[data-board='true']) .reader {
+  max-width: min(56rem, calc(100vw - 24rem));
+}
+
+:global(html[data-board='true']) .art {
+  width: clamp(8rem, 28dvh, 16rem);
+}
+
+/* Narrow phones: a slightly smaller header title so it fits beside the Break button. */
+@media (max-width: 480px) {
+  .page > header h1 {
+    font-size: clamp(1rem, 4.2vw, var(--fs-title));
+  }
+}
+
+/* Phone landscape: all three stories in one row. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -1,4 +1,6 @@
 .shell {
+  /* Width kept free on the right of page headers for the fixed Break button / teacher panel */
+  --header-reserve: 0px;
   min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr;
@@ -216,4 +218,18 @@
   .shell {
     display: block;
   }
+}
+
+.shell[data-kind='child'] {
+  --header-reserve: 8.5rem;
+}
+
+.shell[data-board] {
+  --header-reserve: 26rem;
+}
+
+/* Headings receive programmatic focus on navigation; they are not interactive, so no ring. */
+.main h1:focus {
+  outline: none;
+  box-shadow: none;
 }

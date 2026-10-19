@@ -1,0 +1,311 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.body {
+  display: grid;
+  gap: var(--s-4);
+  width: 100%;
+  max-width: 64rem;
+  margin-inline: auto;
+  padding: 0 var(--s-4) var(--s-4);
+}
+
+/* ---------- Spoken question ---------- */
+.ask {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.askText {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 800;
+  line-height: var(--lh-tight);
+  color: var(--text);
+}
+
+/* ---------- Feeling faces ---------- */
+.feelings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 600px) {
+  .feelings {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.feeling {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  height: 100%;
+  min-height: 7.25rem;
+  padding: var(--s-3) var(--s-2);
+  border: 3px solid transparent;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--elev-2);
+  touch-action: manipulation;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.feeling[data-pressed='true'] {
+  transform: scale(0.97);
+  box-shadow: var(--elev-1);
+}
+
+:global(html[data-sensory='calm']) .feeling[data-pressed='true'] {
+  transform: none;
+}
+
+.face {
+  width: clamp(3.5rem, 18vw, 6.5rem);
+  aspect-ratio: 1;
+}
+
+.feelingLabel {
+  font-weight: 800;
+  font-size: 1.125rem;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- One feeling and its helpers ---------- */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  min-height: 7rem;
+  padding: var(--s-3) var(--s-6) var(--s-3) var(--s-3);
+  border: 0;
+  border-radius: var(--r-card);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  text-align: start;
+  touch-action: manipulation;
+}
+
+.heroFace {
+  flex: none;
+  width: clamp(5rem, 24vw, 8rem);
+  aspect-ratio: 1;
+}
+
+.heroLabel {
+  flex: 1;
+  font-size: var(--fs-display);
+  font-weight: 900;
+  line-height: var(--lh-tight);
+  overflow-wrap: anywhere;
+}
+
+.heroSpeaker {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.8;
+}
+
+.helpBox {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.helpers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(8.5rem, 100%), 1fr));
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.helper {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  height: 100%;
+  min-height: 8.5rem;
+  padding: var(--s-3) var(--s-2);
+  border: 3px solid transparent;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--elev-2);
+  touch-action: manipulation;
+}
+
+.helper[data-pressed='true'] {
+  background: var(--surface-2);
+}
+
+.helper[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+:global(html[data-theme='hc-light']) .feeling,
+:global(html[data-theme='hc-dark']) .feeling,
+:global(html[data-theme='hc-light']) .helper,
+:global(html[data-theme='hc-dark']) .helper,
+:global(html[data-theme='hc-light']) .hero,
+:global(html[data-theme='hc-dark']) .hero {
+  border: 3px solid var(--outline);
+}
+
+:global(html[data-theme='hc-light']) .helper[aria-pressed='true'],
+:global(html[data-theme='hc-dark']) .helper[aria-pressed='true'] {
+  border: 5px solid var(--text);
+}
+
+.helperArt {
+  width: clamp(3.5rem, 16vw, 5rem);
+  aspect-ratio: 1;
+}
+
+.helperLabel {
+  font-weight: 800;
+  font-size: 1.0625rem;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+  stroke-width: 3;
+}
+
+.adultRow {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- Summary for an adult ---------- */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-4);
+  padding-block: var(--s-2);
+}
+
+.summaryItem {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  text-align: center;
+}
+
+.summaryItem figcaption {
+  display: grid;
+  gap: 2px;
+}
+
+.summaryCaption {
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+}
+
+.summaryValue {
+  font-size: var(--fs-title);
+  font-weight: 900;
+  line-height: var(--lh-tight);
+}
+
+.summaryArrow {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--text-muted);
+}
+
+.summaryEmpty {
+  margin: 0;
+  max-width: 14rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Phone landscape: short screen, so the faces get smaller and the question stays on one line. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .body {
+    gap: var(--s-2);
+  }
+  .feeling {
+    min-height: 6.5rem;
+    padding-block: var(--s-2);
+  }
+  .face {
+    width: 3.75rem;
+  }
+  .hero {
+    min-height: 5rem;
+  }
+  .heroFace {
+    width: 4.5rem;
+  }
+  .helper {
+    min-height: 6.5rem;
+  }
+  .helperArt {
+    width: 3.25rem;
+  }
+  .askText {
+    font-size: var(--fs-body);
+  }
+}
+
+/* Whiteboard: question and display on top; the cards sit low and wide. */
+:global(html[data-board='true']) .body {
+  max-width: 90rem;
+  min-height: calc(100dvh - 15rem);
+  align-content: end;
+  /* the Break button floats bottom right on the board */
+  padding-bottom: 4.5rem;
+}
+
+:global(html[data-board='true']) .feelings {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+/* Narrow phones: a slightly smaller header title so it fits beside the Break button. */
+@media (max-width: 480px) {
+  .page > header h1 {
+    font-size: clamp(1rem, 4.2vw, var(--fs-title));
+  }
+}
