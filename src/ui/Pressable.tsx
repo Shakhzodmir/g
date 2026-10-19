@@ -2,6 +2,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   type CSSProperties,
@@ -28,10 +29,11 @@ export interface PressableProps extends Omit<HTMLAttributes<HTMLElement>, 'onCli
   children?: ReactNode
 }
 
-// Global guard: a tremor often lands the second tap on a neighbouring target, so repeats are ignored app-wide.
-let lastPointerActivation = 0
+// Repeat guard: a tremor re-fires the SAME target within a fraction of a second. Different targets are never
+// blocked, so fast typing and fast message building keep working.
+let lastActivation: { id: string; at: number } | null = null
 export function resetRepeatGuard(): void {
-  lastPointerActivation = 0
+  lastActivation = null
 }
 
 export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressable(
@@ -42,6 +44,7 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
   const touch: TouchSettings = { ...profileTouch, ...touchOverride }
   const [isDown, setIsDown] = useState(false)
   const [dwelling, setDwelling] = useState(false)
+  const instanceId = useId()
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const dwellTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pointerActive = useRef(false)
@@ -62,12 +65,12 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
       if (disabled) return
       if (fromPointer) {
         const now = Date.now()
-        if (touch.ignoreRepeatMs > 0 && now - lastPointerActivation < touch.ignoreRepeatMs) return
-        lastPointerActivation = now
+        if (touch.ignoreRepeatMs > 0 && lastActivation && lastActivation.id === instanceId && now - lastActivation.at < touch.ignoreRepeatMs) return
+        lastActivation = { id: instanceId, at: now }
       }
       onActivate()
     },
-    [disabled, onActivate, touch.ignoreRepeatMs],
+    [disabled, instanceId, onActivate, touch.ignoreRepeatMs],
   )
 
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {

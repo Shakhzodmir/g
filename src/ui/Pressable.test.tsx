@@ -60,6 +60,23 @@ describe('Pressable', () => {
     expect(onActivate).toHaveBeenCalledTimes(2)
   })
 
+  it('does not block a DIFFERENT target pressed right after (fast typing)', () => {
+    setTouch({ ignoreRepeatMs: 300 })
+    const a = vi.fn()
+    const b = vi.fn()
+    render(
+      <>
+        <Pressable label="a" onActivate={a}>a</Pressable>
+        <Pressable label="b" onActivate={b}>b</Pressable>
+      </>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'a' }), { detail: 1 })
+    act(() => vi.advanceTimersByTime(60))
+    fireEvent.click(screen.getByRole('button', { name: 'b' }), { detail: 1 })
+    expect(a).toHaveBeenCalledTimes(1)
+    expect(b).toHaveBeenCalledTimes(1)
+  })
+
   it('keyboard / assistive-tech clicks always work, even with a hold time', () => {
     const { onActivate, el } = setup({ holdMs: 800 })
     fireEvent.click(el, { detail: 0 })
