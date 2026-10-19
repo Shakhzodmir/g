@@ -1,0 +1,85 @@
+.sheet {
+  display: none;
+}
+
+@page {
+  margin: 12mm;
+}
+
+@media print {
+  .sheet {
+    display: block;
+    color: #000;
+    font-family: var(--font-ui);
+  }
+
+  .title {
+    margin: 0 0 8mm;
+    font-size: 22pt;
+    text-align: center;
+  }
+
+  .grid,
+  .pair {
+    display: grid;
+    gap: 6mm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .pair {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .card {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 3mm;
+    padding: 6mm 4mm 5mm;
+    border: 1.5pt solid #555;
+    border-radius: 6mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .step {
+    position: absolute;
+    top: 3mm;
+    left: 4mm;
+    font-size: 12pt;
+    font-weight: 800;
+    color: #333;
+  }
+
+  .pair .step {
+    position: static;
+    font-size: 18pt;
+  }
+
+  .img {
+    width: 34mm;
+    height: 34mm;
+    object-fit: contain;
+  }
+
+  .pair .img {
+    width: 60mm;
+    height: 60mm;
+  }
+
+  .name {
+    font-size: 15pt;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .pair .name {
+    font-size: 20pt;
+  }
+}

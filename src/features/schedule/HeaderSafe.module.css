@@ -1,0 +1,9 @@
+.page {
+  min-width: 0;
+}
+
+@media (max-width: 479px) {
+  .page :global(h1) > span[aria-hidden='true'] {
+    display: none;
+  }
+}

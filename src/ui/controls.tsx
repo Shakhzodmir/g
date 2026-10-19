@@ -37,6 +37,7 @@ export function Slider({
   step = 1,
   format = (v) => String(v),
   onChange,
+  disabled,
 }: {
   label: string
   hint?: string
@@ -46,6 +47,7 @@ export function Slider({
   step?: number
   format?: (v: number) => string
   onChange: (v: number) => void
+  disabled?: boolean
 }) {
   const id = useId()
   return (
@@ -68,6 +70,7 @@ export function Slider({
         step={step}
         value={value}
         aria-valuetext={format(value)}
+        disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
       />
     </div>

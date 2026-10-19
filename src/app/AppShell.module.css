@@ -221,7 +221,7 @@
 }
 
 .shell[data-kind='child'] {
-  --header-reserve: 8.5rem;
+  --header-reserve: 9.5rem;
 }
 
 .shell[data-board] {

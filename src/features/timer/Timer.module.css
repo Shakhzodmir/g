@@ -1,0 +1,334 @@
+.page {
+  min-width: 0;
+}
+
+.layout {
+  display: grid;
+  gap: var(--s-5);
+  width: min(100%, 70rem);
+  margin-inline: auto;
+  padding: 0 var(--s-4) var(--s-4);
+}
+
+/* Display (dial, digits, next card) above; controls below, inside the reach zone. */
+.display {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--s-3);
+}
+
+.controls {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--s-4);
+  align-content: start;
+  width: min(100%, 32rem);
+  margin-inline: auto;
+}
+
+@media (min-width: 900px), (orientation: landscape) and (max-height: 520px) {
+  .layout {
+    grid-template-columns: 1.15fr 1fr;
+    align-items: start;
+  }
+}
+
+/* ---------- Dial ---------- */
+.dial {
+  position: relative;
+  border-radius: 50%;
+  box-shadow: var(--elev-2);
+  width: clamp(12rem, min(82vw, 44dvh), 30rem);
+  aspect-ratio: 1;
+}
+
+@media (min-width: 900px) {
+  .dial {
+    width: clamp(14rem, min(40vw, 62dvh), 34rem);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .dial {
+    width: clamp(9rem, min(40vw, 58dvh), 20rem);
+  }
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.face {
+  fill: var(--surface);
+  stroke: var(--outline-soft);
+  stroke-width: 3;
+}
+
+.track {
+  fill: var(--surface-2);
+}
+
+.sector {
+  fill: var(--primary);
+}
+
+.tick {
+  stroke: var(--outline);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.hub {
+  fill: var(--surface);
+  stroke: var(--outline);
+  stroke-width: 2;
+}
+
+.doneMark {
+  position: absolute;
+  inset: 30%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--primary-container) 0 58%, transparent 72%);
+  padding: 6%;
+}
+
+.digits {
+  margin: 0;
+  font-size: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.status {
+  margin: 0;
+  min-height: 1.5em;
+  font-weight: 800;
+  font-size: var(--fs-title);
+  color: var(--on-primary-container);
+  text-align: center;
+}
+
+.status:empty {
+  min-height: 0;
+}
+
+/* ---------- Next card ---------- */
+.next {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--s-3);
+  width: min(100%, 24rem);
+  padding: var(--s-2) var(--s-3);
+  border: 3px solid var(--outline-soft);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  transition: border-color var(--dur-med) var(--ease-out);
+}
+
+.next[data-done] {
+  border-color: var(--primary);
+}
+
+.nextHead {
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-weight: 800;
+}
+
+.nextCard {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--cell-min);
+  padding: var(--s-1) var(--s-2);
+  border: 0;
+  border-radius: var(--r-cell);
+  background: transparent;
+  color: var(--text);
+  text-align: start;
+}
+
+.nextCard[data-pressed='true'] {
+  background: var(--surface-2);
+}
+
+.nextArt {
+  width: 3.75rem;
+  height: 3.75rem;
+}
+
+.nextName {
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Controls ---------- */
+.mainRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s-3);
+}
+
+.mainBtn {
+  width: 100%;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--s-2);
+}
+
+@container (max-width: 20rem) {
+  .presets {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.preset {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: 3.75rem;
+  padding: var(--s-1);
+  border: 2px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.05;
+}
+
+.preset[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.preset[aria-disabled='true'] {
+  opacity: 0.5;
+}
+
+.preset[data-pressed='true'] {
+  transform: scale(0.96);
+}
+
+.presetNum {
+  font-weight: 900;
+  font-size: 1.375rem;
+}
+
+.presetUnit {
+  font-size: var(--fs-caption);
+  font-weight: 700;
+}
+
+.adult {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-card);
+  background: var(--surface-2);
+}
+
+.adult[data-disabled] :global(input[type='range']) {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.nextTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+:global(html[data-theme='hc-light']) .preset,
+:global(html[data-theme='hc-dark']) .preset,
+:global(html[data-theme='hc-light']) .next,
+:global(html[data-theme='hc-dark']) .next {
+  border-color: var(--outline);
+}
+
+:global(html[data-theme='hc-light']) .preset[aria-pressed='true'],
+:global(html[data-theme='hc-dark']) .preset[aria-pressed='true'] {
+  border-width: 4px;
+  border-color: var(--primary);
+}
+
+/* Digits on/off: the whole row is one 48px+ target. */
+.digitToggle {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--s-2) 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: start;
+}
+
+.digitText {
+  display: grid;
+  gap: 2px;
+}
+
+.digitLabel {
+  font-weight: 700;
+}
+
+.digitHint {
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  line-height: 1.3;
+}
+
+.switch {
+  position: relative;
+  width: 4rem;
+  height: 2.375rem;
+  border-radius: var(--r-pill);
+  background: var(--outline-soft);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(2.375rem - 8px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+  transition: translate var(--dur-fast) var(--ease-out);
+}
+
+.digitToggle[aria-pressed='true'] .switch {
+  background: var(--primary);
+}
+
+.digitToggle[aria-pressed='true'] .knob {
+  translate: calc(4rem - 2.375rem) 0;
+}
+
+:global(html[data-theme='hc-light']) .switch,
+:global(html[data-theme='hc-dark']) .switch {
+  border: 2px solid var(--outline);
+}

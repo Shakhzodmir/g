@@ -37,8 +37,8 @@
 .switch {
   flex: none;
   position: relative;
-  width: 64px;
-  height: 38px;
+  width: 68px;
+  height: 44px;
   border: 0;
   border-radius: var(--r-pill);
   background: var(--outline-soft);
@@ -53,8 +53,8 @@
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--surface);
   box-shadow: var(--elev-1);

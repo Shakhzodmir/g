@@ -1,0 +1,99 @@
+.groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+/* Phones: the many groups become one scrollable row so the cards stay in view. */
+@media (max-width: 599px) {
+  .groups {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    margin-inline: calc(-1 * var(--s-2));
+    padding: var(--s-1) var(--s-2) var(--s-2);
+    scrollbar-width: thin;
+  }
+  .chip {
+    flex: none;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch-min);
+  padding: var(--s-1) var(--s-4) var(--s-1) var(--s-2);
+  border: 2px solid var(--outline-soft);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1.15;
+  text-align: start;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.chip[data-pressed='true'] {
+  transform: scale(0.97);
+}
+
+.chipIcon {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 6.75rem), 1fr));
+  gap: var(--s-3);
+}
+
+.card {
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  align-content: start;
+  gap: var(--s-1);
+  min-height: var(--cell-min);
+  padding: var(--s-3) var(--s-2);
+  border: 2px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.card[data-pressed='true'] {
+  transform: scale(0.97);
+  background: var(--surface-2);
+}
+
+.art {
+  display: grid;
+  place-items: center;
+  width: min(100%, 4.5rem);
+  aspect-ratio: 1;
+}
+
+.name {
+  overflow-wrap: anywhere;
+}
+
+:global(html[data-theme='hc-light']) .card,
+:global(html[data-theme='hc-dark']) .card,
+:global(html[data-theme='hc-light']) .chip,
+:global(html[data-theme='hc-dark']) .chip {
+  border-color: var(--outline);
+}
