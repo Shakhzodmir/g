@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatVars, renderBi, type Dict } from './index'
+import { formatVars, renderBi, renderWithVars, type Dict } from './index'
 
 // Every strings module in the app (common + one per feature) must be complete and well-formed.
 const modules = import.meta.glob<Record<string, unknown>>(['./common.ts', '../**/strings.ts'], { eager: true })
@@ -42,5 +42,13 @@ describe('renderBi', () => {
   it('formats variables', () => {
     expect(formatVars('Salom, {name}!', { name: 'Aziz' })).toBe('Salom, Aziz!')
     expect(formatVars('{n} ta', { n: 3 })).toBe('3 ta')
+  })
+
+  it('keeps placeholders intact in Cyrillic and converts the surrounding text', () => {
+    const bi = { uz: 'Yana {n} ta yulduzcha', ru: 'Ещё {n}' }
+    expect(renderWithVars(bi, 'uzc', 'cyrl', { n: 3 })).toBe('Яна 3 та юлдузча')
+    expect(renderWithVars(bi, 'uz', 'latn', { n: 3 })).toBe('Yana 3 ta yulduzcha')
+    expect(renderWithVars(bi, 'ru', 'latn', { n: 3 })).toBe('Ещё 3')
+    expect(renderWithVars({ uz: 'Salom, {name}!', ru: 'Привет, {name}!' }, 'uzc', 'cyrl', { name: 'Aziz' })).toBe('Салом, Aziz!')
   })
 })

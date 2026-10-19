@@ -40,6 +40,23 @@ function cachedDisplay(text: string, script: UzScript): string {
   return v
 }
 
+/**
+ * Renders bilingual text with `{placeholders}`: the text around placeholders is converted to the target
+ * script, then values are inserted untouched (so `{n}` never becomes `{н}` in Cyrillic and numbers/names stay as typed).
+ */
+export function renderWithVars(bi: Bi, lang: UiLang, uzScript: UzScript, vars?: Record<string, string | number>): string {
+  const raw = lang === 'ru' ? bi.ru : bi.uz
+  if (!vars || !raw.includes('{')) return renderBi(bi, lang, uzScript)
+  const parts = raw.split(/(\{\w+\})/)
+  return parts
+    .map((part) => {
+      const m = /^\{(\w+)\}$/.exec(part)
+      if (m) return m[1] in vars ? String(vars[m[1]]) : part
+      return part ? renderBi({ uz: part, ru: part }, lang, uzScript) : ''
+    })
+    .join('')
+}
+
 export function renderBi(bi: Bi, lang: UiLang, uzScript: UzScript): string {
   if (lang === 'ru') return bi.ru
   const script: UzScript = lang === 'uzc' ? 'cyrl' : uzScript === 'latn2026' ? 'latn2026' : 'latn'
@@ -65,10 +82,10 @@ export function useI18n() {
 
 /** Typed translator for one strings namespace: `const t = useStrings(S); t('title')`. */
 export function useStrings<K extends string>(dict: Dict<K>) {
-  const { ui } = useI18n()
+  const { uiLang, uzScript } = useI18n()
   return useCallback(
-    (key: K, vars?: Record<string, string | number>) => formatVars(ui({ uz: dict.uz[key], ru: dict.ru[key] }), vars),
-    [ui, dict],
+    (key: K, vars?: Record<string, string | number>) => renderWithVars({ uz: dict.uz[key], ru: dict.ru[key] }, uiLang, uzScript, vars),
+    [uiLang, uzScript, dict],
   )
 }
 

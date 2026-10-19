@@ -62,7 +62,7 @@ export function AppShell() {
   }, [pathname])
 
   return (
-    <div className={styles.shell} data-kind={kind} data-board={board || undefined}>
+    <div className={styles.shell} data-kind={kind} data-board={board || undefined} data-break={showBreak || undefined}>
       <nav className={styles.nav} aria-label={tc('appName')} data-no-print>
         <span className={styles.brand} aria-hidden="true">
           Gapimiz

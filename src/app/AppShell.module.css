@@ -220,7 +220,7 @@
   }
 }
 
-.shell[data-kind='child'] {
+.shell[data-break] {
   --header-reserve: 9.5rem;
 }
 

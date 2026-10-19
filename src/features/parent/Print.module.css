@@ -1,0 +1,123 @@
+/* Printable A4 sheets: 3 × 4 cards with dashed cut lines. Sizes use container units so the
+   on-screen preview and the printed page are laid out identically. */
+
+.sheets {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-6);
+}
+
+.sheet {
+  container-type: inline-size;
+  width: min(100%, 42rem);
+  aspect-ratio: 210 / 297;
+  padding: 0;
+  /* paper preview: always white, whatever the app theme */
+  background: #fff;
+  color: #1e2633;
+  border-radius: 6px;
+  box-shadow: var(--elev-2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  /* margin in cqi (relative to the sheet); padding on the container itself would not resolve against it */
+  margin: 4.5cqi;
+  height: calc(100% - 9cqi);
+  border-top: 1px dashed #8a8f98;
+  border-left: 1px dashed #8a8f98;
+}
+
+.cell {
+  display: grid;
+  padding: 2.2cqi;
+  border-right: 1px dashed #8a8f98;
+  border-bottom: 1px dashed #8a8f98;
+  min-height: 0;
+}
+
+.card {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  align-items: center;
+  gap: 1cqi;
+  padding: 2cqi;
+  border: 0.7cqi solid #d3d7de;
+  border-radius: 2.6cqi;
+  min-height: 0;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.cardTop {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.cardTop .label {
+  order: -1;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  min-height: 0;
+}
+
+.photo {
+  object-fit: cover;
+  border-radius: 1.6cqi;
+}
+
+.label {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: 4.4cqi;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.second {
+  font-weight: 600;
+  font-size: 3.1cqi;
+  color: #4a5568;
+}
+
+.empty {
+  border-color: transparent;
+}
+
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+@media print {
+  .sheets {
+    display: block;
+  }
+  .sheet {
+    width: 190mm;
+    height: 277mm;
+    aspect-ratio: auto;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    break-after: page;
+    break-inside: avoid;
+  }
+  .grid {
+    margin: 0;
+    height: 100%;
+  }
+  .sheet:last-child {
+    break-after: auto;
+  }
+}
