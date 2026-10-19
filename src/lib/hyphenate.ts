@@ -77,9 +77,12 @@ export function syllablesOf(word: string, _lang: Lang = 'uz'): string[] {
   return merged
 }
 
-const WORD = /[\p{L}ʻʼ]{7,}/gu
+const WORD = /[\p{L}ʻʼ]+/gu
 
-/** Inserts soft hyphens into words of 7+ letters. Safe for display only (not for speech or search). */
-export function shy(text: string, lang: Lang = 'uz'): string {
-  return text.replace(WORD, (w) => syllablesOf(w, lang).join(SOFT_HYPHEN))
+/**
+ * Inserts soft hyphens into words of `minLength`+ letters (default 7). Safe for display only
+ * (not for speech or search); screen readers ignore soft hyphens.
+ */
+export function shy(text: string, lang: Lang = 'uz', minLength = 7): string {
+  return text.replace(WORD, (w) => (w.length >= minLength ? syllablesOf(w, lang).join(SOFT_HYPHEN) : w))
 }

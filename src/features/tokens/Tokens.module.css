@@ -1,25 +1,21 @@
-.page {
-  min-width: 0;
-}
-
 .layout {
+  --col: 40rem; /* one column width for reward, stars, celebration and controls */
   display: grid;
-  gap: var(--s-5);
-  width: min(100%, 64rem);
-  margin-inline: auto;
-  padding: 0 var(--s-4) var(--s-4);
+  gap: var(--section-gap);
+  min-width: 0;
 }
 
 .display {
   display: grid;
   justify-items: center;
   gap: var(--s-4);
+  min-width: 0;
 }
 
 .controls {
   display: grid;
-  gap: var(--s-3);
-  width: min(100%, 28rem);
+  gap: var(--s-4);
+  width: min(100%, var(--col));
   margin-inline: auto;
 }
 
@@ -34,7 +30,9 @@
 .rewardBox {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--s-3);
+  width: min(100%, var(--col));
   padding: var(--s-2) var(--s-3);
   border-radius: var(--r-card);
   background: var(--surface);
@@ -72,7 +70,7 @@
 
 .rewardName {
   font-weight: 800;
-  font-size: 1.25rem;
+  font-size: var(--fs-title);
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
@@ -90,8 +88,8 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--gap);
-  width: min(100%, calc(var(--cols) * 7.5rem));
-  padding: var(--s-3);
+  width: min(100%, var(--col), calc(var(--cols) * 9rem));
+  padding: var(--s-4);
   border: 0;
   border-radius: var(--r-sheet);
   background: var(--surface);
@@ -140,7 +138,7 @@
 .celebrate {
   display: grid;
   justify-items: center;
-  width: min(100%, 26rem);
+  width: min(100%, var(--col));
   border-radius: var(--r-sheet);
   background: var(--surface);
   box-shadow: var(--elev-1);
@@ -179,7 +177,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 900;
-  font-size: 1.25rem;
+  font-size: var(--fs-title);
 }
 
 .goal[aria-pressed='true'] {
@@ -209,4 +207,9 @@
 :global(html[data-theme='hc-dark']) .goal[aria-pressed='true'] {
   border-width: 4px;
   border-color: var(--primary);
+}
+
+/* Whiteboard: keep the first row clear of the fixed teacher panel (top right) */
+:global(html[data-board='true']) .layout {
+  padding-top: var(--s-4);
 }

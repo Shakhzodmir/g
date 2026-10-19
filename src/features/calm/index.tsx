@@ -6,6 +6,7 @@ import { speak, stopSpeaking } from '../../audio/speech'
 import { HELPERS } from '../../content/feelings'
 import { VOICE_LINES } from '../../content/voiceLines'
 import { useLabel, useStrings } from '../../i18n'
+import { shy } from '../../lib/hyphenate'
 import { useDevice } from '../../store/device'
 import { logEvent } from '../../store/events'
 import { useProfileStore } from '../../store/profile'
@@ -49,6 +50,7 @@ export default function Calm() {
   const label = useLabel()
   const navigate = useNavigate()
   const sensory = useProfileStore((s) => s.profile.sensory)
+  const lang = useProfileStore((s) => s.profile.speechLang)
   const reduced = useReducedMotion() ?? false
   const board = useDevice((s) => s.boardMode)
   // Calm level / reduced motion: everything is static except the breathing shape's size.
@@ -187,7 +189,7 @@ export default function Calm() {
                     <span className={styles.helperArt} aria-hidden="true">
                       <SymbolImg id={h.symbol} />
                     </span>
-                    <span className={styles.helperLabel}>{name}</span>
+                    <span className={styles.helperLabel}>{shy(name, lang)}</span>
                     {on && <Check className={styles.check} aria-hidden="true" />}
                   </Pressable>
                 </li>

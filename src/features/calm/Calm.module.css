@@ -79,6 +79,13 @@
   }
 }
 
+/* The header shares the body's centred width, so both start at the same edge on wide screens. */
+.page > header {
+  width: 100%;
+  max-width: var(--width-wide);
+  margin-inline: auto;
+}
+
 .body {
   flex: 1;
   display: grid;
@@ -89,9 +96,9 @@
   grid-template-rows: 1fr auto auto;
   gap: var(--s-4);
   width: 100%;
-  max-width: var(--content-max);
+  max-width: var(--width-wide);
   margin-inline: auto;
-  padding: 0 var(--s-4) var(--s-4);
+  padding: 0 calc(var(--gutter) + var(--safe-right)) var(--s-4) calc(var(--gutter) + var(--safe-left));
 }
 
 /* ---------- Breathing flower ---------- */
@@ -211,7 +218,7 @@
   width: 100%;
   height: 100%;
   min-height: 5.5rem;
-  padding: var(--s-2) 2px;
+  padding: var(--s-2) var(--s-1);
   border: 3px solid transparent;
   border-radius: var(--r-cell);
   background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -252,10 +259,11 @@
 .helperLabel {
   font-weight: 800;
   /* Four columns everywhere: the label follows the column width so words do not break. */
-  font-size: clamp(0.75rem, 3.3cqi, 1.0625rem);
+  font-size: clamp(var(--fs-caption), 3.3cqi, var(--fs-label));
   line-height: 1.15;
   text-align: center;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .check {
@@ -292,6 +300,33 @@
   }
 }
 
+/* Short portrait phones (360 x 740): a smaller flower and tighter helpers keep "I am ready" above the nav bar. */
+@media (max-width: 599px) and (max-height: 900px) and (orientation: portrait) {
+  .body {
+    gap: var(--s-3);
+  }
+  .shape {
+    width: clamp(8rem, min(48vw, 20dvh), 24rem);
+  }
+  .guide {
+    min-height: var(--touch-min);
+  }
+  .helper {
+    min-height: 4.5rem;
+    padding-block: var(--s-1);
+  }
+  .helperArt {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+@media (max-width: 599px) and (max-height: 760px) and (orientation: portrait) {
+  .shape {
+    width: clamp(7rem, min(48vw, 16dvh), 24rem);
+  }
+}
+
 @media (orientation: landscape) and (max-height: 520px) {
   .body {
     gap: var(--s-2);
@@ -309,7 +344,7 @@
     height: 2.25rem;
   }
   .helpersTitle {
-    font-size: var(--fs-caption);
+    font-size: var(--fs-label);
   }
   .phase {
     font-size: var(--fs-body);
@@ -344,7 +379,7 @@
 }
 
 :global(html[data-board='true']) .helperLabel {
-  font-size: 1rem;
+  font-size: var(--fs-label);
 }
 
 :global(html[data-board='true']) .readyRow {

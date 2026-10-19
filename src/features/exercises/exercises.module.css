@@ -1,32 +1,28 @@
 /* ---------- Page frames ---------- */
-.page,
+/* Game screens keep their own wrapper (header + stage + controls) but share the page gutter and widths. */
 .screen {
-  width: min(100%, var(--content-max));
+  width: 100%;
+  max-width: var(--width-wide);
   margin-inline: auto;
   padding-bottom: var(--s-6);
-}
-
-.page {
-  display: grid;
-  gap: var(--s-4);
-  align-content: start;
-}
-
-.screen {
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
+  gap: var(--s-4);
+  min-width: 0;
 }
 
-.page > :not(header),
+/* Everything but the header sits on the same left and right edge as the header text. */
 .screen > :not(header) {
-  margin-inline: var(--s-4);
+  margin-inline: calc(var(--gutter) + var(--safe-left)) calc(var(--gutter) + var(--safe-right));
+  min-width: 0;
 }
 
-/* The child's fixed "Tanaffus" button sits top-right: keep header actions clear of it. */
-:global([data-kind='child']:not([data-board])) .page > header,
-:global([data-kind='child']:not([data-board])) .screen > header {
-  padding-right: calc(var(--s-4) + 8.5rem);
+/* Header and body share one centred frame, so their left and right edges line up on wide screens. */
+.frame {
+  width: 100%;
+  min-width: 0;
+  margin-inline: auto;
+  max-width: var(--width-normal);
 }
 
 .hubGrid,
@@ -41,51 +37,92 @@
 /* ---------- Hub ---------- */
 .hubGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(var(--s-2), 2vw, var(--s-5));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr));
+  gap: var(--s-2);
 }
 
-.hubGrid > li > * {
+@media (min-width: 600px) {
+  .hubGrid {
+    gap: var(--s-4);
+  }
+}
+
+.hubGrid > li {
+  display: grid;
+}
+
+.hubGrid > li > *,
+.exGrid > li > * {
   height: 100%;
-  padding-inline: var(--s-1);
+}
+
+/* The mascot is drawn at a fixed size: let it follow the tile's picture box instead. */
+.hubArt {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hubArt > *,
+.hubArt svg {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .notes {
   display: grid;
-  gap: var(--s-2);
-  max-width: 60ch;
+  gap: var(--s-3);
 }
 
 .noteRow {
   display: flex;
-  gap: var(--s-2);
+  gap: var(--s-3);
   align-items: flex-start;
+  margin: 0;
   color: var(--text-muted);
-  font-size: 0.9375rem;
-  line-height: 1.4;
+  font-size: var(--fs-label);
+  line-height: var(--lh-body);
+  overflow-wrap: normal;
+  hyphens: manual;
+}
+
+.noteRow > span {
+  min-width: 0;
 }
 
 .noteIcon {
   flex: none;
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-top: 0.1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.15rem;
   color: var(--primary);
 }
 
 .lead {
+  margin: 0;
   font-size: var(--fs-body);
   font-weight: 700;
+  line-height: var(--lh-body);
 }
 
 .note {
+  margin: 0;
   color: var(--text-muted);
-  font-size: 0.9375rem;
+  font-size: var(--fs-label);
+  line-height: var(--lh-body);
 }
 
 .muted {
+  margin: 0;
   color: var(--text-muted);
+  line-height: var(--lh-body);
   max-width: 40ch;
+}
+
+/* Whiteboard: hub tiles sit low, within the children's reach. */
+:global(html[data-board='true']) .hub {
+  min-height: calc(100dvh - 17rem);
+  align-content: end;
 }
 
 /* ---------- Game stage (blow) ---------- */
@@ -167,13 +204,14 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  max-width: 40rem;
+  max-width: var(--width-narrow);
 }
 
 .instr {
+  margin: 0;
   font-size: var(--fs-body);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .start {
@@ -191,17 +229,21 @@
 }
 
 .adultNote {
-  max-width: 48ch;
+  margin: 0;
+  max-width: var(--measure);
   color: var(--text-muted);
-  font-size: 0.9375rem;
-  line-height: 1.4;
-  text-align: center;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-body);
+  text-align: start;
 }
 
 .small {
+  margin: 0;
+  max-width: var(--measure);
   color: var(--text-muted);
   font-size: var(--fs-caption);
-  line-height: 1.35;
+  line-height: var(--lh-body);
+  text-align: start;
 }
 
 .holdZone {
@@ -299,7 +341,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: var(--fs-caption);
 }
 
 .pick[aria-pressed='true'] {
@@ -432,22 +474,33 @@
 }
 
 /* ---------- Mirror ---------- */
+/* Ten warm-ups: 2 columns on phones, 5 from tablet width, so no row ends with a lone card. */
 .exGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-3);
 }
 
-.exGrid > li > * {
-  height: 100%;
+@media (min-width: 700px) {
+  .exGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.exGrid > li {
+  display: grid;
 }
 
 .mirrorGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-3);
-  width: min(100% - 2 * var(--s-4), 2 * min(38dvh, 30rem) + var(--s-3));
+  width: min(100% - 2 * var(--gutter) - var(--safe-left) - var(--safe-right), 2 * min(38dvh, 30rem) + var(--s-3));
   align-self: center;
+}
+
+.screen > .mirrorGrid {
+  margin-inline: 0;
 }
 
 .panel {
@@ -540,7 +593,8 @@
   border-radius: var(--r-pill);
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: var(--fs-caption);
+  line-height: 1.3;
   text-align: center;
 }
 
@@ -564,8 +618,17 @@
 .reps {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--s-2);
   max-width: 15rem;
+}
+
+/* Phones: the dots take their own row so the buttons below stay on one line. */
+@media (max-width: 599px) {
+  .reps {
+    flex: 1 0 100%;
+    justify-content: center;
+    max-width: none;
+  }
 }
 
 .rep {
@@ -632,6 +695,7 @@
   }
   .screen > .mirrorGrid {
     width: auto;
+    margin-inline: calc(var(--gutter) + var(--safe-left)) calc(var(--gutter) + var(--safe-right));
   }
   .panel {
     max-height: calc(100dvh - 7rem);
@@ -658,4 +722,10 @@
   .calBar::after {
     animation-duration: 1.5s;
   }
+}
+
+/* Whiteboard: a lower stage keeps the buttons and the note above the bottom bar. */
+:global(html[data-board='true']) .stage,
+:global(html[data-board='true']) .sky {
+  height: clamp(10rem, 30dvh, 34rem);
 }

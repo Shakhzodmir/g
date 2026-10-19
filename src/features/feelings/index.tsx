@@ -6,7 +6,9 @@ import { FEELINGS, type Feeling, type Helper } from '../../content/feelings'
 import { VOICE_LINES } from '../../content/voiceLines'
 import { COMMON } from '../../i18n/common'
 import { useLabel, useStrings } from '../../i18n'
+import { shy } from '../../lib/hyphenate'
 import { logEvent } from '../../store/events'
+import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import { EmptyState } from '../../ui/misc'
@@ -16,6 +18,9 @@ import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './Feelings.module.css'
 import { feelingById, helperById, helpersFor } from './helpers'
 import { S } from './strings'
+
+/** Only very long single words get soft hyphens, so ordinary labels still wrap at spaces. */
+const shyLong = (text: string, lang: 'uz' | 'ru') => text.replace(/[\p{L}ʻʼ]{10,}/gu, (w) => shy(w, lang))
 
 function voiceLine(id: string) {
   const v = VOICE_LINES.find((l) => l.id === id)
@@ -41,6 +46,7 @@ function Ask({ text, listen, line, as: As = 'p', id }: { text: string; listen: s
 
 function FeelingGrid() {
   const t = useStrings(S)
+  const lang = useProfileStore((s) => s.profile.speechLang)
   const label = useLabel()
   const navigate = useNavigate()
   return (
@@ -66,7 +72,7 @@ function FeelingGrid() {
                   <span className={styles.face} aria-hidden="true">
                     <SymbolImg id={f.symbol} />
                   </span>
-                  <span className={styles.feelingLabel}>{name}</span>
+                  <span className={styles.feelingLabel}>{shyLong(name, lang)}</span>
                 </Pressable>
               </li>
             )
@@ -97,6 +103,7 @@ function FeelingHelp({ feeling }: { feeling: Feeling }) {
   const t = useStrings(S)
   const tc = useStrings(COMMON)
   const label = useLabel()
+  const lang = useProfileStore((s) => s.profile.speechLang)
   const [chosen, setChosen] = useState<string | null>(null)
   const [summary, setSummary] = useState(false)
   const helpers = helpersFor(feeling)
@@ -111,7 +118,7 @@ function FeelingHelp({ feeling }: { feeling: Feeling }) {
           <span className={styles.heroFace} aria-hidden="true">
             <SymbolImg id={feeling.symbol} />
           </span>
-          <span className={styles.heroLabel}>{feelingName}</span>
+          <span className={styles.heroLabel}>{shyLong(feelingName, lang)}</span>
           <Volume2 className={styles.heroSpeaker} aria-hidden="true" />
         </Pressable>
 
@@ -137,7 +144,7 @@ function FeelingHelp({ feeling }: { feeling: Feeling }) {
                     <span className={styles.helperArt} aria-hidden="true">
                       <SymbolImg id={h.symbol} />
                     </span>
-                    <span className={styles.helperLabel}>{name}</span>
+                    <span className={styles.helperLabel}>{shyLong(name, lang)}</span>
                     {on && <Check className={styles.check} aria-hidden="true" />}
                   </Pressable>
                 </li>

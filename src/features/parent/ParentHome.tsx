@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { COMMON } from '../../i18n/common'
 import { useStrings } from '../../i18n'
 import { useProfileStore } from '../../store/profile'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
@@ -33,7 +34,7 @@ export default function ParentHome() {
   return (
     <>
       <PageHeader title={t('title')} />
-      <div className={styles.page}>
+      <Page width="normal">
         <div className={styles.spread}>
           <p className={styles.intro}>{t('homeIntro')}</p>
           <span className={styles.profileBadge}>
@@ -58,7 +59,7 @@ export default function ParentHome() {
           ))}
         </ul>
         <p className={styles.hint}>{tc('disclaimer')}</p>
-      </div>
+      </Page>
     </>
   )
 }

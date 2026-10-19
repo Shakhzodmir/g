@@ -9,6 +9,7 @@ import { useDevice } from '../../store/device'
 import { useProfileStore, type ScanMode, type Sensory, type ThemeId } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Segmented, Slider, Toggle } from '../../ui/controls'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { hashPin } from '../../ui/ParentGate'
 import { Pressable } from '../../ui/Pressable'
@@ -44,10 +45,12 @@ function ThemePicker() {
                 <span style={{ background: c.bg }} />
                 <span style={{ background: c.primary }} />
                 <span className={styles.swatchText} style={{ color: c.text }}>
-                  <span style={{ background: c.surface, padding: '0 0.4rem', borderRadius: 6 }}>Aa</span>
+                  <span className={styles.swatchAa} style={{ background: c.surface }}>
+                    Aa
+                  </span>
                 </span>
               </span>
-              <span className={styles.row} style={{ justifyContent: 'center', gap: 4 }}>
+              <span className={styles.themeLabel}>
                 {theme === id && <Check aria-hidden="true" size={16} />}
                 {tk(`theme_${id}`)}
               </span>
@@ -148,7 +151,7 @@ export default function Settings() {
   return (
     <>
       <PageHeader title={t('secSettings')} back="/parent" />
-      <div className={[styles.page, styles.narrow].join(' ')}>
+      <Page width="narrow">
         <Section title={t('deviceSection')}>
           <p className={styles.hint}>{t('deviceNote')}</p>
           <Segmented<UiLang>
@@ -255,7 +258,7 @@ export default function Settings() {
         </Section>
 
         <PinSettings />
-      </div>
+      </Page>
     </>
   )
 }

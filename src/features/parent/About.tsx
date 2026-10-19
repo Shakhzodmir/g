@@ -1,6 +1,7 @@
 import { ExternalLink } from 'lucide-react'
 import { APP_NAME, REPO_URL } from '../../app/brand'
 import { Button } from '../../ui/Button'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import styles from './parent.module.css'
 import { APP_VERSION, Section, useT } from './shared'
@@ -20,7 +21,7 @@ export default function About() {
   return (
     <>
       <PageHeader title={t('secAbout')} back="/parent" />
-      <div className={[styles.page, styles.narrow].join(' ')}>
+      <Page width="narrow">
         <Section>
           <div className={styles.tight}>
             <h2 className={styles.h2}>{APP_NAME}</h2>
@@ -59,7 +60,7 @@ export default function About() {
             </Button>
           </div>
         </Section>
-      </div>
+      </Page>
     </>
   )
 }

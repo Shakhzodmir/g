@@ -61,6 +61,7 @@
   /* Text roles (min 14px for reading text; 13px only for tab/nav labels) */
   --fs-nav: 0.8125rem;
   --fs-card-title: 1.125rem;
+  --fs-section: 1.25rem;
   --fs-card-meta: 0.875rem;
   --measure: 62ch;
 

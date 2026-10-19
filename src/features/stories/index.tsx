@@ -5,6 +5,8 @@ import { Route, Routes, useNavigate, useParams, useSearchParams } from 'react-ro
 import { speak, stopSpeaking } from '../../audio/speech'
 import { STORIES, type SocialStory } from '../../content/stories'
 import { useLabel, useStrings } from '../../i18n'
+import { shy } from '../../lib/hyphenate'
+import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { EmptyState } from '../../ui/misc'
 import { PageHeader } from '../../ui/PageHeader'
@@ -14,10 +16,14 @@ import { canGoNext, canGoPrev, clampPage, isLastPage, nextPage, prevPage, storyP
 import { S } from './strings'
 import styles from './Stories.module.css'
 
+/** Only very long single words get soft hyphens, so ordinary titles still wrap at spaces. */
+const shyLong = (text: string, lang: 'uz' | 'ru') => text.replace(/[\p{L}ʻʼ]{12,}/gu, (w) => shy(w, lang))
+
 function StoryList() {
   const t = useStrings(S)
   const label = useLabel()
   const navigate = useNavigate()
+  const lang = useProfileStore((s) => s.profile.speechLang)
   return (
     <div className={styles.page}>
       <PageHeader title={t('title')} />
@@ -30,7 +36,7 @@ function StoryList() {
                 shape="card"
                 tone="calm"
                 symbol={s.symbol}
-                title={title}
+                title={shyLong(title, lang)}
                 subtitle={t('pages', { n: s.pages.length })}
                 label={title}
                 scanGroup="stories"
@@ -97,7 +103,7 @@ function StoryReader({ story }: { story: SocialStory }) {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-reader>
       <PageHeader title={label(story.title)} back="/stories" />
       <div className={styles.reader}>
         <div

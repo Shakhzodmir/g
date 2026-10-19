@@ -50,6 +50,11 @@ describe('shy', () => {
     for (const part of out.split(SHY)) expect(part.replace(/[^\p{L}ʻʼ]/gu, '').length).toBeGreaterThanOrEqual(2)
   })
 
+  it('honours a custom minimum word length', () => {
+    expect(shy('xohlayman', 'uz', 10)).toBe('xohlayman')
+    expect(shy('xohlayman', 'uz', 9)).toContain(SHY)
+  })
+
   it('works for Cyrillic Uzbek and Russian', () => {
     expect(shy('хоҳлайман', 'uz').replaceAll(SHY, '')).toBe('хоҳлайман')
     expect(shy('Упражнения', 'ru')).toContain(SHY)

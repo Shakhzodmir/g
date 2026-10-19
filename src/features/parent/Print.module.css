@@ -79,14 +79,17 @@
   text-align: center;
   font-family: var(--font-ui);
   font-weight: 800;
-  font-size: 4.4cqi;
+  /* proportional on paper; never below the 14 px reading floor on a phone preview */
+  font-size: max(3.9cqi, var(--fs-caption));
   line-height: 1.15;
+  /* built-in words carry soft hyphens (shy); anywhere only catches long words typed by the adult */
   overflow-wrap: anywhere;
+  hyphens: manual;
 }
 
 .second {
   font-weight: 600;
-  font-size: 3.1cqi;
+  font-size: max(2.9cqi, var(--fs-nav));
   color: #4a5568;
 }
 

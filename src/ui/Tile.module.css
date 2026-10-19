@@ -59,6 +59,10 @@
 }
 
 .title {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: normal;
+  hyphens: manual;
   font-weight: 800;
   font-size: 1.1875rem;
   line-height: 1.15;

@@ -11,6 +11,8 @@
 }
 
 .main {
+  /* The page header follows the width of the <Page> below it (see ui/Page.tsx), so both share one left edge. */
+  --page-w: none;
   grid-area: main;
   min-width: 0;
   padding-bottom: var(--s-4);
@@ -235,4 +237,14 @@
 .main h1:focus {
   outline: none;
   box-shadow: none;
+}
+
+.main:has([data-pw='narrow']) {
+  --page-w: var(--width-narrow);
+}
+.main:has([data-pw='normal']) {
+  --page-w: var(--width-normal);
+}
+.main:has([data-pw='wide']) {
+  --page-w: var(--width-wide);
 }

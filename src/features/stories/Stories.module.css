@@ -1,6 +1,9 @@
 .page {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: var(--width-normal);
+  margin-inline: auto;
   min-height: calc(100dvh - 6rem - var(--s-4) - var(--safe-bottom));
 }
 
@@ -20,21 +23,55 @@
   grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
   gap: var(--s-4);
   width: 100%;
-  max-width: 64rem;
-  margin: 0 auto;
-  padding: 0 var(--s-4) var(--s-4);
+  margin: 0;
+  padding: 0 calc(var(--gutter) + var(--safe-right)) var(--s-4) calc(var(--gutter) + var(--safe-left));
   list-style: none;
 }
 
+/* Cards in a row are equally tall. */
+.list > li {
+  display: grid;
+}
+
+.list > li > * {
+  height: 100%;
+}
+
+/* Phones: one story per row, picture on the left, title and page count beside it. */
 @media (max-width: 599px) {
   .list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-3);
+  }
+  .list > li > * {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
+    justify-items: start;
+    column-gap: var(--s-4);
+    row-gap: var(--s-1);
+    min-height: var(--cell-min);
+    padding: var(--s-3) var(--s-4);
+  }
+  .list > li > * > span:first-child {
+    grid-row: 1 / span 2;
+    width: 5.5rem;
+  }
+  .list > li > * > span:nth-child(2) {
+    align-self: end;
+    text-align: start;
+  }
+  .list > li > * > span:nth-child(3) {
+    align-self: start;
+    text-align: start;
   }
 }
 
-:global(html[data-board='true']) .list {
+:global(html[data-board='true']) .page {
   max-width: 90rem;
+}
+
+:global(html[data-board='true']) .list {
   margin-top: auto;
   padding-bottom: 4.5rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -47,9 +84,7 @@
   grid-template-rows: 1fr auto auto auto;
   gap: var(--s-3);
   width: 100%;
-  max-width: 60rem;
-  margin-inline: auto;
-  padding: 0 var(--s-4) var(--s-4);
+  padding: 0 calc(var(--gutter) + var(--safe-right)) var(--s-4) calc(var(--gutter) + var(--safe-left));
 }
 
 .sheet {
@@ -73,6 +108,7 @@
   align-content: center;
   gap: var(--s-4);
   padding: var(--s-6) var(--s-4);
+  min-width: 0;
 }
 
 .art {
@@ -83,6 +119,8 @@
 .text {
   margin: 0;
   max-width: 28ch;
+  overflow-wrap: normal;
+  hyphens: manual;
   font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2rem);
   font-weight: 700;
   line-height: 1.35;
@@ -192,19 +230,12 @@
 }
 
 /* Board: a narrower reader keeps prev/next clear of the Break button (bottom right). */
-:global(html[data-board='true']) .reader {
+:global(html[data-board='true']) .page[data-reader] {
   max-width: min(56rem, calc(100vw - 24rem));
 }
 
 :global(html[data-board='true']) .art {
   width: clamp(8rem, 28dvh, 16rem);
-}
-
-/* Narrow phones: a slightly smaller header title so it fits beside the Break button. */
-@media (max-width: 480px) {
-  .page > header h1 {
-    font-size: clamp(1rem, 4.2vw, var(--fs-title));
-  }
 }
 
 /* Phone landscape: all three stories in one row. */

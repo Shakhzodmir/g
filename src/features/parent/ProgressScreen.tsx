@@ -7,6 +7,7 @@ import { queryEvents } from '../../store/events'
 import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { EmptyState } from '../../ui/misc'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import styles from './parent.module.css'
 import { calendar, pluralRu, summarize, supportLines, windowStart, type Counted, type SupportLine } from './progress'
@@ -88,7 +89,7 @@ export default function Progress() {
   return (
     <>
       <PageHeader title={t('secProgress')} back="/parent" />
-      <div className={styles.page}>
+      <Page width="normal">
         <p className={styles.intro}>{t('periodNote')}</p>
         {!summary ? (
           <p className={styles.muted} aria-busy="true">
@@ -210,7 +211,7 @@ export default function Progress() {
               </Section>
             </div>
 
-            <div className={styles.twoCol}>
+            <div className={styles.threeCol}>
               <Section title={t('gamesTitle')}>
                 <RankList items={summary.games} empty={t('noneYet')} />
               </Section>
@@ -223,7 +224,7 @@ export default function Progress() {
             </div>
           </>
         )}
-      </div>
+      </Page>
     </>
   )
 }

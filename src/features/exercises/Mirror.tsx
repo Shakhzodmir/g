@@ -12,6 +12,7 @@ import { logEvent } from '../../store/events'
 import { Button } from '../../ui/Button'
 import { Slider } from '../../ui/controls'
 import { Ogizcha } from '../../ui/mascot/Ogizcha'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
@@ -35,8 +36,9 @@ export function MirrorList() {
   const label = useLabel()
   const navigate = useNavigate()
   return (
-    <div className={styles.page}>
+    <div className={styles.frame}>
       <PageHeader title={t('mirrorTitle')} back="/exercises" symbol={<SymbolImg id="mirror" />} />
+      <Page width="normal">
       <p className={styles.lead}>{t('mirrorIntro')}</p>
       <ul className={styles.exGrid} role="list">
         {ARTICULATION.map((ex) => (
@@ -53,6 +55,7 @@ export function MirrorList() {
         ))}
       </ul>
       <p className={styles.note}>{t('warmupNote')}</p>
+      </Page>
     </div>
   )
 }

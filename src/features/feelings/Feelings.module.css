@@ -1,16 +1,17 @@
 .page {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: var(--width-normal);
   min-height: 100%;
+  margin-inline: auto;
 }
 
 .body {
   display: grid;
   gap: var(--s-4);
   width: 100%;
-  max-width: 64rem;
-  margin-inline: auto;
-  padding: 0 var(--s-4) var(--s-4);
+  padding: 0 calc(var(--gutter) + var(--safe-right)) var(--s-4) calc(var(--gutter) + var(--safe-left));
 }
 
 /* ---------- Spoken question ---------- */
@@ -21,6 +22,8 @@
 }
 
 .askText {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   font-size: var(--fs-title);
   font-weight: 800;
@@ -84,7 +87,8 @@
   font-size: 1.125rem;
   line-height: 1.15;
   text-align: center;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 /* ---------- One feeling and its helpers ---------- */
@@ -115,7 +119,8 @@
   font-size: var(--fs-display);
   font-weight: 900;
   line-height: var(--lh-tight);
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .heroSpeaker {
@@ -192,7 +197,8 @@
   font-size: 1.0625rem;
   line-height: 1.15;
   text-align: center;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .check {
@@ -291,8 +297,11 @@
 }
 
 /* Whiteboard: question and display on top; the cards sit low and wide. */
-:global(html[data-board='true']) .body {
+:global(html[data-board='true']) .page {
   max-width: 90rem;
+}
+
+:global(html[data-board='true']) .body {
   min-height: calc(100dvh - 15rem);
   align-content: end;
   /* the Break button floats bottom right on the board */
@@ -303,9 +312,3 @@
   grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 
-/* Narrow phones: a slightly smaller header title so it fits beside the Break button. */
-@media (max-width: 480px) {
-  .page > header h1 {
-    font-size: clamp(1rem, 4.2vw, var(--fs-title));
-  }
-}

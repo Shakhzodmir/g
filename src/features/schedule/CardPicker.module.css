@@ -30,7 +30,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: var(--fs-label);
   line-height: 1.15;
   text-align: start;
 }
@@ -70,7 +70,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 800;
-  font-size: 0.9375rem;
+  font-size: var(--fs-label);
   line-height: 1.15;
   text-align: center;
 }

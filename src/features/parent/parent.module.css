@@ -16,19 +16,6 @@
   letter-spacing: -0.01em;
 }
 
-.page {
-  width: min(100%, 64rem);
-  margin-inline: auto;
-  padding: 0 var(--s-4) var(--s-10);
-  display: grid;
-  gap: var(--s-5);
-  min-width: 0;
-}
-
-.narrow {
-  width: min(100%, 46rem);
-}
-
 .intro {
   color: var(--text-muted);
   max-width: 62ch;
@@ -63,13 +50,17 @@
 }
 
 .h2 {
-  font-size: 1.25rem;
-  line-height: 1.3;
+  font-size: var(--fs-section);
+  line-height: 1.2;
+  overflow-wrap: break-word;
+  hyphens: manual;
 }
 
 .h3 {
-  font-size: 1.0625rem;
-  line-height: 1.3;
+  font-size: var(--fs-card-title);
+  line-height: 1.2;
+  overflow-wrap: break-word;
+  hyphens: manual;
 }
 
 .muted {
@@ -100,15 +91,32 @@
 
 .section {
   display: grid;
+  align-content: start;
   gap: var(--s-4);
   min-width: 0;
   border: 1px solid var(--outline-soft);
 }
 
+/* Card padding: s-4 on phones, s-5 from 600 px (the shared Card is s-5 everywhere). */
+.area .section {
+  padding: var(--s-4);
+}
+
+@media (min-width: 600px) {
+  .area .section {
+    padding: var(--s-5);
+  }
+}
+
+/* Slider values ("300 ms") never wrap onto two lines. */
+.section output {
+  white-space: nowrap;
+}
+
 /* ---------- Home ---------- */
 .homeGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
   gap: var(--s-3);
   margin: 0;
   padding: 0;
@@ -157,20 +165,24 @@
 
 .homeText {
   display: grid;
-  gap: 2px;
+  gap: var(--s-1);
   min-width: 0;
 }
 
 .homeTitle {
   font-weight: 700;
-  font-size: 1.125rem;
-  line-height: 1.25;
+  font-size: var(--fs-card-title);
+  line-height: 1.2;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .homeHint {
   color: var(--text-muted);
-  font-size: var(--fs-caption);
-  line-height: 1.35;
+  font-size: var(--fs-card-meta);
+  line-height: 1.4;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .profileBadge {
@@ -188,7 +200,7 @@
 /* ---------- Form fields ---------- */
 .field {
   display: grid;
-  gap: var(--s-1);
+  gap: var(--s-2);
   min-width: 0;
 }
 
@@ -345,7 +357,7 @@
 .itemSym {
   width: 3rem;
   height: 3rem;
-  border-radius: 10px;
+  border-radius: var(--r-chip);
   object-fit: cover;
 }
 
@@ -354,6 +366,7 @@
   min-width: 0;
 }
 
+/* Names typed by the adult may be any length (anywhere); built-in words break only at syllables (shy()). */
 .itemMain {
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -363,27 +376,40 @@
 .itemSub {
   color: var(--text-muted);
   font-size: var(--fs-caption);
+  line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.itemFixed {
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .badges {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-1);
-  margin-top: 2px;
+  margin-top: var(--s-1);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--s-1);
   padding: 0 var(--s-2);
   border-radius: var(--r-pill);
   background: var(--surface-2);
   color: var(--text-muted);
-  font-size: 0.8125rem;
+  font-size: var(--fs-nav);
   font-weight: 600;
   line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* In a dimmed row the pill would vanish into the row background. */
+.itemRow[data-hidden] .badge {
+  background: var(--surface);
+  border: 1px solid var(--outline-soft);
 }
 
 .badge svg {
@@ -399,7 +425,7 @@
 
 .actions {
   display: flex;
-  gap: var(--s-1);
+  gap: var(--s-2);
   justify-content: flex-end;
 }
 
@@ -417,20 +443,20 @@
 /* ---------- Progress ---------- */
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
   gap: var(--s-3);
 }
 
 .stat {
   display: grid;
-  gap: 2px;
+  gap: var(--s-1);
   padding: var(--s-3) var(--s-4);
   border-radius: var(--r-cell);
   background: var(--surface-2);
 }
 
 .statNum {
-  font-size: 1.875rem;
+  font-size: var(--fs-display);
   font-weight: 700;
   line-height: 1.1;
   color: var(--primary);
@@ -475,14 +501,14 @@
 
 .calWrap {
   display: grid;
-  gap: var(--s-2);
+  gap: var(--s-3);
   max-width: 30rem;
 }
 
 .cal {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: var(--s-1);
 }
 
 .calHead {
@@ -496,10 +522,10 @@
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  border-radius: 10px;
+  border-radius: var(--r-chip);
   background: var(--surface-2);
   color: var(--text-muted);
-  font-size: 0.875rem;
+  font-size: var(--fs-caption);
   font-variant-numeric: tabular-nums;
 }
 
@@ -519,11 +545,20 @@
   border: 1px dashed var(--outline-soft);
 }
 
-.twoCol {
+/* Side-by-side sections: same gap as stacked sections, equal heights. */
+.twoCol,
+.threeCol {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-  gap: var(--s-4);
-  align-items: start;
+  gap: var(--section-gap);
+  align-items: stretch;
+}
+
+.twoCol {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+}
+
+.threeCol {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
 
 .table {
@@ -543,6 +578,7 @@
   color: var(--text-muted);
   font-size: var(--fs-caption);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .table .num {
@@ -569,7 +605,7 @@
 .rankSym {
   width: 2rem;
   height: 2rem;
-  border-radius: 6px;
+  border-radius: var(--s-2);
   object-fit: cover;
 }
 
@@ -591,7 +627,7 @@
 
 .tip {
   display: grid;
-  grid-template-columns: 3.25rem 1fr;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
   gap: var(--s-4);
   align-items: start;
   height: 100%;
@@ -636,7 +672,7 @@
   grid-template-columns: 1fr 1fr;
   height: 2.75rem;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: var(--r-chip);
   border: 1px solid rgb(0 0 0 / 0.18);
 }
 
@@ -646,7 +682,20 @@
   display: grid;
   place-items: center;
   font-weight: 800;
-  font-size: 1.125rem;
+  font-size: var(--fs-card-title);
+}
+
+.swatchAa {
+  padding: 0 var(--s-2);
+  border-radius: var(--s-2);
+}
+
+.themeLabel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
 }
 
 .pinRow {
@@ -660,7 +709,7 @@
 .recorder {
   display: grid;
   gap: var(--s-3);
-  padding: var(--s-3);
+  padding: var(--s-4);
   border-radius: var(--r-cell);
   background: var(--surface-2);
 }

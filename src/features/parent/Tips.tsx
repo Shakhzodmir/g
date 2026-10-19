@@ -1,6 +1,7 @@
 import { TIPS } from '../../content/tips'
 import { useI18n } from '../../i18n'
 import { Card } from '../../ui/misc'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './parent.module.css'
@@ -12,7 +13,7 @@ export default function Tips() {
   return (
     <>
       <PageHeader title={t('secTips')} back="/parent" />
-      <div className={styles.page}>
+      <Page width="normal">
         <p className={styles.intro}>{t('tipsIntro')}</p>
         <ol className={styles.tips}>
           {TIPS.map((tip) => (
@@ -27,7 +28,7 @@ export default function Tips() {
             </li>
           ))}
         </ol>
-      </div>
+      </Page>
     </>
   )
 }

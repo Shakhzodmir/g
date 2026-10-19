@@ -17,7 +17,7 @@ export function Page({
   className?: string
 }) {
   return (
-    <div className={[styles.page, styles[width], gap === 'tight' && styles.tight, className].filter(Boolean).join(' ')}>
+    <div data-pw={width} className={[styles.page, styles[width], gap === 'tight' && styles.tight, className].filter(Boolean).join(' ')}>
       {children}
     </div>
   )

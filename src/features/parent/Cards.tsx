@@ -5,6 +5,7 @@ import { deleteRecording } from '../../audio/recorder'
 import { speak } from '../../audio/speech'
 import type { TopicId, Word } from '../../content/types'
 import { wordsByTopic } from '../../content/vocab'
+import { shy } from '../../lib/hyphenate'
 import { COMMON } from '../../i18n/common'
 import { renderBi, useI18n, useLabel, useStrings, type Bi, type SpeechLang } from '../../i18n'
 import { db, type CustomCard } from '../../store/db'
@@ -12,6 +13,7 @@ import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Segmented } from '../../ui/controls'
 import { Dialog } from '../../ui/Dialog'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { CardEditor, LangPicker, useVoiceDraft } from './CardEditor'
 import { useObjectUrl } from './image'
@@ -32,6 +34,12 @@ function useSecondary() {
   const speechLang = useProfileStore((s) => s.profile.speechLang)
   const { uzScript } = useI18n()
   return (bi: Bi) => (speechLang === 'ru' ? renderBi(bi, uzScript === 'cyrl' ? 'uzc' : 'uz', uzScript) : bi.ru)
+}
+
+/** Built-in words break at syllables (soft hyphens) instead of mid-syllable. */
+function useShy() {
+  const { uiLang } = useI18n()
+  return (text: string) => shy(text, uiLang === 'ru' ? 'ru' : 'uz')
 }
 
 function WordVoiceDialog({ word, onClose }: { word: Word | null; onClose: () => void }) {
@@ -129,13 +137,14 @@ function WordRow({ word, hidden, hasVoice, onToggle, onVoice }: { word: Word; hi
   const t = useT()
   const label = useLabel()
   const secondary = useSecondary()
+  const soft = useShy()
   const name = label(word)
   return (
     <li className={styles.itemRow} data-hidden={hidden || undefined}>
       <SymbolImg id={word.symbol} className={styles.itemSym} />
       <span className={styles.itemText}>
-        <span className={styles.itemMain}>{name}</span>
-        <span className={styles.itemSub}>{secondary(word)}</span>
+        <span className={[styles.itemMain, styles.itemFixed].join(' ')}>{soft(name)}</span>
+        <span className={[styles.itemSub, styles.itemFixed].join(' ')}>{soft(secondary(word))}</span>
         <span className={styles.badges}>
           {word.core && <span className={styles.badge}>{t('levelBadge', { n: word.core.level })}</span>}
           {hasVoice && (
@@ -206,7 +215,7 @@ export default function Cards() {
   return (
     <>
       <PageHeader title={t('secCards')} back="/parent" />
-      <div className={styles.page}>
+      <Page width="normal">
         {!persistent && <p className={styles.notice}>{t('noStorage')}</p>}
         <Section>
           <Segmented
@@ -262,7 +271,7 @@ export default function Cards() {
             ))}
           </ul>
         </Section>
-      </div>
+      </Page>
 
       <CardEditor open={editorOpen} card={editing} defaultTopic={topic} onClose={() => setEditorOpen(false)} />
       <WordVoiceDialog word={voiceFor} onClose={() => setVoiceFor(null)} />

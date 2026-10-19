@@ -1,4 +1,7 @@
 .header {
+  width: 100%;
+  max-width: var(--page-w, none);
+  margin-inline: auto;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto var(--header-reserve, 0px);
   grid-template-areas: 'back title actions reserve';

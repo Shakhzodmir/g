@@ -5,6 +5,7 @@ import { useMotionPreset } from '../../design/motion'
 import { useStrings } from '../../i18n'
 import { useProfileStore } from '../../store/profile'
 import { Musicha } from '../../ui/mascot/Musicha'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { SymbolImg } from '../../ui/SymbolImg'
 import { Tile } from '../../ui/Tile'
@@ -22,8 +23,9 @@ function Hub() {
   const preset = useMotionPreset()
   const adult = useProfileStore((s) => s.profile.kind === 'adult')
   return (
-    <div className={styles.page}>
+    <div className={styles.frame}>
       <PageHeader title={t('title')} />
+      <Page width="normal" className={styles.hub}>
       <ul className={styles.hubGrid} role="list">
         <li>
           <Tile
@@ -36,7 +38,11 @@ function Hub() {
         </li>
         <li>
           <Tile
-            art={adult ? <SymbolImg id="microphone" /> : <Musicha state="happy" size={120} calm={!preset.idleLoops} title="" />}
+            art={
+              <span className={styles.hubArt}>
+                {adult ? <SymbolImg id="microphone" /> : <Musicha state="happy" size={120} calm={!preset.idleLoops} title="" />}
+              </span>
+            }
             title={adult ? t('voiceTitleAdult') : t('voiceTitle')}
             label={adult ? t('voiceTitleAdult') : t('voiceTitle')}
             tone="secondary"
@@ -57,6 +63,7 @@ function Hub() {
           <span>{t('privacyNote')}</span>
         </p>
       </div>
+      </Page>
     </div>
   )
 }

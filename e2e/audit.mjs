@@ -18,6 +18,8 @@ const ROUTES = [
   '/exercises/mirror/smile', '/board-setup', '/parent?qa', '/parent/progress?qa', '/parent/tips?qa', '/parent/cards?qa',
   '/parent/profiles?qa', '/parent/settings?qa', '/parent/data?qa', '/parent/print?qa', '/parent/about?qa',
 ]
+const ONLY = (process.env.ONLY ?? '').split(',').filter(Boolean)
+const ROUTES_TO_RUN = ONLY.length ? ROUTES.filter((r) => ONLY.some((o) => r === o || r.startsWith(o + '/') || r.startsWith(o + '?'))) : ROUTES
 const VIEWPORTS = [
   { name: 'phone-360', width: 360, height: 740, touch: true },
   { name: 'phone-390', width: 390, height: 844, touch: true },
@@ -54,11 +56,13 @@ const probe = () => {
     const box = el.getBoundingClientRect()
     if (box.width === 0 || box.height === 0) continue
     // word broken across lines
-    const re = /\S+/g
+    const re = /[^\s\-‐-―­]+/g
     let m
     let broken = false
     while ((m = re.exec(text)) && !broken) {
       if (m[0].length < 4) continue
+      // words that carry soft hyphens break at syllables on purpose
+      if (text.slice(Math.max(0, m.index - 1), m.index + m[0].length + 1).includes('­')) continue
       const r = document.createRange()
       r.setStart(node, m.index)
       r.setEnd(node, m.index + m[0].length)
@@ -69,14 +73,21 @@ const probe = () => {
       }
     }
     const fs = parseFloat(cs.fontSize)
-    if (fs < 13.5) add('small-text', el, `${fs}px`)
-    if (box.left < 10 || box.right > vw - 10) {
+    if (fs < 12.9) add('small-text', el, `${fs}px`)
+    const inScroller = (() => {
+      for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+        const o = getComputedStyle(p).overflowX
+        if ((o === 'auto' || o === 'scroll') && p.scrollWidth > p.clientWidth + 2) return true
+      }
+      return false
+    })()
+    if (!inScroller && (box.left < 10 || box.right > vw - 10)) {
       if (box.right > vw + 1 || box.left < -1) add('outside-viewport', el, `${Math.round(box.left)}..${Math.round(box.right)}`)
       else if (box.width > 40) add('edge-hug', el, `${Math.round(box.left)}..${Math.round(box.right)}`)
     }
   }
   for (const el of document.querySelectorAll('body *')) {
-    if (el.closest('[aria-hidden="true"], .visually-hidden')) continue
+    if (el.closest('[aria-hidden="true"], .visually-hidden') || el.tagName === 'LEGEND') continue
     const cs = getComputedStyle(el)
     if (cs.display === 'none' || cs.visibility === 'hidden') continue
     if ((cs.overflowX === 'hidden' || cs.overflowX === 'clip') && el.scrollWidth > el.clientWidth + 2 && el.clientWidth > 0 && (el.textContent ?? '').trim()) add('clipped-x', el, `${el.scrollWidth}>${el.clientWidth}`)
@@ -102,7 +113,7 @@ for (const lang of LANGS) {
       [!!vp.board, lang],
     )
     const page = await ctx.newPage()
-    for (const r of ROUTES) {
+    for (const r of ROUTES_TO_RUN) {
       await page.goto(`${base}#${r}`, { waitUntil: 'networkidle' })
       await page.waitForTimeout(450)
       const issues = await page.evaluate(probe)

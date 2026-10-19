@@ -1,14 +1,9 @@
-.page {
-  container-type: inline-size;
-  min-width: 0;
-}
-
+/* Page supplies gutters and max width; this is the vertical rhythm of the screen. */
 .screen {
+  container-type: inline-size;
   display: grid;
-  gap: var(--s-4);
-  width: min(100%, 60rem);
-  margin-inline: auto;
-  padding: 0 var(--s-4) var(--s-4);
+  gap: var(--section-gap);
+  min-width: 0;
 }
 
 /* The Segmented legend duplicates the page title; keep it for screen readers only. */
@@ -28,7 +23,10 @@
 
 .modeBar :global(label) {
   min-height: var(--touch-min);
+  padding-inline: var(--s-2);
   font-weight: 800;
+  font-size: var(--fs-label);
+  white-space: nowrap;
 }
 
 .editingBanner {
@@ -47,7 +45,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--s-2);
-  padding-top: var(--s-2);
+  padding-top: var(--s-4);
   border-top: 1px solid var(--outline-soft);
 }
 
@@ -428,4 +426,30 @@
 :global(html[data-theme='hc-dark']) .slot[data-state='active'] {
   border-color: var(--primary);
   border-width: 6px;
+}
+
+/* Cards get a little more inner room from 600 px (spec: --s-4 phones, --s-5 above) */
+@media (min-width: 600px) {
+  .slot {
+    padding: var(--s-5);
+  }
+  .current {
+    padding: var(--s-6) var(--s-5) var(--s-5);
+  }
+  .finished {
+    padding: var(--s-5);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .slot {
+    padding: var(--s-3);
+  }
+  .current {
+    padding: var(--s-6) var(--s-4) var(--s-4);
+  }
+}
+
+:global(html[data-board='true']) .screen {
+  padding-top: var(--s-4);
 }

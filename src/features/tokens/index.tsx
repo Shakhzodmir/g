@@ -11,6 +11,7 @@ import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import { Reward } from '../../ui/misc'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
@@ -21,7 +22,6 @@ import { DEFAULT_BOARD, useTokenStore } from './store'
 import { S } from './strings'
 import { addToken, isComplete, MAX_GOAL, MIN_GOAL, remaining, remainingSpeechIds, resetBoard, setGoal, setReward } from './tokenLogic'
 import styles from './Tokens.module.css'
-import { headerSafe } from '../schedule/HeaderSafe'
 
 const REWARD_GROUPS: PickerGroup[] = ['stickers', 'activities', 'mine', 'topics']
 const GOALS = Array.from({ length: MAX_GOAL - MIN_GOAL + 1 }, (_, i) => MIN_GOAL + i)
@@ -96,127 +96,129 @@ export default function Tokens() {
   const colsNarrow = board.goal <= 3 ? board.goal : Math.ceil(board.goal / 2)
 
   return (
-    <div className={`${styles.page} ${headerSafe}`}>
+    <>
       <PageHeader title={t('title')} symbol={<SymbolImg id="star" />} />
-      <div className={styles.layout}>
-        <section className={styles.display}>
-          <div className={styles.rewardBox}>
-            <span className={styles.rewardHead}>{t('reward')}</span>
-            {reward ? (
-              <Pressable className={styles.rewardCard} label={`${t('reward')}: ${label(reward.label)}`} onActivate={() => void speak(reward.speech)}>
-                <span className={styles.rewardArt} aria-hidden="true">
+      <Page width="normal">
+        <div className={styles.layout}>
+          <section className={styles.display}>
+            <div className={styles.rewardBox}>
+              <span className={styles.rewardHead}>{t('reward')}</span>
+              {reward ? (
+                <Pressable className={styles.rewardCard} label={`${t('reward')}: ${label(reward.label)}`} onActivate={() => void speak(reward.speech)}>
+                  <span className={styles.rewardArt} aria-hidden="true">
+                    <CardArt card={reward} />
+                  </span>
+                  <span className={styles.rewardName}>{label(reward.label)}</span>
+                </Pressable>
+              ) : (
+                <span className={styles.rewardNone}>{t('noReward')}</span>
+              )}
+            </div>
+
+            <Pressable
+              className={styles.stars}
+              style={{ '--cols-wide': cols, '--cols-narrow': colsNarrow } as React.CSSProperties}
+              label={progress}
+              onActivate={() => void speakSequence(remainingSpeechIds(left, speechLang).map(speechFor))}
+            >
+              {Array.from({ length: board.goal }, (_, i) => (
+                <Star key={i} index={i} filled={i < board.count} />
+              ))}
+            </Pressable>
+
+            {complete && (
+              <div className={styles.celebrate}>
+                <Reward symbol={reward?.symbol ?? 'glowing_star'} label={reward ? label(reward.label) : t('allCollected')} />
+              </div>
+            )}
+          </section>
+
+          <section className={styles.controls}>
+            {complete ? (
+              <Button size="xl" block variant="primary" icon={<RotateCcw />} onActivate={() => setBoard(resetBoard(board))}>
+                {t('again')}
+              </Button>
+            ) : (
+              <Button size="xl" block variant="warm" label={t('addLabel')} onActivate={add} touch={{ ignoreRepeatMs: Math.max(600, repeatMs) }}>
+                {t('add')}
+              </Button>
+            )}
+            <div className={styles.tools}>
+              <Button variant="ghost" icon={<Settings />} onActivate={() => requestUnlock(() => setSetupOpen(true))}>
+                {t('setup')}
+              </Button>
+              <Button variant="ghost" icon={<RotateCcw />} disabled={board.count === 0 || complete} onActivate={() => setConfirmReset(true)}>
+                {t('reset')}
+              </Button>
+            </div>
+          </section>
+        </div>
+
+        <Dialog
+          open={setupOpen && !picking}
+          onClose={() => setSetupOpen(false)}
+          title={t('setupTitle')}
+          footer={<Button onActivate={() => setSetupOpen(false)}>{tc('done')}</Button>}
+        >
+          <div className={styles.setupBlock}>
+            <p className={styles.setupLabel}>{t('goal')}</p>
+            <div className={styles.goals} role="group" aria-label={t('goal')}>
+              {GOALS.map((g) => (
+                <Pressable key={g} className={styles.goal} label={t('goalN', { n: g })} pressed={board.goal === g} onActivate={() => setBoard(setGoal(board, g))}>
+                  {g}
+                </Pressable>
+              ))}
+            </div>
+          </div>
+          <div className={styles.setupBlock}>
+            <p className={styles.setupLabel}>{t('reward')}</p>
+            <div className={styles.setupReward}>
+              {reward && (
+                <span className={styles.setupRewardArt} aria-hidden="true">
                   <CardArt card={reward} />
                 </span>
-                <span className={styles.rewardName}>{label(reward.label)}</span>
-              </Pressable>
-            ) : (
-              <span className={styles.rewardNone}>{t('noReward')}</span>
-            )}
-          </div>
-
-          <Pressable
-            className={styles.stars}
-            style={{ '--cols-wide': cols, '--cols-narrow': colsNarrow } as React.CSSProperties}
-            label={progress}
-            onActivate={() => void speakSequence(remainingSpeechIds(left, speechLang).map(speechFor))}
-          >
-            {Array.from({ length: board.goal }, (_, i) => (
-              <Star key={i} index={i} filled={i < board.count} />
-            ))}
-          </Pressable>
-
-          {complete && (
-            <div className={styles.celebrate}>
-              <Reward symbol={reward?.symbol ?? 'glowing_star'} label={reward ? label(reward.label) : t('allCollected')} />
+              )}
+              <span className={styles.rewardName}>{reward ? label(reward.label) : t('noReward')}</span>
+              <Button variant="soft" onActivate={() => setPicking(true)}>
+                {t('chooseReward')}
+              </Button>
             </div>
-          )}
-        </section>
-
-        <section className={styles.controls}>
-          {complete ? (
-            <Button size="xl" block variant="primary" icon={<RotateCcw />} onActivate={() => setBoard(resetBoard(board))}>
-              {t('again')}
-            </Button>
-          ) : (
-            <Button size="xl" block variant="warm" label={t('addLabel')} onActivate={add} touch={{ ignoreRepeatMs: Math.max(600, repeatMs) }}>
-              {t('add')}
-            </Button>
-          )}
-          <div className={styles.tools}>
-            <Button variant="ghost" icon={<Settings />} onActivate={() => requestUnlock(() => setSetupOpen(true))}>
-              {t('setup')}
-            </Button>
-            <Button variant="ghost" icon={<RotateCcw />} disabled={board.count === 0 || complete} onActivate={() => setConfirmReset(true)}>
-              {t('reset')}
-            </Button>
           </div>
-        </section>
-      </div>
+        </Dialog>
 
-      <Dialog
-        open={setupOpen && !picking}
-        onClose={() => setSetupOpen(false)}
-        title={t('setupTitle')}
-        footer={<Button onActivate={() => setSetupOpen(false)}>{tc('done')}</Button>}
-      >
-        <div className={styles.setupBlock}>
-          <p className={styles.setupLabel}>{t('goal')}</p>
-          <div className={styles.goals} role="group" aria-label={t('goal')}>
-            {GOALS.map((g) => (
-              <Pressable key={g} className={styles.goal} label={t('goalN', { n: g })} pressed={board.goal === g} onActivate={() => setBoard(setGoal(board, g))}>
-                {g}
-              </Pressable>
-            ))}
-          </div>
-        </div>
-        <div className={styles.setupBlock}>
-          <p className={styles.setupLabel}>{t('reward')}</p>
-          <div className={styles.setupReward}>
-            {reward && (
-              <span className={styles.setupRewardArt} aria-hidden="true">
-                <CardArt card={reward} />
-              </span>
-            )}
-            <span className={styles.rewardName}>{reward ? label(reward.label) : t('noReward')}</span>
-            <Button variant="soft" onActivate={() => setPicking(true)}>
-              {t('chooseReward')}
-            </Button>
-          </div>
-        </div>
-      </Dialog>
+        <CardPicker
+          open={picking}
+          onClose={() => setPicking(false)}
+          onPick={(ref) => setBoard(setReward(board, ref))}
+          groups={REWARD_GROUPS}
+          title={t('pickRewardTitle')}
+        />
 
-      <CardPicker
-        open={picking}
-        onClose={() => setPicking(false)}
-        onPick={(ref) => setBoard(setReward(board, ref))}
-        groups={REWARD_GROUPS}
-        title={t('pickRewardTitle')}
-      />
+        <Dialog
+          open={confirmReset}
+          onClose={() => setConfirmReset(false)}
+          title={t('resetTitle')}
+          footer={
+            <>
+              <Button variant="ghost" onActivate={() => setConfirmReset(false)}>
+                {tc('cancel')}
+              </Button>
+              <Button
+                onActivate={() => {
+                  setBoard(resetBoard(board))
+                  setConfirmReset(false)
+                }}
+              >
+                {t('reset')}
+              </Button>
+            </>
+          }
+        >
+          <p>{t('resetText')}</p>
+        </Dialog>
 
-      <Dialog
-        open={confirmReset}
-        onClose={() => setConfirmReset(false)}
-        title={t('resetTitle')}
-        footer={
-          <>
-            <Button variant="ghost" onActivate={() => setConfirmReset(false)}>
-              {tc('cancel')}
-            </Button>
-            <Button
-              onActivate={() => {
-                setBoard(resetBoard(board))
-                setConfirmReset(false)
-              }}
-            >
-              {t('reset')}
-            </Button>
-          </>
-        }
-      >
-        <p>{t('resetText')}</p>
-      </Dialog>
-
-      {gate}
-    </div>
+        {gate}
+      </Page>
+    </>
   )
 }

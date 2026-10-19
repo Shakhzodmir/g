@@ -1,13 +1,7 @@
-.page {
-  min-width: 0;
-}
-
 .layout {
   display: grid;
-  gap: var(--s-5);
-  width: min(100%, 70rem);
-  margin-inline: auto;
-  padding: 0 var(--s-4) var(--s-4);
+  gap: var(--section-gap);
+  min-width: 0;
 }
 
 /* Display (dial, digits, next card) above; controls below, inside the reach zone. */
@@ -15,7 +9,7 @@
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: var(--s-3);
+  gap: var(--s-4);
 }
 
 .controls {
@@ -39,13 +33,13 @@
   position: relative;
   border-radius: 50%;
   box-shadow: var(--elev-2);
-  width: clamp(12rem, min(82vw, 44dvh), 30rem);
+  width: clamp(11rem, min(72vw, 36dvh), 30rem);
   aspect-ratio: 1;
 }
 
 @media (min-width: 900px) {
   .dial {
-    width: clamp(14rem, min(40vw, 62dvh), 34rem);
+    width: clamp(14rem, min(40vw, 54dvh), 34rem);
   }
 }
 
@@ -118,6 +112,7 @@
 
 .status:empty {
   min-height: 0;
+  margin-block: calc(-1 * var(--s-2));
 }
 
 /* ---------- Next card ---------- */
@@ -171,7 +166,7 @@
 
 .nextName {
   font-weight: 800;
-  font-size: 1.25rem;
+  font-size: var(--fs-title);
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
@@ -193,7 +188,8 @@
   gap: var(--s-2);
 }
 
-@container (max-width: 20rem) {
+/* Narrow phones: 3 x 2 chips of equal size instead of six cramped ones */
+@container (max-width: 21rem) {
   .presets {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -203,7 +199,7 @@
   display: grid;
   justify-items: center;
   align-content: center;
-  min-height: 3.75rem;
+  min-height: 4rem;
   padding: var(--s-1);
   border: 2px solid var(--outline-soft);
   border-radius: var(--r-cell);
@@ -228,7 +224,8 @@
 
 .presetNum {
   font-weight: 900;
-  font-size: 1.375rem;
+  font-size: var(--fs-title);
+  line-height: 1.1;
 }
 
 .presetUnit {
@@ -331,4 +328,19 @@
 :global(html[data-theme='hc-light']) .switch,
 :global(html[data-theme='hc-dark']) .switch {
   border: 2px solid var(--outline);
+}
+
+@media (min-width: 600px) {
+  .adult {
+    padding: var(--s-5);
+  }
+}
+
+:global(html[data-board='true']) .layout {
+  padding-top: var(--s-4);
+}
+
+/* Whiteboard: dial + digits + next card must fit above the bottom navigation row */
+:global(html[data-board='true']) .dial {
+  width: clamp(14rem, min(30vw, 38dvh), 34rem);
 }

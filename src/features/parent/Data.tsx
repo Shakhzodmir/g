@@ -5,6 +5,7 @@ import { APP_NAME } from '../../app/brand'
 import { db } from '../../store/db'
 import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { backupFileName, backupStats, BACKUP_EXT, exportProfile, importBackup, parseBackup, wipeDatabase, type Backup } from './backup'
 import styles from './parent.module.css'
@@ -117,7 +118,7 @@ export default function Data() {
   return (
     <>
       <PageHeader title={t('secData')} back="/parent" />
-      <div className={[styles.page, styles.narrow].join(' ')}>
+      <Page width="narrow">
         <p className={styles.intro}>{t('dataIntro')}</p>
         {!persistent && <p className={styles.notice}>{t('noStorage')}</p>}
         {counts && <p className={styles.muted}>{t('counts', { cards: counts.cards, recs: counts.recs, events: counts.events })}</p>}
@@ -170,7 +171,7 @@ export default function Data() {
             </Button>
           </div>
         </Section>
-      </div>
+      </Page>
 
       <ConfirmDialog
         open={!!pending}

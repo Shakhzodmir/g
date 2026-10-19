@@ -7,6 +7,7 @@ import { useProfileStore, type Profile } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Segmented } from '../../ui/controls'
 import { Dialog } from '../../ui/Dialog'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
@@ -100,7 +101,7 @@ export default function Profiles() {
   return (
     <>
       <PageHeader title={t('secProfiles')} back="/parent" />
-      <div className={[styles.page, styles.narrow].join(' ')}>
+      <Page width="narrow">
         <Section>
           <ul className={styles.list}>
             {list.map((p) => {
@@ -145,7 +146,7 @@ export default function Profiles() {
             </Button>
           </div>
         </Section>
-      </div>
+      </Page>
       <CreateDialog open={creating} onClose={() => setCreating(false)} />
       <ConfirmDialog
         open={!!deleting}

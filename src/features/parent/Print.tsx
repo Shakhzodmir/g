@@ -3,9 +3,11 @@ import { useMemo, useState } from 'react'
 import type { Fitz, TopicId } from '../../content/types'
 import { wordsByTopic } from '../../content/vocab'
 import { renderBi, useI18n, useLabel, type Bi } from '../../i18n'
+import { shy } from '../../lib/hyphenate'
 import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Toggle } from '../../ui/controls'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { symbolUrl } from '../../ui/SymbolImg'
 import { useObjectUrl } from './image'
@@ -33,7 +35,7 @@ export function paginate<T>(items: T[], perPage = CARDS_PER_PAGE): T[][] {
 function PrintCard({ item, both, colour, top }: { item: PrintItem; both: boolean; colour: boolean; top: boolean }) {
   const label = useLabel()
   const speechLang = useProfileStore((s) => s.profile.speechLang)
-  const { uzScript } = useI18n()
+  const { uzScript, uiLang } = useI18n()
   const photo = useObjectUrl(item.image ?? null)
   const second = speechLang === 'ru' ? renderBi(item.label, uzScript === 'cyrl' ? 'uzc' : 'uz', uzScript) : item.label.ru
   return (
@@ -42,8 +44,8 @@ function PrintCard({ item, both, colour, top }: { item: PrintItem; both: boolean
         {/* eager: lazy images outside the viewport would be missing from the printout */}
         <img className={[ps.img, photo && ps.photo].filter(Boolean).join(' ')} src={photo ?? symbolUrl(item.symbol)} alt="" loading="eager" decoding="sync" />
         <span className={ps.label}>
-          <span>{label(item.label)}</span>
-          {both && second && second !== label(item.label) && <span className={ps.second}>{second}</span>}
+          <span>{shy(label(item.label), uiLang === 'ru' ? 'ru' : 'uz')}</span>
+          {both && second && second !== label(item.label) && <span className={ps.second}>{shy(second, uiLang === 'ru' ? 'uz' : 'ru')}</span>}
         </span>
       </div>
     </div>
@@ -75,7 +77,7 @@ export default function Print() {
   return (
     <>
       <PageHeader title={t('secPrint')} back="/parent" />
-      <div className={styles.page}>
+      <Page width="normal">
         <div className={styles.stack} data-no-print>
           <p className={styles.intro}>{t('printIntro')}</p>
           <Section title={t('printWhich')}>
@@ -109,7 +111,7 @@ export default function Print() {
         ) : (
           <p className={styles.muted}>{t('printEmpty')}</p>
         )}
-      </div>
+      </Page>
     </>
   )
 }
