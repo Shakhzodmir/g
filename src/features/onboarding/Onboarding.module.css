@@ -141,3 +141,10 @@
     padding: var(--s-3) var(--s-5);
   }
 }
+
+.fieldHint {
+  color: var(--text-muted);
+  font-size: var(--fs-card-meta);
+  font-weight: 600;
+  line-height: 1.35;
+}

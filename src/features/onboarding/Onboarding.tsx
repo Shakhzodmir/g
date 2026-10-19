@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { ONBOARDING } from '../../app/strings'
 import { COMMON } from '../../i18n/common'
 import { useStrings } from '../../i18n'
-import type { SpeechLang, UiLang } from '../../i18n/types'
+import type { UiLang } from '../../i18n/types'
 import { useDevice } from '../../store/device'
 import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
@@ -13,7 +13,7 @@ import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './Onboarding.module.css'
 
-type Step = 'lang' | 'who' | 'speech' | 'info'
+type Step = 'lang' | 'who' | 'name' | 'info'
 
 const LANGS: Array<{ id: UiLang; label: string; sub: string }> = [
   { id: 'uz', label: 'Oʻzbekcha', sub: 'lotin' },
@@ -47,12 +47,13 @@ export default function Onboarding() {
   const createProfile = useProfileStore((s) => s.create)
   const [step, setStep] = useState<Step>('lang')
   const [kind, setKind] = useState<'child' | 'adult'>('child')
-  const [speech, setSpeech] = useState<SpeechLang>(uiLang === 'ru' ? 'ru' : 'uz')
   const [name, setName] = useState('')
   const [info, setInfo] = useState(0)
 
   const finish = async () => {
-    await createProfile({ kind, speechLang: speech, name: name.trim(), theme: kind === 'adult' ? 'kattalar' : 'bolajon' })
+    // One language choice: the app speaks the language it is shown in (Uzbek in either script, or Russian).
+    // The speech language can still be changed separately in the adult area.
+    await createProfile({ kind, speechLang: uiLang === 'ru' ? 'ru' : 'uz', name: name.trim(), theme: kind === 'adult' ? 'kattalar' : 'bolajon' })
     setOnboarded(true)
     void navigator.storage?.persist?.().catch(() => false)
     navigate('/', { replace: true })
@@ -85,7 +86,6 @@ export default function Onboarding() {
                   selected={uiLang === l.id}
                   onActivate={() => {
                     setUiLang(l.id)
-                    setSpeech(l.id === 'ru' ? 'ru' : 'uz')
                     setStep('who')
                   }}
                 />
@@ -100,8 +100,8 @@ export default function Onboarding() {
               {t('whoUses')}
             </h1>
             <div className={styles.choices}>
-              <Choice label={t('child')} hint={t('childHint')} symbol="child" onActivate={() => (setKind('child'), setStep('speech'))} />
-              <Choice label={t('adult')} hint={t('adultHint')} symbol="adult" onActivate={() => (setKind('adult'), setStep('speech'))} />
+              <Choice label={t('child')} hint={t('childHint')} symbol="child" onActivate={() => (setKind('child'), setStep('name'))} />
+              <Choice label={t('adult')} hint={t('adultHint')} symbol="adult" onActivate={() => (setKind('adult'), setStep('name'))} />
             </div>
             <Button variant="ghost" onActivate={() => setStep('lang')}>
               {tc('back')}
@@ -109,28 +109,43 @@ export default function Onboarding() {
           </section>
         )}
 
-        {step === 'speech' && (
-          <section className={styles.step} aria-labelledby="ob-speech">
-            <h1 id="ob-speech" className={styles.h}>
-              {t('speechLang')}
+        {step === 'name' && (
+          <form
+            className={styles.step}
+            aria-labelledby="ob-name"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (name.trim()) setStep('info')
+            }}
+          >
+            <h1 id="ob-name" className={styles.h}>
+              {t('nameTitle')}
             </h1>
-            <div className={styles.choices}>
-              <Choice label={t('speechUz')} selected={speech === 'uz'} onActivate={() => setSpeech('uz')} />
-              <Choice label={t('speechRu')} selected={speech === 'ru'} onActivate={() => setSpeech('ru')} />
-            </div>
             <label className={styles.field}>
               <span>{t('nameQ')}</span>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('namePh')} maxLength={30} autoComplete="off" />
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t('namePh')}
+                maxLength={30}
+                autoComplete="off"
+                autoFocus
+                required
+                aria-describedby="ob-name-hint"
+              />
+              <span id="ob-name-hint" className={styles.fieldHint}>
+                {t('nameHint')}
+              </span>
             </label>
             <div className={styles.row}>
               <Button variant="ghost" onActivate={() => setStep('who')}>
                 {tc('back')}
               </Button>
-              <Button size="lg" onActivate={() => setStep('info')}>
+              <Button size="lg" disabled={!name.trim()} onActivate={() => name.trim() && setStep('info')}>
                 {tc('next')}
               </Button>
             </div>
-          </section>
+          </form>
         )}
 
         {step === 'info' && (
