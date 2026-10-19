@@ -62,7 +62,7 @@
 }
 
 .switch[aria-checked='true'] .knob {
-  transform: translateX(26px);
+  transform: translateX(24px);
 }
 
 .range {
