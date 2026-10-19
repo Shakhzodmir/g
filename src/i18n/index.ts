@@ -19,8 +19,17 @@ export function defineStrings<const U extends Record<string, string>>(dict: {
   return dict as unknown as Dict<Extract<keyof U, string>>
 }
 
+/**
+ * Visual form of Uzbek Latin: data keeps U+02BB/U+02BC (correct for TTS and search), but on screen
+ * ‘ and ’ are used — in Nunito the modifier letters render with a wide gap ("O ʻyinlar").
+ */
+export function prettyUz(text: string): string {
+  return text.replace(/ʻ/g, '‘').replace(/ʼ/g, '’')
+}
+
 const cyrCache = new Map<string, string>()
 function cachedDisplay(text: string, script: UzScript): string {
+  if (script === 'latn') return prettyUz(displayUz(text, 'latn'))
   if (script !== 'cyrl') return displayUz(text, script)
   let v = cyrCache.get(text)
   if (v === undefined) {

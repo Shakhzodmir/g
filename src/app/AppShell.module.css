@@ -1,0 +1,219 @@
+.shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    'main'
+    'nav';
+}
+
+.main {
+  grid-area: main;
+  min-width: 0;
+  padding-bottom: var(--s-4);
+}
+
+.nav {
+  grid-area: nav;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  padding: var(--s-2) var(--s-2) calc(var(--s-2) + var(--safe-bottom));
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -1px 0 var(--outline-soft);
+}
+
+.brand {
+  display: none;
+}
+
+.navList {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navItem {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 4rem;
+  padding: var(--s-2) var(--s-1);
+  border: 0;
+  border-radius: var(--r-cell);
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  line-height: 1.1;
+}
+
+.navItem[aria-current='page'] {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.navItem[data-pressed='true'] {
+  background: var(--surface-2);
+}
+
+.navIcon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.navLabel {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Tablets, laptops, desktops: a calm fixed rail on the left */
+@media (min-width: 840px) {
+  .shell {
+    grid-template-columns: var(--rail-w) 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas: 'nav main';
+  }
+  .nav {
+    position: sticky;
+    top: 0;
+    bottom: auto;
+    height: 100dvh;
+    padding: calc(var(--s-4) + var(--safe-top)) var(--s-2) var(--s-4);
+    box-shadow: 1px 0 0 var(--outline-soft);
+    display: grid;
+    align-content: start;
+    gap: var(--s-4);
+  }
+  .brand {
+    display: block;
+    text-align: center;
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--primary);
+    letter-spacing: 0.01em;
+  }
+  .navList {
+    grid-auto-flow: row;
+    gap: var(--s-2);
+  }
+  .navItem {
+    min-height: 5rem;
+    font-size: 0.875rem;
+  }
+  .navIcon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .main {
+    padding-bottom: var(--s-8);
+  }
+}
+
+/* Interactive whiteboard: navigation is a big row at the bottom, inside the children's reach. */
+.shell[data-board] {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    'main'
+    'nav';
+}
+
+.shell[data-board] .nav {
+  position: sticky;
+  top: auto;
+  bottom: 0;
+  height: auto;
+  display: block;
+  padding: var(--s-2) var(--s-6) var(--s-3);
+  box-shadow: 0 -1px 0 var(--outline-soft);
+}
+
+.shell[data-board] .brand {
+  display: none;
+}
+
+.shell[data-board] .navList {
+  grid-auto-flow: column;
+  max-width: 90rem;
+  margin-inline: auto;
+}
+
+.shell[data-board] .navItem {
+  min-height: 5.5rem;
+  grid-auto-flow: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  font-size: 1.125rem;
+}
+
+/* Break: always in the same place, calm colour, never alarming */
+.breakBtn {
+  position: fixed;
+  z-index: 25;
+  top: calc(var(--s-3) + var(--safe-top));
+  right: calc(var(--s-3) + var(--safe-right));
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--s-4) 0 var(--s-2);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: #e4f1ea;
+  color: #1f4a35;
+  font-weight: 800;
+  box-shadow: var(--elev-2);
+}
+
+:global(html[data-theme='tun']) .breakBtn,
+:global(html[data-theme='hc-dark']) .breakBtn {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.breakBtn[data-pressed='true'] {
+  transform: scale(0.97);
+}
+
+.breakIcon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.shell[data-board] .breakBtn {
+  top: auto;
+  right: var(--s-6);
+  bottom: calc(var(--s-6) + 6.5rem);
+}
+
+.teacher {
+  position: fixed;
+  z-index: 30;
+  top: var(--s-3);
+  right: var(--s-3);
+  display: flex;
+  gap: var(--s-2);
+  padding: var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--elev-2);
+}
+
+.loading {
+  min-height: 50dvh;
+}
+
+@media print {
+  .shell {
+    display: block;
+  }
+}

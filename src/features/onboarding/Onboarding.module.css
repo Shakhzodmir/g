@@ -1,0 +1,127 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--s-6);
+  padding: calc(var(--s-6) + var(--safe-top)) var(--s-4) calc(var(--s-6) + var(--safe-bottom));
+}
+
+.mascot {
+  width: 120px;
+  height: 120px;
+}
+
+.step {
+  width: min(100%, 34rem);
+  display: grid;
+  gap: var(--s-5);
+  justify-items: stretch;
+  text-align: center;
+}
+
+.h {
+  font-size: var(--fs-title);
+}
+
+.p {
+  color: var(--text-muted);
+  max-width: 38ch;
+  margin-inline: auto;
+}
+
+.choices {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  min-height: 5rem;
+  padding: var(--s-3) var(--s-5);
+  border: 2px solid transparent;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+  text-align: left;
+}
+
+.choice[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-container);
+}
+
+.choice[data-pressed='true'] {
+  transform: scale(0.98);
+}
+
+.choiceIcon {
+  flex: none;
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.choiceText {
+  display: grid;
+}
+
+.choiceLabel {
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+.choiceHint {
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+}
+
+.field {
+  display: grid;
+  gap: var(--s-2);
+  text-align: left;
+  font-weight: 700;
+}
+
+.field input {
+  min-height: 3.25rem;
+  padding: 0 var(--s-4);
+  border: 2px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+  font-size: 1.125rem;
+}
+
+.field input:focus-visible {
+  border-color: var(--primary);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.infoIcon {
+  width: 6rem;
+  height: 6rem;
+  margin-inline: auto;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--s-2);
+}
+
+.dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--outline-soft);
+}
+
+.dots span[data-on] {
+  background: var(--primary);
+}

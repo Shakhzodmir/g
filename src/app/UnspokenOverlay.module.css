@@ -1,0 +1,26 @@
+.toast {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  top: 30%;
+  translate: -50% 0;
+  width: min(92vw, 36rem);
+  padding: var(--s-6);
+  border-radius: var(--r-sheet);
+  background: var(--surface);
+  box-shadow: var(--elev-dialog);
+  text-align: center;
+}
+
+.big {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  margin-top: var(--s-3);
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+}

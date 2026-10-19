@@ -1,0 +1,107 @@
+.page {
+  width: min(100%, var(--content-max));
+  margin-inline: auto;
+  padding: calc(var(--s-4) + var(--safe-top)) var(--s-4) var(--s-6);
+  display: grid;
+  gap: var(--s-6);
+}
+
+.top {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--s-3);
+  /* leave room for the fixed Break button on the right */
+  padding-right: 8.5rem;
+}
+
+.topAdult {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.mascotBtn {
+  border: 0;
+  padding: 0;
+  background: none;
+  border-radius: 50%;
+  width: 112px;
+  height: 112px;
+}
+
+.hello {
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--fs-display);
+}
+
+.slogan {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.lock {
+  justify-self: center;
+  color: var(--text-muted);
+}
+
+.plates,
+.small,
+.adultGrid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--s-4);
+}
+
+.plates {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.small {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.small :global([data-pressable]) {
+  min-height: 7.5rem;
+}
+
+.adultGrid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+}
+
+@media (max-width: 380px) {
+  .top {
+    grid-template-columns: auto 1fr;
+    padding-right: 0;
+    padding-top: 3.5rem;
+  }
+  .mascotBtn {
+    width: 88px;
+    height: 88px;
+  }
+}
+
+@media (min-width: 600px) {
+  .small {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .plates {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Board: content sits low, inside the reach zone */
+:global(html[data-board='true']) .page {
+  min-height: calc(100dvh - 7rem);
+  align-content: end;
+}

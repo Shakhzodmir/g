@@ -33,7 +33,7 @@ describe('UI strings', () => {
 describe('renderBi', () => {
   it('renders by UI language and script', () => {
     const bi = { uz: 'Oʻyinlar', ru: 'Игры' }
-    expect(renderBi(bi, 'uz', 'latn')).toBe('Oʻyinlar')
+    expect(renderBi(bi, 'uz', 'latn')).toBe('O‘yinlar')
     expect(renderBi(bi, 'uzc', 'cyrl')).toBe('Ўйинлар')
     expect(renderBi(bi, 'ru', 'latn')).toBe('Игры')
     expect(renderBi(bi, 'uz', 'latn2026')).toBe('Öyinlar')

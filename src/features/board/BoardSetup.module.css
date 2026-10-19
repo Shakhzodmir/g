@@ -1,0 +1,45 @@
+.page {
+  width: min(100%, 44rem);
+  margin-inline: auto;
+  padding: 0 var(--s-4) var(--s-8);
+  display: grid;
+  gap: var(--s-4);
+}
+
+.intro {
+  color: var(--text-muted);
+}
+
+.form {
+  display: grid;
+  gap: var(--s-5);
+}
+
+.preview {
+  display: grid;
+  place-items: center;
+}
+
+.screen {
+  position: relative;
+  width: min(100%, 22rem);
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  border: 6px solid var(--text);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.reach {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--primary) 30%, transparent);
+  border-top: 2px dashed var(--primary);
+}
+
+.reachText {
+  text-align: center;
+  font-weight: 700;
+}
