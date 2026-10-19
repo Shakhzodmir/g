@@ -66,8 +66,8 @@ const CORE: Word[] = [
   core('play', 'oʻyna', 'играть', 'игр+ать', 'action', 'person_bouncing_ball', 1, 4, 2),
   core('where', 'qayerda?', 'где?', 'где?', 'question', 'magnifying_glass_tilted_left', 1, 5, 3),
 
-  core('yes', 'ha', 'да', 'да', 'social', 'head_shaking_vertically', 2, 0, 1),
-  core('no', 'yoʻq', 'нет', 'нет', 'negation', 'head_shaking_horizontally', 2, 1, 1),
+  core('yes', 'ha', 'да', 'да', 'social', 'thumbs_up', 2, 0, 1),
+  core('no', 'yoʻq', 'нет', 'нет', 'negation', 'thumbs_down', 2, 1, 1),
   core('finished', 'tamom', 'всё', 'вс+ё', 'social', 'check_mark_button', 2, 2, 1),
   core('like', 'yoqadi', 'нравится', 'нр+авится', 'action', 'smiling_face_with_heart_eyes', 2, 3, 2),
   core('dislike', 'yoqmaydi', 'не нравится', 'не нр+авится', 'negation', 'persevering_face', 2, 4, 2),
