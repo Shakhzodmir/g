@@ -1,0 +1,32 @@
+import type { SoundMaker } from './types'
+
+/*
+ * "Kim nima deydi? / Кто как говорит?"
+ * Each id equals a WORDS id (animals / toys topic), so the name audio can reuse the word's `ruTts`.
+ * Sounds are spoken by the voice, never played as loud real recordings (no sirens, no growls).
+ */
+export const SOUND_MAKERS: SoundMaker[] = [
+  { id: 'cat', kind: 'animal', uz: 'mushuk', ru: 'кошка', symbol: 'cat', sound: { uz: 'miyov-miyov', ru: 'мяу-мяу' }, ruSoundTts: 'м+яу-м+яу' },
+  { id: 'dog', kind: 'animal', uz: 'it', ru: 'собака', symbol: 'dog', sound: { uz: 'vov-vov', ru: 'гав-гав' }, ruSoundTts: 'гав-гав' },
+  { id: 'cow', kind: 'animal', uz: 'sigir', ru: 'корова', symbol: 'cow', sound: { uz: 'moʻ-moʻ', ru: 'му-у' }, ruSoundTts: 'му-у' },
+  { id: 'sheep', kind: 'animal', uz: 'qoʻy', ru: 'овечка', symbol: 'ewe', sound: { uz: 'ma-a-a', ru: 'бе-е' }, ruSoundTts: 'бе-е' },
+  { id: 'goat', kind: 'animal', uz: 'echki', ru: 'коза', symbol: 'goat', sound: { uz: 'me-e-e', ru: 'ме-е' }, ruSoundTts: 'ме-е' },
+  { id: 'horse', kind: 'animal', uz: 'ot', ru: 'лошадка', symbol: 'horse', sound: { uz: 'igogo', ru: 'иго-го' }, ruSoundTts: 'игог+о' },
+  { id: 'donkey', kind: 'animal', uz: 'eshak', ru: 'ослик', symbol: 'donkey', sound: { uz: 'ia-ia', ru: 'иа-иа' }, ruSoundTts: 'и+а-и+а' },
+  { id: 'rooster', kind: 'animal', uz: 'xoʻroz', ru: 'петух', symbol: 'rooster', sound: { uz: 'qu-qu-qu-quu', ru: 'кукареку' }, ruSoundTts: 'кукарек+у' },
+  { id: 'chicken', kind: 'animal', uz: 'tovuq', ru: 'курица', symbol: 'chicken', sound: { uz: 'qaq-qaq', ru: 'ко-ко-ко' }, ruSoundTts: 'ко-ко-ко' },
+  { id: 'duck', kind: 'animal', uz: 'oʻrdak', ru: 'утка', symbol: 'duck', sound: { uz: 'gʻaq-gʻaq', ru: 'кря-кря' }, ruSoundTts: 'кря-кря' },
+  { id: 'bird', kind: 'animal', uz: 'qush', ru: 'птичка', symbol: 'bird', sound: { uz: 'chik-chirik', ru: 'чик-чирик' }, ruSoundTts: 'чик-чир+ик' },
+  { id: 'dove', kind: 'animal', uz: 'musicha', ru: 'горлица', symbol: 'dove', sound: { uz: 'ku-kuu', ru: 'гу-гу' }, ruSoundTts: 'гу-гу' },
+  { id: 'owl', kind: 'animal', uz: 'boyqush', ru: 'сова', symbol: 'owl', sound: { uz: 'uhu-uhu', ru: 'угу-угу' }, ruSoundTts: 'уг+у-уг+у' },
+  { id: 'frog', kind: 'animal', uz: 'qurbaqa', ru: 'лягушка', symbol: 'frog', sound: { uz: 'vaq-vaq', ru: 'ква-ква' }, ruSoundTts: 'ква-ква' },
+  { id: 'mouse', kind: 'animal', uz: 'sichqon', ru: 'мышка', symbol: 'mouse', sound: { uz: 'chiy-chiy', ru: 'пи-пи-пи' }, ruSoundTts: 'пи-пи-пи' },
+  { id: 'bee', kind: 'animal', uz: 'ari', ru: 'пчела', symbol: 'honeybee', sound: { uz: 'viz-viz', ru: 'ж-ж-ж' }, ruSoundTts: 'ж-ж-ж' },
+
+  { id: 'car', kind: 'vehicle', uz: 'mashina', ru: 'машина', symbol: 'automobile', sound: { uz: 'bip-bip', ru: 'би-би' }, ruSoundTts: 'би-би' },
+  { id: 'train', kind: 'vehicle', uz: 'poyezd', ru: 'поезд', symbol: 'locomotive', sound: { uz: 'chux-chux', ru: 'чух-чух' }, ruSoundTts: 'чух-чух' },
+  { id: 'airplane', kind: 'vehicle', uz: 'samolyot', ru: 'самолёт', symbol: 'airplane', sound: { uz: 'u-u-u', ru: 'у-у-у' }, ruSoundTts: 'у-у-у' },
+  { id: 'helicopter', kind: 'vehicle', uz: 'vertolyot', ru: 'вертолёт', symbol: 'helicopter', sound: { uz: 'tar-tar-tar', ru: 'тр-тр-тр' }, ruSoundTts: 'тр-тр-тр' },
+  { id: 'bicycle', kind: 'vehicle', uz: 'velosiped', ru: 'велосипед', symbol: 'bicycle', sound: { uz: 'jiring-jiring', ru: 'дзинь-дзинь' }, ruSoundTts: 'дзинь-дзинь' },
+  { id: 'ambulance', kind: 'vehicle', uz: 'tez yordam', ru: 'скорая помощь', symbol: 'ambulance', sound: { uz: 'viu-viu', ru: 'виу-виу' }, ruSoundTts: 'в+иу-в+иу' },
+]

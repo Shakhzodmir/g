@@ -1,0 +1,29 @@
+import type { Sticker } from './types'
+
+/* Sticker album rewards (every attempt earns one). Uzbek-flavoured where possible. */
+export const STICKERS: Sticker[] = [
+  { id: 'anor', uz: 'Anor', ru: 'Гранат', symbol: 'anor' },
+  { id: 'non', uz: 'Non', ru: 'Лепёшка', symbol: 'non' },
+  { id: 'doppi', uz: 'Doʻppi', ru: 'Тюбетейка', symbol: 'doppi' },
+  { id: 'somsa', uz: 'Somsa', ru: 'Самса', symbol: 'somsa' },
+  { id: 'palov', uz: 'Palov', ru: 'Плов', symbol: 'palov' },
+  { id: 'choynak', uz: 'Choynak', ru: 'Чайник', symbol: 'teapot' },
+  { id: 'piyola', uz: 'Piyola', ru: 'Пиала', symbol: 'teacup_without_handle' },
+  { id: 'qovun', uz: 'Qovun', ru: 'Дыня', symbol: 'melon' },
+  { id: 'tarvuz', uz: 'Tarvuz', ru: 'Арбуз', symbol: 'watermelon' },
+  { id: 'uzum', uz: 'Uzum', ru: 'Виноград', symbol: 'grapes' },
+  { id: 'gilos', uz: 'Gilos', ru: 'Черешня', symbol: 'cherries' },
+  { id: 'shaftoli', uz: 'Shaftoli', ru: 'Персик', symbol: 'peach' },
+  { id: 'tuya', uz: 'Tuya', ru: 'Верблюд', symbol: 'two_hump_camel' },
+  { id: 'lola', uz: 'Lola', ru: 'Тюльпан', symbol: 'tulip' },
+  { id: 'kungaboqar', uz: 'Kungaboqar', ru: 'Подсолнух', symbol: 'sunflower' },
+  { id: 'musicha', uz: 'Musicha', ru: 'Муся', symbol: 'dove' },
+  { id: 'qozichoq', uz: 'Qoʻzichoq', ru: 'Ягнёнок', symbol: 'ewe' },
+  { id: 'kapalak', uz: 'Kapalak', ru: 'Бабочка', symbol: 'butterfly' },
+  { id: 'baliqcha', uz: 'Baliqcha', ru: 'Рыбка', symbol: 'tropical_fish' },
+  { id: 'varrak', uz: 'Varrak', ru: 'Воздушный змей', symbol: 'kite' },
+  { id: 'kamalak', uz: 'Kamalak', ru: 'Радуга', symbol: 'rainbow' },
+  { id: 'quyosh', uz: 'Quyosh', ru: 'Солнышко', symbol: 'sun_with_face' },
+  { id: 'yulduz', uz: 'Yulduzcha', ru: 'Звёздочка', symbol: 'glowing_star' },
+  { id: 'ayiqcha', uz: 'Ayiqcha', ru: 'Мишка', symbol: 'teddy_bear' },
+]
