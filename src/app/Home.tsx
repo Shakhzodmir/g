@@ -5,8 +5,10 @@ import { speak } from '../audio/speech'
 import { useI18n, useStrings } from '../i18n'
 import { useDevice } from '../store/device'
 import { useProfileStore } from '../store/profile'
+import { shy } from '../lib/hyphenate'
 import { Button } from '../ui/Button'
 import { Musicha } from '../ui/mascot/Musicha'
+import { Page } from '../ui/Page'
 import { useMotionPreset } from '../design/motion'
 import { ParentGate } from '../ui/ParentGate'
 import { Tile } from '../ui/Tile'
@@ -43,12 +45,13 @@ const TONES = ['primary', 'warm', 'secondary', 'calm'] as const
 
 export function HomeChild() {
   const t = useStrings(SHELL)
-  const { ui } = useI18n()
+  const { ui, uiLang } = useI18n()
   const navigate = useNavigate()
   const name = useProfileStore((s) => s.profile.name)
   const preset = useMotionPreset()
   const level = useSpeechLevel()
   const [state, setState] = useState<'idle' | 'speak' | 'happy'>('idle')
+  const hy = uiLang === 'ru' ? 'ru' : 'uz'
 
   const greet = () => {
     setState('speak')
@@ -56,7 +59,7 @@ export function HomeChild() {
   }
 
   return (
-    <div className={styles.page}>
+    <Page width="normal" className={styles.home}>
       <header className={styles.top}>
         <button type="button" className={styles.mascotBtn} onClick={greet} aria-label={ui({ uz: 'Musicha bilan salomlashish', ru: 'Поздороваться с Мусей' })}>
           <Musicha state={state} level={level} size={112} calm={!preset.idleLoops} title="" />
@@ -72,7 +75,7 @@ export function HomeChild() {
       <ul className={styles.plates} role="list">
         {MAIN.map((id, i) => (
           <li key={id}>
-            <Tile shape="plate" tone={TONES[i]} symbol={FEATURES[id].symbol} title={ui(FEATURES[id].title)} label={ui(FEATURES[id].title)} onActivate={() => navigate(FEATURES[id].path)} />
+            <Tile shape="plate" tone={TONES[i]} symbol={FEATURES[id].symbol} title={shy(ui(FEATURES[id].title), hy)} label={ui(FEATURES[id].title)} onActivate={() => navigate(FEATURES[id].path)} />
           </li>
         ))}
       </ul>
@@ -80,7 +83,7 @@ export function HomeChild() {
       <ul className={styles.small} role="list">
         {SMALL.map((id) => (
           <li key={id}>
-            <Tile shape="card" tone="neutral" symbol={FEATURES[id].symbol} title={ui(FEATURES[id].title)} label={ui(FEATURES[id].title)} onActivate={() => navigate(FEATURES[id].path)} />
+            <Tile shape="card" tone="neutral" symbol={FEATURES[id].symbol} title={shy(ui(FEATURES[id].title), hy)} label={ui(FEATURES[id].title)} onActivate={() => navigate(FEATURES[id].path)} />
           </li>
         ))}
       </ul>
@@ -88,13 +91,14 @@ export function HomeChild() {
       <div className={styles.lock}>
         <ParentLock withText />
       </div>
-    </div>
+    </Page>
   )
 }
 
 export function HomeAdult() {
   const t = useStrings(SHELL)
-  const { ui } = useI18n()
+  const { ui, uiLang } = useI18n()
+  const hy = uiLang === 'ru' ? 'ru' : 'uz'
   const navigate = useNavigate()
   const name = useProfileStore((s) => s.profile.name)
   const items: Array<{ id: string; symbol: string; title: string; path: string }> = [
@@ -106,7 +110,7 @@ export function HomeAdult() {
     { id: 'ex', symbol: FEATURES.exercises.symbol, title: ui(FEATURES.exercises.title), path: FEATURES.exercises.path },
   ]
   return (
-    <div className={styles.page}>
+    <Page width="normal" className={styles.home}>
       <header className={styles.topAdult}>
         <h1 className={styles.title}>{name ? t('greetingName', { name }) : t('adultTitle')}</h1>
         <ParentLock />
@@ -115,11 +119,11 @@ export function HomeAdult() {
       <ul className={styles.adultGrid} role="list">
         {items.map((it) => (
           <li key={it.id}>
-            <Tile shape="card" tone="neutral" symbol={it.symbol} title={it.title} label={it.title} onActivate={() => navigate(it.path)} />
+            <Tile shape="card" tone="neutral" symbol={it.symbol} title={shy(it.title, hy)} label={it.title} onActivate={() => navigate(it.path)} />
           </li>
         ))}
       </ul>
-    </div>
+    </Page>
   )
 }
 

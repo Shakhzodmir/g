@@ -18,8 +18,8 @@ export function BoardHint() {
   if (board || dismissed || !likelyBoard) return null
   return (
     <Card>
-      <p className={styles.slogan}>{t('boardHint')}</p>
-      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+      <p className={styles.hintText}>{t('boardHint')}</p>
+      <div className={styles.hintActions}>
         <Button onActivate={() => navigate('/board-setup')}>{t('boardHintOn')}</Button>
         <Button variant="ghost" onActivate={dismiss}>
           {t('boardHintLater')}

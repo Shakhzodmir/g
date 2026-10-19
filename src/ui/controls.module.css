@@ -13,7 +13,7 @@
 
 .labels {
   display: grid;
-  gap: 2px;
+  gap: var(--s-1);
 }
 
 .label {
@@ -29,6 +29,8 @@
 }
 
 .value {
+  flex: none;
+  white-space: nowrap;
   font-weight: 800;
   color: var(--primary);
   font-variant-numeric: tabular-nums;

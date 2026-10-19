@@ -8,6 +8,7 @@ import { useDevice } from '../../store/device'
 import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Musicha } from '../../ui/mascot/Musicha'
+import { Page } from '../../ui/Page'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './Onboarding.module.css'
@@ -65,102 +66,104 @@ export default function Onboarding() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.mascot}>
-        <Musicha state={step === 'info' ? 'happy' : 'idle'} size={120} title="" />
-      </div>
+      <Page width="narrow" className={styles.body}>
+        <div className={styles.mascot}>
+          <Musicha state={step === 'info' ? 'happy' : 'idle'} size={120} title="" />
+        </div>
 
-      {step === 'lang' && (
-        <section className={styles.step} aria-labelledby="ob-lang">
-          <h1 id="ob-lang" className={styles.h}>
-            Tilni tanlang / Выберите язык
-          </h1>
-          <div className={styles.choices}>
-            {LANGS.map((l) => (
-              <Choice
-                key={l.id}
-                label={l.label}
-                hint={l.sub}
-                selected={uiLang === l.id}
-                onActivate={() => {
-                  setUiLang(l.id)
-                  setSpeech(l.id === 'ru' ? 'ru' : 'uz')
-                  setStep('who')
-                }}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+        {step === 'lang' && (
+          <section className={styles.step} aria-labelledby="ob-lang">
+            <h1 id="ob-lang" className={styles.h}>
+              Tilni tanlang / Выберите язык
+            </h1>
+            <div className={styles.choices}>
+              {LANGS.map((l) => (
+                <Choice
+                  key={l.id}
+                  label={l.label}
+                  hint={l.sub}
+                  selected={uiLang === l.id}
+                  onActivate={() => {
+                    setUiLang(l.id)
+                    setSpeech(l.id === 'ru' ? 'ru' : 'uz')
+                    setStep('who')
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-      {step === 'who' && (
-        <section className={styles.step} aria-labelledby="ob-who">
-          <h1 id="ob-who" className={styles.h}>
-            {t('whoUses')}
-          </h1>
-          <div className={styles.choices}>
-            <Choice label={t('child')} hint={t('childHint')} symbol="child" onActivate={() => (setKind('child'), setStep('speech'))} />
-            <Choice label={t('adult')} hint={t('adultHint')} symbol="adult" onActivate={() => (setKind('adult'), setStep('speech'))} />
-          </div>
-          <Button variant="ghost" onActivate={() => setStep('lang')}>
-            {tc('back')}
-          </Button>
-        </section>
-      )}
-
-      {step === 'speech' && (
-        <section className={styles.step} aria-labelledby="ob-speech">
-          <h1 id="ob-speech" className={styles.h}>
-            {t('speechLang')}
-          </h1>
-          <div className={styles.choices}>
-            <Choice label={t('speechUz')} selected={speech === 'uz'} onActivate={() => setSpeech('uz')} />
-            <Choice label={t('speechRu')} selected={speech === 'ru'} onActivate={() => setSpeech('ru')} />
-          </div>
-          <label className={styles.field}>
-            <span>{t('nameQ')}</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('namePh')} maxLength={30} autoComplete="off" />
-          </label>
-          <div className={styles.row}>
-            <Button variant="ghost" onActivate={() => setStep('who')}>
+        {step === 'who' && (
+          <section className={styles.step} aria-labelledby="ob-who">
+            <h1 id="ob-who" className={styles.h}>
+              {t('whoUses')}
+            </h1>
+            <div className={styles.choices}>
+              <Choice label={t('child')} hint={t('childHint')} symbol="child" onActivate={() => (setKind('child'), setStep('speech'))} />
+              <Choice label={t('adult')} hint={t('adultHint')} symbol="adult" onActivate={() => (setKind('adult'), setStep('speech'))} />
+            </div>
+            <Button variant="ghost" onActivate={() => setStep('lang')}>
               {tc('back')}
             </Button>
-            <Button size="lg" onActivate={() => setStep('info')}>
-              {tc('next')}
-            </Button>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {step === 'info' && (
-        <section className={styles.step} aria-labelledby="ob-info">
-          <div className={styles.infoIcon} aria-hidden="true">
-            <SymbolImg id={infos[info].symbol} />
-          </div>
-          <h1 id="ob-info" className={styles.h}>
-            {infos[info].title}
-          </h1>
-          <p className={styles.p}>{infos[info].text}</p>
-          <div className={styles.dots} aria-hidden="true">
-            {infos.map((_, i) => (
-              <span key={i} data-on={i === info || undefined} />
-            ))}
-          </div>
-          <div className={styles.row}>
-            <Button variant="ghost" onActivate={() => void finish()}>
-              {tc('skip')}
-            </Button>
-            {info < infos.length - 1 ? (
-              <Button size="lg" onActivate={() => setInfo(info + 1)}>
+        {step === 'speech' && (
+          <section className={styles.step} aria-labelledby="ob-speech">
+            <h1 id="ob-speech" className={styles.h}>
+              {t('speechLang')}
+            </h1>
+            <div className={styles.choices}>
+              <Choice label={t('speechUz')} selected={speech === 'uz'} onActivate={() => setSpeech('uz')} />
+              <Choice label={t('speechRu')} selected={speech === 'ru'} onActivate={() => setSpeech('ru')} />
+            </div>
+            <label className={styles.field}>
+              <span>{t('nameQ')}</span>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('namePh')} maxLength={30} autoComplete="off" />
+            </label>
+            <div className={styles.row}>
+              <Button variant="ghost" onActivate={() => setStep('who')}>
+                {tc('back')}
+              </Button>
+              <Button size="lg" onActivate={() => setStep('info')}>
                 {tc('next')}
               </Button>
-            ) : (
-              <Button size="lg" onActivate={() => void finish()}>
-                {t('finish')}
+            </div>
+          </section>
+        )}
+
+        {step === 'info' && (
+          <section className={styles.step} aria-labelledby="ob-info">
+            <div className={styles.infoIcon} aria-hidden="true">
+              <SymbolImg id={infos[info].symbol} />
+            </div>
+            <h1 id="ob-info" className={styles.h}>
+              {infos[info].title}
+            </h1>
+            <p className={styles.p}>{infos[info].text}</p>
+            <div className={styles.dots} aria-hidden="true">
+              {infos.map((_, i) => (
+                <span key={i} data-on={i === info || undefined} />
+              ))}
+            </div>
+            <div className={styles.row}>
+              <Button variant="ghost" onActivate={() => void finish()}>
+                {tc('skip')}
               </Button>
-            )}
-          </div>
-        </section>
-      )}
+              {info < infos.length - 1 ? (
+                <Button size="lg" onActivate={() => setInfo(info + 1)}>
+                  {tc('next')}
+                </Button>
+              ) : (
+                <Button size="lg" onActivate={() => void finish()}>
+                  {t('finish')}
+                </Button>
+              )}
+            </div>
+          </section>
+        )}
+      </Page>
     </main>
   )
 }

@@ -15,7 +15,7 @@ interface BoardProps {
   glowKey: string | null
 }
 
-const MIN_CELL = 52
+const MIN_CELL = 48
 const MAX_CELL = 190
 
 /**
@@ -30,8 +30,31 @@ export function coreCellSize(width: number, height: number, gap: number, comfort
   return Math.floor(Math.min(MAX_CELL, Math.max(MIN_CELL, size)))
 }
 
-function useCoreCell(ref: RefObject<HTMLElement | null>, comfortable: number): { cell: number; gap: number } {
-  const [dims, setDims] = useState({ cell: 72, gap: 6 })
+/** Below this width a square cell cannot carry a symbol and a readable two-line label. */
+const NARROW_CELL = 84
+/** Tallest a narrow cell may grow, as a multiple of its width. */
+const NARROW_MAX_RATIO = 1.45
+/** Spare panel height must allow at least this ratio for the rows to fit without scrolling. */
+const NARROW_FIT_RATIO = 1.2
+/** When the rows cannot fit, a narrow cell keeps this ratio and the panel scrolls (positions never change). */
+const NARROW_SCROLL_RATIO = 1.4
+
+/**
+ * Height of a cell. Cells are square, except on narrow phones: there a 13 px label needs room (up to three
+ * short lines for the longest words), so cells are taller than wide. They use the spare panel height (up to
+ * 1.45× the width); on the shortest phones, where the rows would not fit anyway, they keep 1.4× and the
+ * panel scrolls.
+ */
+export function coreCellHeight(cell: number, height: number, gap: number): number {
+  if (cell >= NARROW_CELL) return cell
+  const byHeight = Math.floor((height - (CORE_SIZE - 1) * gap) / CORE_SIZE)
+  return byHeight >= Math.round(cell * NARROW_FIT_RATIO)
+    ? Math.min(byHeight, Math.floor(cell * NARROW_MAX_RATIO))
+    : Math.round(cell * NARROW_SCROLL_RATIO)
+}
+
+function useCoreCell(ref: RefObject<HTMLElement | null>, comfortable: number): { cell: number; cellH: number; gap: number } {
+  const [dims, setDims] = useState({ cell: 72, cellH: 72, gap: 6 })
   useLayoutEffect(() => {
     const el = ref.current?.parentElement
     if (!el) return
@@ -41,7 +64,8 @@ function useCoreCell(ref: RefObject<HTMLElement | null>, comfortable: number): {
       const h = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
       const gap = Math.round(Math.min(12, Math.max(4, Math.min(w, h) * 0.012)))
       const cell = coreCellSize(w, h, gap, comfortable)
-      setDims((d) => (d.cell === cell && d.gap === gap ? d : { cell, gap }))
+      const cellH = coreCellHeight(cell, h, gap)
+      setDims((d) => (d.cell === cell && d.cellH === cellH && d.gap === gap ? d : { cell, cellH, gap }))
     }
     measure()
     if (typeof ResizeObserver === 'undefined') return
@@ -56,14 +80,14 @@ function useCoreCell(ref: RefObject<HTMLElement | null>, comfortable: number): {
 export function CoreBoard({ aac, onTap, glowKey, comfortable = 72 }: BoardProps & { comfortable?: number }) {
   const label = useLabel()
   const ref = useRef<HTMLDivElement>(null)
-  const { cell, gap } = useCoreCell(ref, comfortable)
+  const { cell, cellH, gap } = useCoreCell(ref, comfortable)
   const cells = useMemo(() => buildCoreBoard(WORDS, aac.level, aac.hiddenWordIds), [aac.level, aac.hiddenWordIds])
   return (
     <div
       ref={ref}
       className={styles.core}
       role="group"
-      style={{ '--cell': `${cell}px`, '--gap': `${gap}px`, gridTemplateColumns: `repeat(${CORE_SIZE}, var(--cell))` } as CSSProperties}
+      style={{ '--cell': `${cell}px`, '--cell-h': `${cellH}px`, '--gap': `${gap}px`, gridTemplateColumns: `repeat(${CORE_SIZE}, var(--cell))` } as CSSProperties}
     >
       {cells.map((c) => {
         if (!c.word) return <Placeholder key={`${c.row}-${c.col}`} />

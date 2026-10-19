@@ -6,6 +6,7 @@ import { reachFraction, suggestedScale, useDevice, type ReachAge } from '../../s
 import { Button } from '../../ui/Button'
 import { Segmented, Slider, Toggle } from '../../ui/controls'
 import { Card } from '../../ui/misc'
+import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import styles from './BoardSetup.module.css'
 
@@ -34,7 +35,7 @@ export default function BoardSetup() {
   return (
     <>
       <PageHeader title={t('title')} />
-      <div className={styles.page}>
+      <Page width="narrow">
         <p className={styles.intro}>{t('intro')}</p>
         <Card>
           <div className={styles.form}>
@@ -79,7 +80,7 @@ export default function BoardSetup() {
             </Button>
           </div>
         </Card>
-      </div>
+      </Page>
     </>
   )
 }

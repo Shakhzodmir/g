@@ -1,10 +1,15 @@
 import type { CSSProperties } from 'react'
 import type { Fitz } from '../../content/types'
-import { shy } from '../../lib/hyphenate'
+import { SOFT_HYPHEN, syllablesOf } from '../../lib/hyphenate'
 import { useProfileStore, type AacSettings } from '../../store/profile'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './Aac.module.css'
+
+/** Cells are narrow: words of 6+ letters get soft hyphens (the shared shy() starts at 7). */
+function cellText(text: string, lang: 'uz' | 'ru'): string {
+  return text.replace(/[\p{L}ʻʼ]{6,}/gu, (w) => syllablesOf(w, lang).join(SOFT_HYPHEN))
+}
 
 export function fitzVars(fitz: Fitz): CSSProperties {
   return { '--cell-bg': `var(--fitz-${fitz}-bg)`, '--cell-border': `var(--fitz-${fitz}-border)` } as CSSProperties
@@ -40,7 +45,7 @@ export function Cell({ symbol, src, label, fitz, aac, onActivate, scanGroup, glo
       </span>
       {aac.showLabels && (
         <span className={styles.cellLabel} aria-hidden="true">
-          {shy(label, lang)}
+          {cellText(label, lang)}
         </span>
       )}
     </Pressable>

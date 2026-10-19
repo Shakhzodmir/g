@@ -87,7 +87,7 @@ export function KeyboardPanel() {
           placeholder={t('typeHere')}
           aria-label={t('typeHere')}
         />
-        <Button variant="primary" size="lg" icon={<Volume2 />} label={t('say')} scanGroup="kb-say" onActivate={say} disabled={!text.trim()}>
+        <Button variant="primary" size="lg" icon={<Volume2 />} label={t('say')} scanGroup="kb-say" className={styles.kbSay} onActivate={say} disabled={!text.trim()}>
           {t('say')}
         </Button>
       </div>

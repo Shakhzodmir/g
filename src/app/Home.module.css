@@ -1,18 +1,16 @@
-.page {
-  width: min(100%, var(--content-max));
-  margin-inline: auto;
-  padding: calc(var(--s-4) + var(--safe-top)) var(--s-4) var(--s-6);
-  display: grid;
-  gap: var(--s-6);
+/* Home body is a <Page>: same gutter, width and section rhythm as every other screen. */
+.home {
+  container-type: inline-size;
 }
 
 .top {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--s-3);
-  /* leave room for the fixed Break button on the right */
-  padding-right: 8.5rem;
+  gap: var(--s-4);
+  padding-top: calc(var(--s-3) + var(--safe-top));
+  /* leave room for the fixed Break button / teacher panel on the right */
+  padding-right: var(--header-reserve, 0px);
 }
 
 .topAdult {
@@ -20,6 +18,7 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--s-3);
+  padding-top: calc(var(--s-3) + var(--safe-top));
 }
 
 .mascotBtn {
@@ -27,21 +26,40 @@
   padding: 0;
   background: none;
   border-radius: 50%;
-  width: 112px;
-  height: 112px;
+  width: 7rem;
+  height: 7rem;
 }
 
 .hello {
   min-width: 0;
+  display: grid;
+  gap: var(--s-1);
 }
 
 .title {
   font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 .slogan {
   color: var(--text-muted);
+  font-size: var(--fs-body);
   font-weight: 700;
+  line-height: var(--lh-body);
+}
+
+.hintText {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.hintActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-4);
 }
 
 .lock {
@@ -59,13 +77,17 @@
   gap: var(--s-4);
 }
 
-.plates {
+/* Phones: two across, never wider than a comfortable reading column, so edges of both rows match. */
+.plates,
+.small {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
 }
 
 .small {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-3);
+  gap: var(--s-4);
 }
 
 .small :global([data-pressable]) {
@@ -73,35 +95,39 @@
 }
 
 .adultGrid {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
 }
 
-@media (max-width: 380px) {
+/* The Break button sits at the top right: below 30rem the greeting starts under its row. */
+@media (max-width: 30rem) {
   .top {
-    grid-template-columns: auto 1fr;
     padding-right: 0;
-    padding-top: 3.5rem;
+    padding-top: calc(var(--s-3) + var(--touch-min) + var(--s-3) + var(--safe-top));
+    gap: var(--s-3);
   }
   .mascotBtn {
-    width: 88px;
-    height: 88px;
+    width: 5.5rem;
+    height: 5.5rem;
   }
 }
 
-@media (min-width: 600px) {
+/* Wide enough for four across: plates and small cards share the same grid. */
+@container (min-width: 38rem) {
+  .plates,
   .small {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1000px) {
-  .plates {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-width: none;
   }
 }
 
 /* Board: content sits low, inside the reach zone */
-:global(html[data-board='true']) .page {
+:global(html[data-board='true']) .home {
+  max-width: 44rem; /* ×1.5 root: ~1050 px, so the tiles and the adults' lock stay on one board screen */
   min-height: calc(100dvh - 7rem);
   align-content: end;
+}
+
+/* The centred page only touches the teacher panel at its right end: keep the greeting clear of it. */
+:global(html[data-board='true']) .top {
+  padding-right: 10rem;
 }

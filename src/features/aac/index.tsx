@@ -6,6 +6,7 @@ import { TOPICS } from '../../content/topics'
 import type { TopicId } from '../../content/types'
 import { wordById } from '../../content/vocab'
 import { useI18n, useLabel, useStrings } from '../../i18n'
+import { shy } from '../../lib/hyphenate'
 import { useMediaQuery } from '../../lib/useMediaQuery'
 import { useDevice } from '../../store/device'
 import { logEvent } from '../../store/events'
@@ -63,7 +64,7 @@ const sameView = (a: View, b: View) => a.kind === b.kind && (a.kind !== 'topic' 
 /** "Gapirish / Говорить": the AAC communicator. */
 export default function Aac() {
   const t = useStrings(S)
-  const { ui } = useI18n()
+  const { ui, uiLang } = useI18n()
   const label = useLabel()
   const profile = useProfile()
   const board = useDevice((s) => s.boardMode)
@@ -165,7 +166,7 @@ export default function Aac() {
               <span className={styles.tabIcon} aria-hidden="true">
                 <SymbolImg id={tab.symbol} />
               </span>
-              <span className={styles.tabLabel}>{tab.label}</span>
+              <span className={styles.tabLabel}>{shy(tab.label, uiLang === 'ru' ? 'ru' : 'uz')}</span>
             </Pressable>
           ))}
         </nav>

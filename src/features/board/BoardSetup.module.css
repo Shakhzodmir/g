@@ -1,18 +1,10 @@
-.page {
-  width: min(100%, 44rem);
-  margin-inline: auto;
-  padding: 0 var(--s-4) var(--s-8);
-  display: grid;
-  gap: var(--s-4);
-}
-
 .intro {
   color: var(--text-muted);
 }
 
 .form {
   display: grid;
-  gap: var(--s-5);
+  gap: var(--s-6);
 }
 
 .preview {
@@ -24,7 +16,7 @@
   position: relative;
   width: min(100%, 22rem);
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border-radius: var(--r-chip);
   border: 6px solid var(--text);
   background: var(--surface-2);
   overflow: hidden;
@@ -40,6 +32,7 @@
 }
 
 .reachText {
+  max-width: none;
   text-align: center;
   font-weight: 700;
 }

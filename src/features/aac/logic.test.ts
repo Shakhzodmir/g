@@ -133,4 +133,14 @@ describe('core cell size', () => {
     // Phone landscape: rows cannot fit the height, so the panel scrolls with comfortable cells.
     expect(coreCellSize(700, 200, 6, 72)).toBe(72)
   })
+
+  it('narrow cells grow taller than wide (room for a 13 px label), wide cells stay square', async () => {
+    const { coreCellHeight } = await import('./Boards')
+    // 390 px phone: spare panel height is used (up to 1.45x the width).
+    expect(coreCellHeight(56, 430, 4)).toBe(68)
+    // 360 px phone with a short panel: rows cannot fit, cells keep 1.4x and the panel scrolls.
+    expect(coreCellHeight(51, 330, 4)).toBe(71)
+    // Tablet and larger: square.
+    expect(coreCellHeight(96, 700, 8)).toBe(96)
+  })
 })
