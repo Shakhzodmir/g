@@ -135,6 +135,10 @@ def main() -> None:
                 else:
                     failed.append(f"{lang}:{k}: manifest has no `latin` text (rebuild the manifest)")
                     continue
+            if lang == "uz":
+                # Azure's Uzbek front end is trained on the everyday keyboard form: oʻ/gʻ/tutuq are sent as a plain
+                # apostrophe (checked 19.10.2026: ASCII and curly apostrophes sound identical, U+02BB/U+02BC differ).
+                text = text.replace("ʻ", "'").replace("ʼ", "'").replace("‘", "'").replace("’", "'")
             voice, tag = voices[lang]
             digest = hashlib.sha1(f"azure|{voice}|{rate}|{text}".encode("utf-8")).hexdigest()
             hkey = f"{lang}:{k}"

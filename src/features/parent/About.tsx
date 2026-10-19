@@ -9,7 +9,7 @@ import type { StrKey } from './strings'
 
 const LICENSES: Array<{ what: StrKey; name: string; license: string }> = [
   { what: 'lic_symbols', name: 'Fluent Emoji', license: 'MIT © Microsoft Corporation' },
-  { what: 'lic_voice', name: 'Silero TTS models', license: 'MIT' },
+  { what: 'lic_voice', name: 'Microsoft Azure Neural TTS (uz-UZ-MadinaNeural, ru-RU-SvetlanaNeural)', license: 'Sunʼiy ovoz · Синтетический голос · Microsoft' },
   { what: 'lic_fonts', name: 'Nunito, Onest', license: 'SIL Open Font License 1.1' },
   { what: 'lic_icons', name: 'Lucide', license: 'ISC' },
   { what: 'lic_face', name: 'MediaPipe Tasks Vision', license: 'Apache License 2.0' },

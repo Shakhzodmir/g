@@ -35,6 +35,6 @@ node e2e/audit.mjs http://localhost:5173/   # аудит текстов и от�
 - `scripts/README.md` — как пересоздать озвучку и символы
 
 ## Лицензии
-Символы: Microsoft Fluent Emoji (MIT). Озвучка: Silero (MIT), временная, к пилоту заменяется записью диктора. Шрифты Nunito и Onest: SIL OFL 1.1. Подробнее в разделе «О приложении».
+Символы: Microsoft Fluent Emoji (MIT). Озвучка: готовые клипы Microsoft Azure Neural TTS (uz-UZ-MadinaNeural, ru-RU-SvetlanaNeural), синтетический голос; к пилоту можно заменить записью диктора. Шрифты Nunito и Onest: SIL OFL 1.1. Подробнее в разделе «О приложении».
 
 Gapimiz не является медицинским изделием и не заменяет занятия со специалистом.
