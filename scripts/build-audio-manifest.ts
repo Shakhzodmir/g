@@ -76,6 +76,12 @@ for (const s of (stories.STORIES as ST[] | undefined) ?? []) {
   s.pages.forEach((p, i) => add(`st.${s.id}.${i}`, p.uz, p.ruTts ?? p.ru))
 }
 
+// Exercise prompts spoken by the blow / voice games (keys match src/features/exercises).
+add('x.blow_candles', 'Shamlarni puflab oʻchir.', 'Подуй и задуй св+ечи.')
+add('x.blow_dandelion', 'Qoqioʻtni puflab uchir.', 'Подуй на одув+анчик.')
+add('x.blow_boat', 'Qayiqchani puflab suzdir.', 'Подуй — кор+аблик поплывёт.')
+add('x.voice', 'Ovoz chiqar: a-a-a. Musicha yuqoriga uchadi.', 'Скажи а-а-а — М+уся полетит вверх.')
+
 // Fixed UI utterances referenced directly by app code.
 add('ui.greeting', 'Salom! Men Musicha.', 'Прив+ет! Я М+уся.')
 add('p.need_break', 'Menga tanaffus kerak', 'Мне н+ужен перер+ыв')

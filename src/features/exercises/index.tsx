@@ -23,7 +23,7 @@ function Hub() {
   const adult = useProfileStore((s) => s.profile.kind === 'adult')
   return (
     <div className={styles.page}>
-      <PageHeader title={t('title')} symbol={<SymbolImg id="lips" />} />
+      <PageHeader title={t('title')} />
       <ul className={styles.hubGrid} role="list">
         <li>
           <Tile

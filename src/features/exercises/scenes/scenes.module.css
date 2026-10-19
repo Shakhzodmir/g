@@ -1,0 +1,198 @@
+.scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.wind {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: opacity 300ms ease-out;
+}
+
+/* Candles */
+.plate {
+  fill: var(--surface-2);
+  stroke: var(--outline-soft);
+  stroke-width: 2;
+}
+
+.cake {
+  fill: var(--warm-container);
+  stroke: var(--warm);
+  stroke-width: 3;
+}
+
+.frosting {
+  fill: var(--fitz-social-bg);
+  stroke: var(--fitz-social-border);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.wick {
+  stroke: var(--text-muted);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.flame {
+  transition:
+    opacity 600ms ease-out,
+    transform 180ms ease-out;
+}
+
+.flameOuter {
+  fill: var(--warm);
+}
+
+.flameInner {
+  fill: var(--surface);
+  opacity: 0.85;
+}
+
+.smoke {
+  fill: none;
+  stroke: var(--outline);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: smoke 1.6s ease-out 1;
+}
+
+@keyframes smoke {
+  0% {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-22px);
+  }
+}
+
+/* Dandelion */
+.grass {
+  fill: var(--fitz-action-bg);
+}
+
+.stem {
+  fill: none;
+  stroke: var(--fitz-action-border);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.leaf {
+  fill: var(--fitz-action-bg);
+  stroke: var(--fitz-action-border);
+  stroke-width: 2;
+}
+
+.head {
+  transition: transform 300ms ease-out;
+}
+
+.headCore {
+  fill: var(--outline);
+}
+
+.seed {
+  transition:
+    transform 2.8s cubic-bezier(0.2, 0.6, 0.3, 1),
+    opacity 2.8s ease-in;
+}
+
+.seedFade {
+  transition: opacity 500ms ease-out;
+}
+
+.seedStalk {
+  stroke: var(--outline);
+  stroke-width: 1.6;
+}
+
+.pappus {
+  fill: var(--surface);
+  stroke: var(--outline);
+  stroke-width: 1.6;
+  stroke-dasharray: 2 2;
+}
+
+/* Boat */
+.sun {
+  fill: var(--warm);
+  opacity: 0.8;
+}
+
+.island {
+  fill: var(--fitz-people-bg);
+  stroke: var(--fitz-people-border);
+  stroke-width: 2;
+}
+
+.flag {
+  fill: var(--accent);
+  transition: opacity 600ms ease-out;
+}
+
+.water {
+  fill: var(--fitz-describe-bg);
+}
+
+.wave {
+  fill: none;
+  stroke: var(--fitz-describe-border);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.boatMove {
+  transition: transform 260ms linear;
+}
+
+.boatFade {
+  transition: transform 120ms linear;
+}
+
+.hull {
+  fill: var(--warm);
+  stroke: var(--on-warm);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.mast {
+  stroke: var(--text-muted);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.sail {
+  fill: var(--surface);
+  stroke: var(--outline);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  transition: transform 200ms ease-out;
+}
+
+.sail2 {
+  fill: var(--primary-container);
+  stroke: var(--outline);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smoke {
+    animation: none;
+  }
+  .head,
+  .boatMove,
+  .sail {
+    transition-duration: 1ms;
+  }
+}
