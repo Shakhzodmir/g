@@ -1,3 +1,4 @@
+import { effectiveSensory } from '../lib/sensory'
 import { getProfile } from '../store/profile'
 import { audioContext } from './player'
 
@@ -14,7 +15,8 @@ const SHAPES: Record<Sfx, Array<{ f: number; t: number; d: number; type?: Oscill
 
 export function playSfx(name: Sfx): void {
   const p = getProfile()
-  if (p.sensory === 'calm' && name !== 'soft') return
+  // prefers-reduced-motion counts as the calm level: no effects except the gentle 'soft' one.
+  if (effectiveSensory(p.sensory) === 'calm' && name !== 'soft') return
   const vol = p.voice.sfxVolume
   if (vol <= 0) return
   const ctx = audioContext()

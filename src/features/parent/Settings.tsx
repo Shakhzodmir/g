@@ -23,7 +23,7 @@ const THEMES: ThemeId[] = ['bolajon', 'tun', 'tinch', 'kattalar', 'hc-light', 'h
 const THEME_PREVIEW: Record<ThemeId, { bg: string; surface: string; text: string; primary: string }> = {
   bolajon: { bg: '#f4f8f7', surface: '#ffffff', text: '#1e2633', primary: '#0a7584' },
   tun: { bg: '#0e1726', surface: '#16233a', text: '#edf2f7', primary: '#4fd1db' },
-  tinch: { bg: '#f1f3f2', surface: '#fbfbfa', text: '#283140', primary: '#3c7a82' },
+  tinch: { bg: '#f1f3f2', surface: '#fbfbfa', text: '#283140', primary: '#336d75' },
   kattalar: { bg: '#f6f7f6', surface: '#ffffff', text: '#1f2328', primary: '#0a7584' },
   'hc-light': { bg: '#ffffff', surface: '#ffffff', text: '#000000', primary: '#00205b' },
   'hc-dark': { bg: '#000000', surface: '#000000', text: '#ffffff', primary: '#00e5ff' },

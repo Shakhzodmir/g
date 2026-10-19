@@ -757,7 +757,7 @@
 :global(html[data-board='true']) .controls > .start,
 :global(html[data-board='true']) .controls > .holdZone,
 :global(html[data-board='true']) .controls > .micBlock {
-  order: -1;
+  order: -2;
 }
 
 :global(html[data-board='true']) .controls[data-reach] {

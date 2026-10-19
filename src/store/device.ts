@@ -154,6 +154,19 @@ export function defaultCalibration(viewport: Viewport): BoardCalibration {
   return { ...base, scale: suggestedScale(base.diagonalIn, base.distanceM, viewport), reach: reachFraction(base) }
 }
 
+/** Height of the bottom bar in board mode, rem (AppShell.module.css → --board-nav-h). */
+export const BOARD_NAV_REM = 7
+/** The reach zone is never smaller than this, rem (one row of big tiles must fit). */
+export const REACH_ZONE_MIN_REM = 10
+
+/**
+ * Height in px of the reach zone: the bottom `reach` share of the screen above the bottom bar, at least 10 rem.
+ * Mirrors the CSS `--reach-h: max(10rem, (100dvh - 7rem) * var(--reach))`.
+ */
+export function reachZoneHeight(viewportHeight: number, reach: number, remPx: number): number {
+  return Math.max(REACH_ZONE_MIN_REM * remPx, (viewportHeight - BOARD_NAV_REM * remPx) * reach)
+}
+
 export function currentViewport(): Viewport {
   return typeof window === 'undefined' ? { width: 1920, height: 1080 } : { width: window.innerWidth, height: window.innerHeight }
 }

@@ -5,6 +5,7 @@ import {
   maxScaleFor,
   reachClamp,
   reachFraction,
+  reachZoneHeight,
   reachRaw,
   scaleTooLarge,
   suggestedScale,
@@ -101,5 +102,22 @@ describe('board mode without calibration (B20)', () => {
     useDevice.getState().setBoardMode(true)
     expect(useDevice.getState().boardCalibration).toEqual(mine)
     useDevice.setState({ boardMode: false, boardCalibration: null })
+  })
+})
+
+describe('reach zone layout math', () => {
+  const rem = 24 // 1920×1080 at ×1.5
+  it('is the bottom share of the space above the bar', () => {
+    expect(reachZoneHeight(1080, 0.45, rem)).toBeCloseTo((1080 - 7 * rem) * 0.45, 5)
+    expect(reachZoneHeight(1080, 0.8, rem)).toBeGreaterThan(reachZoneHeight(1080, 0.45, rem))
+  })
+  it('never drops below 10 rem, so one row of big tiles always fits', () => {
+    expect(reachZoneHeight(1080, 0.15, rem)).toBe(10 * rem)
+  })
+  it('moves the zone top accordingly: higher reach → zone starts higher', () => {
+    const navTop = 1080 - 7 * rem
+    const top = (r: number) => navTop - reachZoneHeight(1080, r, rem)
+    expect(top(0.15)).toBeGreaterThan(top(0.4))
+    expect(top(0.4)).toBeGreaterThan(top(0.8))
   })
 })
