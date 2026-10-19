@@ -11,6 +11,7 @@ import { FEATURES } from './features'
 import { Home } from './Home'
 import { SHELL } from './strings'
 import { useApplyTheme } from './useApplyTheme'
+import { prefetchLanguagePack } from '../audio/offlinePack'
 
 const Onboarding = lazy(() => import('../features/onboarding/Onboarding'))
 const BoardSetup = lazy(() => import('../features/board/BoardSetup'))
@@ -37,6 +38,14 @@ function Root() {
   useEffect(() => {
     void load()
   }, [load])
+  const speechLang = useProfileStore((s) => s.profile.speechLang)
+  const onboarded = useDevice((s) => s.onboarded)
+  useEffect(() => {
+    if (!loaded || !onboarded) return
+    // Let the first screen settle, then fetch the speech pack for offline use.
+    const t = setTimeout(() => void prefetchLanguagePack(speechLang), 4000)
+    return () => clearTimeout(t)
+  }, [loaded, onboarded, speechLang])
   if (!loaded) return null
   return (
     <ScanProvider>

@@ -35,13 +35,25 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,webp,png,woff2,mp3,json}'],
+        globPatterns: ['**/*.{js,css,html,svg,webp,png,woff2,json}'],
+        globIgnores: ['audio/**'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
         runtimeCaching: [
+          {
+            // Speech clips: cached on first play and by the background language pack (src/audio/offlinePack.ts).
+            urlPattern: ({ url }) => url.pathname.includes('/audio/') && url.pathname.endsWith('.mp3'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'audio-clips',
+              expiration: { maxEntries: 4000, maxAgeSeconds: YEAR },
+              cacheableResponse: { statuses: [0, 200] },
+              rangeRequests: true,
+            },
+          },
           {
             urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/npm\/@mediapipe\/tasks-vision@/,
             handler: 'CacheFirst',

@@ -66,6 +66,7 @@ for (const x of (exercises.ARTICULATION as EX[] | undefined) ?? []) {
 }
 
 for (const v of (voice.VOICE_LINES as W[] | undefined) ?? []) add(`v.${v.id}`, v.uzTts ?? v.uz, v.ruTts ?? v.ru)
+for (const n of (voice.NUMBER_LINES as W[] | undefined) ?? []) add(`n.${n.id.replace(/^num_/, '')}`, n.uzTts ?? n.uz, n.ruTts ?? n.ru)
 for (const f of (feelings.FEELINGS as W[] | undefined) ?? []) add(`f.${f.id}`, f.uz, f.ruTts ?? f.ru)
 for (const h of (feelings.HELPERS as W[] | undefined) ?? []) add(`h.${h.id}`, h.uz, h.ruTts ?? h.ru)
 
