@@ -130,3 +130,14 @@ function interleave(lists: ListenItem[][], size: number): ListenItem[] {
   }
   return out
 }
+
+/**
+ * How many different prompts the game can ask in total (all three levels): one per category question, one per picture
+ * ("show me the apple"), plus every curated question, place question, yes/no question and two-step command.
+ * Used for the hub label, so it counts the same items the rounds draw from.
+ */
+export function listenTaskCount(): number {
+  const steady: Rand = () => 0.5
+  const categories = CATS.filter((c) => catItems(c.id).length >= 3).length
+  return categories + adultItems().length + qaItems(steady).length + placeItems(steady).length + yesNoItems().length + commandItems(steady).length
+}

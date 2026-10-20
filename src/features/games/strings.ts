@@ -68,6 +68,14 @@ export const S = defineStrings({
     anotherSet: 'Yana bir mashq',
     toTraining: 'Mashqlarga',
     toRelax: 'Tinchlanish',
+    // hub labels: age and size of a game (the numbers come from the data, see counts.ts)
+    ageRange: '{from}–{to} yosh',
+    nWord: '{n} ta soʻz',
+    nPicture: '{n} ta rasm',
+    nTask: '{n} ta topshiriq',
+    nPair: '{n} ta juft',
+    nCategory: '{n} ta turkum',
+    nNumber: '{n} ta son',
   },
   ru: {
     title: 'Игры',
@@ -134,5 +142,12 @@ export const S = defineStrings({
     anotherSet: 'Ещё одно упражнение',
     toTraining: 'К упражнениям',
     toRelax: 'Расслабление',
+    ageRange: '{from}–{to} год|года|лет',
+    nWord: '{n} слово|слова|слов',
+    nPicture: '{n} картинка|картинки|картинок',
+    nTask: '{n} задание|задания|заданий',
+    nPair: '{n} пара|пары|пар',
+    nCategory: '{n} категория|категории|категорий',
+    nNumber: '{n} число|числа|чисел',
   },
 })

@@ -1,0 +1,118 @@
+/* «Qayerga murojaat qilish» page and the contact book. Calm surfaces, nothing relies on colour alone. */
+
+.urgent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 2px solid var(--secondary);
+  border-left-width: 6px;
+  border-radius: var(--r-chip);
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.urgent > svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: 0.15rem;
+}
+
+.urgent p {
+  margin: 0;
+}
+
+.roles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.role {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-1);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-chip);
+  background: var(--surface);
+}
+
+.prep {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding-left: var(--s-5);
+  line-height: 1.45;
+}
+
+/* A telephone link: a button-sized target that also works with a keyboard and a screen reader. */
+.call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--touch-min);
+  max-width: 100%;
+  padding: 0 var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-weight: 800;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.call svg {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.call:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.urgent .call {
+  justify-self: start;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+}
+
+.entryText {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+  min-width: 0;
+}
+
+.phone {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.entryActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+
+.entryActions .call {
+  margin-right: auto;
+}

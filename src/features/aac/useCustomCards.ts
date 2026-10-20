@@ -37,3 +37,13 @@ export function useCustomCards(profileId: string, topic: TopicId | null): ShownC
   }, [cards])
   return useMemo(() => cards.map((card) => ({ card, src: urls[card.id] })), [cards, urls])
 }
+
+/** How many visible own cards the profile has in each topic (for the tab labels; same filter as `useCustomCards`). */
+export function useCustomCardCounts(profileId: string): ReadonlyMap<TopicId, number> {
+  const all = useLiveQuery(() => loadCards(profileId), [profileId])
+  return useMemo(() => {
+    const counts = new Map<TopicId, number>()
+    for (const c of all ?? []) if (!c.hidden) counts.set(c.topic, (counts.get(c.topic) ?? 0) + 1)
+    return counts
+  }, [all])
+}

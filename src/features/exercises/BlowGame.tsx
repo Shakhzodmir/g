@@ -14,13 +14,15 @@ import { Musicha } from '../../ui/mascot/Musicha'
 import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import styles from './exercises.module.css'
-import { AdultSettings, HoldButton, LevelMeter, MicOverlay } from './parts'
+import { AdultSettings, HoldButton, MicOverlay } from './parts'
 import { SCENES } from './scenes/Scenes'
 import { createBlowDetector } from './sensors/blowDetector'
+import { levelFromThreshold } from './sensors/meterLevel'
 import { useMic } from './sensors/useMic'
 import { advanceSession, cooldownLeftMs, minutesLeft, SESSION_MS } from './sessionLimits'
 import { useExerciseSettings, type BlowScene } from './settings'
 import { bi, S } from './strings'
+import { VoiceMeter } from './VoiceMeter'
 
 export { SESSION_MS }
 
@@ -68,11 +70,12 @@ export default function BlowGame() {
   const [progress, setProgress] = useState(0)
   const [blow, setBlow] = useState({ blowing: false, strength: 0 })
   const [done, setDone] = useState(false)
-  const [meter, setMeter] = useState(0)
   const [now, setNow] = useState(() => Date.now())
 
   const detector = useRef(createBlowDetector({ sensitivity }))
   const input = useRef({ blowing: false, strength: 0 })
+  /** Raw loudness for the "we hear you" bar (0..1); the bar smooths it itself. */
+  const meterLevel = useRef(0)
   const progressRef = useRef(0)
 
   useEffect(() => detector.current.setSensitivity(sensitivity), [sensitivity])
@@ -81,7 +84,7 @@ export default function BlowGame() {
     (f) => {
       const s = detector.current.update(f, f.t)
       input.current = { blowing: s.blowing, strength: s.strength }
-      setMeter(Math.round(Math.min(1, f.rms / (s.threshold * 1.5)) * 10) / 10)
+      meterLevel.current = levelFromThreshold(f.rms, s.threshold)
     },
     (floor) => {
       detector.current.setFloor(floor)
@@ -97,8 +100,11 @@ export default function BlowGame() {
     }
   }, [micStatus])
 
+  const readMeter = useCallback(() => meterLevel.current, [])
+
   const resetScene = useCallback(() => {
     progressRef.current = 0
+    meterLevel.current = 0
     input.current = { blowing: false, strength: 0 }
     setProgress(0)
     setDone(false)
@@ -327,10 +333,10 @@ export default function BlowGame() {
         ) : (
           micStatus === 'running' && (
             <div className={styles.micBlock}>
+              <VoiceMeter read={readMeter} active />
               <p className={styles.micStatus}>
                 <Mic aria-hidden="true" className={styles.micIcon} />
                 <span>{t('micOn')}</span>
-                <LevelMeter value={meter} label={t('micOn')} />
               </p>
               {noisy && (
                 <p className={styles.adultNote} role="status">

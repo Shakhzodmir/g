@@ -19,6 +19,7 @@
   color: #1e2633;
   border-radius: 6px;
   box-shadow: var(--elev-2);
+  position: relative;
 }
 
 @supports (container-type: inline-size) {
@@ -39,8 +40,9 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
   /* margin in --u (1% of the sheet); padding on the container itself would not resolve against it */
-  margin: calc(4.5 * var(--u));
-  height: calc(100% - calc(9 * var(--u)));
+  margin: calc(4.5 * var(--u)) calc(4.5 * var(--u)) 0;
+  /* the footer (QR code + address) takes the bottom 16.5 u of the sheet */
+  height: calc(100% - calc(21 * var(--u)));
   border-top: 1px dashed #8a8f98;
   border-left: 1px dashed #8a8f98;
 }
@@ -129,6 +131,41 @@
   border-color: transparent;
 }
 
+/* Footer of a card sheet: QR code to the communicator and the app address to type if the code is not scanned. */
+.foot {
+  position: absolute;
+  left: calc(4.5 * var(--u));
+  right: calc(4.5 * var(--u));
+  bottom: calc(3 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(3 * var(--u));
+  min-width: 0;
+}
+
+.foot .footQr {
+  --qr-size: calc(12 * var(--u));
+  min-width: 0;
+}
+
+.foot .footQr figcaption {
+  font-family: var(--font-ui);
+  font-size: max(calc(2.6 * var(--u)), var(--fs-nav));
+  line-height: 1.2;
+  max-width: calc(30 * var(--u));
+}
+
+.footUrl {
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: max(calc(2.6 * var(--u)), var(--fs-nav));
+  color: #1e2633;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
 @page {
   size: A4 portrait;
   margin: 10mm;
@@ -140,7 +177,7 @@
   }
   .sheet {
     width: 190mm;
-    height: 277mm;
+    height: 276mm;
     aspect-ratio: auto;
     padding: 0;
     border-radius: 0;
@@ -150,7 +187,17 @@
   }
   .grid {
     margin: 0;
-    height: 100%;
+    height: calc(100% - calc(16.5 * var(--u)));
+  }
+  .foot {
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  /* the page padding of the adult area would push the 190 mm sheet past the printable width */
+  .page[data-pw] {
+    max-width: none;
+    padding: 0;
   }
   .sheet:last-child {
     break-after: auto;

@@ -1,5 +1,5 @@
 import { Lock } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router'
 import { COMMON } from '../../i18n/common'
 import { useStrings } from '../../i18n'
@@ -19,6 +19,11 @@ import Settings from './Settings'
 import { useT } from './shared'
 import Tips from './Tips'
 import { isParentUnlocked, lockParent, markParentUnlocked, touchParent, trustedEntry } from './unlock'
+
+// Nutq tekshiruvi / Проверка речи: a screen of its own, loaded when opened.
+const Check = lazy(() => import('../check'))
+// Qayerga murojaat qilish / Куда обратиться (and the family's contact book): loaded when opened.
+const Help = lazy(() => import('../help'))
 
 /** How often the idle timeout is checked. */
 const IDLE_CHECK_MS = 15_000
@@ -97,6 +102,22 @@ export default function ParentArea() {
           <Route path="data" element={<Data />} />
           <Route path="print" element={<Print />} />
           <Route path="about" element={<About />} />
+          <Route
+            path="check/*"
+            element={
+              <Suspense fallback={null}>
+                <Check />
+              </Suspense>
+            }
+          />
+          <Route
+            path="help"
+            element={
+              <Suspense fallback={null}>
+                <Help />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<ParentHome />} />
         </Routes>
       </div>

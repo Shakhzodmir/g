@@ -303,22 +303,59 @@
   color: var(--success);
 }
 
-.meter {
-  display: inline-block;
-  width: 6rem;
-  height: 8px;
+/* ---------- Voice level meter ("we hear you"): large, calm, text-free ---------- */
+.voiceMeter {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--s-2) var(--s-3);
   border-radius: var(--r-pill);
-  background: var(--outline-soft);
-  overflow: hidden;
+  background: var(--surface-2);
+  color: var(--text-muted);
 }
 
-.meterFill {
-  display: block;
-  width: 100%;
-  height: 100%;
+.vmEar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  color: var(--text-muted);
+}
+
+.vmEar > svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.voiceMeter[data-heard] .vmEar {
+  color: var(--success);
+}
+
+.vmTrack {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  height: 1.75rem;
+}
+
+.vmSeg {
+  min-width: 0;
+  border-radius: var(--r-pill);
+  background: var(--outline-soft);
+}
+
+.vmSeg[data-on] {
   background: var(--success);
-  transform-origin: left;
-  transition: transform 90ms linear;
+}
+
+/* Easing only where motion is welcome (never in the calm level or with reduced motion: those get steady steps). */
+.voiceMeter[data-animate] .vmSeg {
+  transition: background-color 120ms linear;
 }
 
 /* Scene picker */
@@ -791,4 +828,46 @@
   display: grid;
   justify-items: center;
   gap: var(--s-1);
+  /* A definite width: the level bar inside takes a percentage of it (a shrink-wrapped block would collapse the bar). */
+  width: min(100%, 24rem);
+}
+
+/* Whiteboard: the bar is part of the reach zone and big enough to read from the back of the room. */
+:global(html[data-board='true']) .micBlock {
+  width: min(100%, 36rem);
+}
+
+:global(html[data-board='true']) .voiceMeter {
+  width: 100%;
+  padding: var(--s-3) var(--s-4);
+}
+
+:global(html[data-board='true']) .vmTrack {
+  height: 2.5rem;
+}
+
+:global(html[data-board='true']) .vmEar {
+  width: 3rem;
+  height: 3rem;
+}
+
+:global(html[data-board='true']) .vmEar > svg {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* High-contrast themes and forced colours: the empty segments get a real outline, the filled ones a solid fill. */
+:global(html[data-theme='hc-light']) .vmSeg,
+:global(html[data-theme='hc-dark']) .vmSeg {
+  box-shadow: inset 0 0 0 2px var(--outline);
+}
+
+@media (forced-colors: active) {
+  .vmSeg {
+    border: 2px solid ButtonText;
+    background: Canvas;
+  }
+  .vmSeg[data-on] {
+    background: Highlight;
+  }
 }

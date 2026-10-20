@@ -227,12 +227,3 @@ export function ProgressRing({ value, size = 64, children }: { value: number; si
     </span>
   )
 }
-
-/** Tiny live level meter so the adult can see the microphone hears something. */
-export function LevelMeter({ value, label }: { value: number; label: string }) {
-  return (
-    <span className={styles.meter} role="img" aria-label={label}>
-      <span className={styles.meterFill} style={{ transform: `scaleX(${Math.min(1, Math.max(0, value))})` }} />
-    </span>
-  )
-}

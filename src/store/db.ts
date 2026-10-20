@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie'
 import type { Fitz, TopicId } from '../content/types'
+import type { CheckRow } from '../features/check/types'
 import type { Profile } from './profileTypes'
 
 export type EventType =
@@ -76,6 +77,8 @@ export class GapimizDB extends Dexie {
   events!: Table<EventRow, number>
   schedules!: Table<ScheduleRow, string>
   stickers!: Table<StickerRow, number>
+  /** Nutq tekshiruvi: one row per profile and screening (results, plan, ticks). Added in schema version 2. */
+  checks!: Table<CheckRow, string>
 
   constructor(name = 'gapimiz') {
     super(name)
@@ -86,6 +89,10 @@ export class GapimizDB extends Dexie {
       events: '++id, profileId, type, ts, [profileId+ts]',
       schedules: 'id, profileId',
       stickers: '++id, profileId, ts',
+    })
+    // v2: speech / communication checks. Only the new table is declared; the others carry over unchanged.
+    this.version(2).stores({
+      checks: 'id, profileId',
     })
   }
 }

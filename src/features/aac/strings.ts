@@ -32,6 +32,9 @@ export const S = defineStrings({
     clearText: 'Matnni tozalash',
     keys: 'Harflar',
     board: 'Soʻzlar',
+    topicCount: '{n} ta soʻz',
+    topicsBack: 'Oldingi mavzular',
+    topicsMore: 'Yana mavzular',
     myCard: 'Mening kartochkam',
   },
   ru: {
@@ -65,6 +68,9 @@ export const S = defineStrings({
     clearText: 'Очистить текст',
     keys: 'Буквы',
     board: 'Слова',
+    topicCount: '{n} слово|слова|слов',
+    topicsBack: 'Предыдущие темы',
+    topicsMore: 'Ещё темы',
     myCard: 'Моя карточка',
   },
 })

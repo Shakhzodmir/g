@@ -50,8 +50,8 @@ async function deleteIndexedDb(name: string): Promise<void> {
 export async function wipeAllData(): Promise<void> {
   const known = useProfileStore.getState().profiles.map((p) => p.id)
   await db
-    .transaction('rw', [db.profiles, db.cards, db.recordings, db.events, db.schedules, db.stickers], async () => {
-      await Promise.all([db.profiles, db.cards, db.recordings, db.events, db.schedules, db.stickers].map((t) => t.clear()))
+    .transaction('rw', [db.profiles, db.cards, db.recordings, db.events, db.schedules, db.stickers, db.checks], async () => {
+      await Promise.all([db.profiles, db.cards, db.recordings, db.events, db.schedules, db.stickers, db.checks].map((t) => t.clear()))
     })
     .catch(() => undefined)
   db.close()

@@ -355,8 +355,25 @@
 }
 
 /* ---------- Topic tabs ---------- */
-.tabs {
+/*
+ * The strip and its two "there is more" arrows share a wrapper: the wrapper is the grid item, the strip inside scrolls.
+ * (Layouts below change the strip's direction and the wrapper's place; they never hide a topic.)
+ */
+.tabsWrap {
   grid-area: tabs;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabsWrap > .tabs {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tabs {
   min-width: 0;
   display: flex;
   gap: var(--s-2);
@@ -409,6 +426,132 @@
   text-align: center;
   overflow-wrap: normal;
   hyphens: manual;
+}
+
+/* Cards on this topic's board, in the corner of the tab (the accessible name spells it out). */
+.tab {
+  position: relative;
+}
+
+.tabCount {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 2px;
+  min-width: 1.5rem;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-weight: 800;
+  line-height: 1.45;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.tab[aria-pressed='true'] .tabCount {
+  background: var(--surface);
+  color: var(--on-primary-container);
+}
+
+/* A soft fade on the side where more tabs wait ... */
+.tabsWrap::before,
+.tabsWrap::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms linear;
+}
+
+.tabsWrap[data-dir='x']::before,
+.tabsWrap[data-dir='x']::after {
+  top: 0;
+  bottom: var(--s-2);
+  width: 3rem;
+}
+.tabsWrap[data-dir='x']::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg), transparent);
+}
+.tabsWrap[data-dir='x']::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg), transparent);
+}
+
+.tabsWrap[data-dir='y']::before,
+.tabsWrap[data-dir='y']::after {
+  left: 0;
+  right: 0;
+  height: 3rem;
+}
+.tabsWrap[data-dir='y']::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg), transparent);
+}
+.tabsWrap[data-dir='y']::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg), transparent);
+}
+
+.tabsWrap[data-before]::before,
+.tabsWrap[data-after]::after {
+  opacity: 1;
+}
+
+/* ... and a big round arrow that moves the strip by about a screenful. */
+.tabsArrow {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--elev-2);
+  touch-action: manipulation;
+}
+
+.tabsArrow > svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.tabsArrow[data-pressed='true'] {
+  background: var(--primary-container);
+}
+
+.tabsWrap[data-dir='x'] .tabsArrow {
+  top: calc((100% - var(--s-2) - var(--touch-min)) / 2);
+}
+.tabsWrap[data-dir='x'] .tabsArrow[data-side='before'] {
+  left: 2px;
+}
+.tabsWrap[data-dir='x'] .tabsArrow[data-side='after'] {
+  right: 2px;
+}
+
+/* Column strips keep their left padding (the gutter): centre the arrow on the tabs. */
+.tabsWrap[data-dir='y'] .tabsArrow {
+  left: calc(var(--gutter) + var(--safe-left) + (100% - var(--gutter) - var(--safe-left) - var(--touch-min)) / 2);
+}
+.tabsWrap[data-dir='y'] .tabsArrow[data-side='before'] {
+  top: 2px;
+}
+.tabsWrap[data-dir='y'] .tabsArrow[data-side='after'] {
+  bottom: var(--s-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabsWrap::before,
+  .tabsWrap::after {
+    transition: none;
+  }
 }
 
 /* ---------- Panel ---------- */
@@ -1056,7 +1199,7 @@
 .screen[data-board] .panel > * {
   margin-top: auto;
 }
-.screen[data-board] .tabs {
+.screen[data-board] .tabsWrap {
   align-self: end;
   max-height: 100%;
 }

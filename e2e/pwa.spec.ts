@@ -61,6 +61,8 @@ test('the service worker precaches the app shell only (not every symbol), and a 
 })
 
 test('the background pack fills the symbols cache', async ({ page }) => {
+  // ~4500 audio clips + ~450 symbols are fetched three at a time: well over a minute on a cold run
+  test.setTimeout(240_000)
   await page.addInitScript((seed) => localStorage.setItem('gapimiz.device', JSON.stringify(seed)), SEED)
   await page.goto('./')
   // the adult gate: hold for 1.5 s, then open "About"
@@ -82,9 +84,9 @@ test('the background pack fills the symbols cache', async ({ page }) => {
       return (await c.keys()).length > 300
     },
     null,
-    { timeout: 60_000 },
+    { timeout: 120_000 },
   )
-  await expect(page.getByText('Офлайн готов')).toBeVisible({ timeout: 60_000 })
+  await expect(page.getByText('Офлайн готов')).toBeVisible({ timeout: 120_000 })
 })
 
 test('every screen sets its own document title', async ({ page }) => {

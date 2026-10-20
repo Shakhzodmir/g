@@ -233,3 +233,44 @@ describe('camera (B9, B18)', () => {
     expect(screen.getByRole('button', { name: 'Uddaladi!' })).toBeInTheDocument()
   })
 })
+
+describe('level meter ("we hear you") in the microphone exercises', () => {
+  it('voice: the meter appears once the room is measured and the microphone listens', async () => {
+    vi.useFakeTimers()
+    const { stream } = fakeStream()
+    media(() => Promise.resolve(stream))
+    at('/exercises/voice', <VoiceGame />)
+    expect(screen.queryByRole('meter')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Mikrofonni yoqish' }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2200)
+    })
+    expect(screen.getByRole('meter', { name: 'Tovush darajasi' })).toHaveAttribute('aria-valuenow', '0')
+  })
+
+  it('blow: the meter appears with the microphone, and is gone again in the press-and-hold fallback', async () => {
+    vi.useFakeTimers()
+    const { stream } = fakeStream()
+    media(() => Promise.resolve(stream))
+    at('/exercises/blow', <BlowGame />)
+    fireEvent.click(screen.getByRole('button', { name: 'Mikrofonni yoqish' }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2200)
+    })
+    expect(screen.getByRole('meter')).toBeInTheDocument()
+  })
+
+  it('denied microphone: no meter, the hold button completes the exercise', async () => {
+    media(() => Promise.reject(new DOMException('no', 'NotAllowedError')))
+    at('/exercises/voice', <VoiceGame />)
+    fireEvent.click(screen.getByRole('button', { name: 'Mikrofonni yoqish' }))
+    expect(await screen.findByRole('button', { name: 'Bosib turing' })).toBeVisible()
+    expect(screen.queryByRole('meter')).toBeNull()
+  })
+
+  it('"without microphone" never shows a meter', () => {
+    at('/exercises/blow', <BlowGame />)
+    fireEvent.click(screen.getByRole('button', { name: 'Mikrofonsiz' }))
+    expect(screen.queryByRole('meter')).toBeNull()
+  })
+})

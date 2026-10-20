@@ -49,6 +49,7 @@ function ignoredText(r: IgnoredReport, t: (k: StrKey, v?: Record<string, string 
   if (r.schedules) parts.push(t('ignSchedules', { n: r.schedules }))
   if (r.stickers) parts.push(t('ignStickers', { n: r.stickers }))
   if (r.events) parts.push(t('ignEvents', { n: r.events }))
+  if (r.checks) parts.push(t('ignChecks', { n: r.checks }))
   if (r.settings.length) parts.push(t('ignSettings', { names: r.settings.slice(0, 6).join(', ') + (r.settings.length > 6 ? ' …' : '') }))
   if (r.device) parts.push(t('ignDevice'))
   return parts.length ? `${t('ignoredLead')} ${parts.join('; ')}.` : ''

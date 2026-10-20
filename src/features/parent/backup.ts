@@ -3,6 +3,8 @@ import type { TopicId } from '../../content/types'
 import { normalizeUz } from '../../i18n/orthography'
 import { db as defaultDb, type CustomCard, type EventRow, type EventType, type GapimizDB, type Recording, type ScheduleItem, type ScheduleRow, type StickerRow } from '../../store/db'
 import { defaultProfile, sanitizeProfile, type Profile } from '../../store/profileTypes'
+import { sanitizeRow } from '../check/model'
+import type { CheckRow } from '../check/types'
 import { applyDevice, collectDevice, sanitizeDevice, type DeviceBlock } from './deviceBlock'
 import { asciiSlug, cleanName, cleanText, FITZ, isSafeId, MAX_LABEL_LEN } from './model'
 
@@ -27,6 +29,8 @@ export const LIMITS = {
   schedules: 50,
   stickers: 2000,
   events: 100_000,
+  /** Rows examined in the `checks` array (there are three screenings per profile). */
+  checks: 12,
   imageBase64: 4_000_000,
   audioBase64: 3_000_000,
   scheduleItems: 60,
@@ -52,6 +56,8 @@ export interface Backup {
   schedules: ScheduleRow[]
   stickers: Array<Omit<StickerRow, 'id'>>
   events: Array<Omit<EventRow, 'id'>>
+  /** Speech / communication checks (results, plan, ticks). Optional: files from before the feature have none. */
+  checks?: CheckRow[]
   device?: DeviceBlock
 }
 
@@ -62,6 +68,7 @@ export interface IgnoredReport {
   schedules: number
   stickers: number
   events: number
+  checks: number
   /** Names of profile settings that were invalid and replaced by defaults/clamped values (e.g. `voice.rate`). */
   settings: string[]
   /** The `device` block was present but unusable. */
@@ -69,7 +76,7 @@ export interface IgnoredReport {
 }
 
 export function ignoredTotal(r: IgnoredReport): number {
-  return r.cards + r.recordings + r.schedules + r.stickers + r.events + r.settings.length + (r.device ? 1 : 0)
+  return r.cards + r.recordings + r.schedules + r.stickers + r.events + r.checks + r.settings.length + (r.device ? 1 : 0)
 }
 
 async function blobBytes(blob: Blob): Promise<Uint8Array> {
@@ -113,12 +120,13 @@ function stripId<T extends { id?: number }>(row: T): Omit<T, 'id'> {
 /** Collects every row of one profile (the profile object itself comes from the store: it is the freshest copy). */
 export async function exportProfile(profile: Profile, appVersion: string, database: GapimizDB = defaultDb, now = Date.now(), withDevice = true): Promise<Backup> {
   const pid = profile.id
-  const [cards, recordings, schedules, stickers, events] = await Promise.all([
+  const [cards, recordings, schedules, stickers, events, checks] = await Promise.all([
     database.cards.where('profileId').equals(pid).toArray(),
     database.recordings.where('profileId').equals(pid).toArray(),
     database.schedules.where('profileId').equals(pid).toArray(),
     database.stickers.where('profileId').equals(pid).toArray(),
     database.events.where('profileId').equals(pid).toArray(),
+    database.checks.where('profileId').equals(pid).toArray(),
   ])
   return {
     format: BACKUP_FORMAT,
@@ -131,6 +139,7 @@ export async function exportProfile(profile: Profile, appVersion: string, databa
     schedules,
     stickers: stickers.map(stripId),
     events: events.map(stripId),
+    checks,
     ...(withDevice ? { device: collectDevice(pid) } : {}),
   }
 }
@@ -280,7 +289,7 @@ export function parseBackup(text: string): ParseResult {
     if (!Array.isArray(data[k])) return { ok: false, error: 'invalid' }
   }
 
-  const ignored: IgnoredReport = { cards: 0, recordings: 0, schedules: 0, stickers: 0, events: 0, settings: [], device: false }
+  const ignored: IgnoredReport = { cards: 0, recordings: 0, schedules: 0, stickers: 0, events: 0, checks: 0, settings: [], device: false }
   const profile = sanitizeBackupProfile(data.profile, ignored.settings)
   if (!profile) return { ok: false, error: 'invalid' }
   const pid = profile.id
@@ -305,6 +314,22 @@ export function parseBackup(text: string): ParseResult {
   const stickers = run(data.stickers as unknown[], LIMITS.stickers, (x) => sanitizeSticker(x, pid), 'stickers')
   const events = run(data.events as unknown[], LIMITS.events, (x) => sanitizeEvent(x, pid), 'events')
 
+  // Speech / communication checks: optional, rebuilt row by row (one per screening kind, the last one wins).
+  let checks: CheckRow[] | undefined
+  if (data.checks !== undefined) {
+    if (Array.isArray(data.checks)) {
+      const byKind = new Map<string, CheckRow>()
+      data.checks.forEach((x, i) => {
+        const row = i < LIMITS.checks ? sanitizeRow(x, pid) : null
+        if (row) byKind.set(row.kind, row)
+        else ignored.checks++
+      })
+      checks = [...byKind.values()]
+    } else {
+      ignored.checks++
+    }
+  }
+
   let device: DeviceBlock | undefined
   if (data.device !== undefined) {
     device = sanitizeDevice(data.device) ?? undefined
@@ -316,7 +341,7 @@ export function parseBackup(text: string): ParseResult {
   return {
     ok: true,
     ignored,
-    backup: { format: BACKUP_FORMAT, version: data.version, app, exportedAt, profile, cards, recordings, schedules, stickers, events, ...(device ? { device } : {}) },
+    backup: { format: BACKUP_FORMAT, version: data.version, app, exportedAt, profile, cards, recordings, schedules, stickers, events, ...(checks ? { checks } : {}), ...(device ? { device } : {}) },
   }
 }
 
@@ -337,7 +362,7 @@ export async function importBackup(b: Backup, database: GapimizDB = defaultDb, a
   const profile = sanitizeProfile(b.profile, defaultProfile())
   const pid = profile.id
   if (!isSafeId(pid)) throw new Error('bad profile id')
-  const tables = [database.profiles, database.cards, database.recordings, database.events, database.schedules, database.stickers]
+  const tables = [database.profiles, database.cards, database.recordings, database.events, database.schedules, database.stickers, database.checks]
   let replaced = false
   const counts = { cards: 0, recordings: 0, events: 0 }
   await database.transaction('rw', tables, async () => {
@@ -362,12 +387,15 @@ export async function importBackup(b: Backup, database: GapimizDB = defaultDb, a
     await database.events.where('profileId').equals(pid).delete()
     await database.schedules.where('profileId').equals(pid).delete()
     await database.stickers.where('profileId').equals(pid).delete()
+    // A file from before the checks existed has no `checks` key: the checks already on this device are left alone.
+    if (b.checks) await database.checks.where('profileId').equals(pid).delete()
     await database.profiles.put(profile)
     await database.cards.bulkPut(cards)
     await database.recordings.bulkPut(recordings)
     await database.schedules.bulkPut(schedules)
     await database.stickers.bulkAdd(stickers)
     await database.events.bulkAdd(events)
+    if (b.checks) await database.checks.bulkPut(b.checks.map((c) => sanitizeRow(c, pid)).filter((c): c is CheckRow => c !== null))
     counts.cards = cards.length
     counts.recordings = recordings.length
     counts.events = events.length
@@ -382,7 +410,7 @@ export async function importBackup(b: Backup, database: GapimizDB = defaultDb, a
 
 /** Removes every profile and all their data from this device (IndexedDB rows only; see wipe.ts for the rest). */
 export async function wipeDatabase(database: GapimizDB = defaultDb): Promise<void> {
-  const tables = [database.profiles, database.cards, database.recordings, database.events, database.schedules, database.stickers]
+  const tables = [database.profiles, database.cards, database.recordings, database.events, database.schedules, database.stickers, database.checks]
   await database.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()))
   })

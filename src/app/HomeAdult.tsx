@@ -16,6 +16,7 @@ import { Page } from '../ui/Page'
 import { Pressable } from '../ui/Pressable'
 import { SymbolImg } from '../ui/SymbolImg'
 import { BoardHint } from './BoardHint'
+import { ContinueCard, useResume } from './ContinueCard'
 import { FEATURES } from './features'
 import styles from './Home.module.css'
 import { ParentLock } from './ParentLock'
@@ -66,6 +67,7 @@ function useTools(): Tool[] {
     { id: 'voice', symbol: FEATURES.exercises.symbol, title: t('toolVoice'), hint: t('toolVoiceHint'), path: FEATURES.exercises.path },
     { id: 'timer', symbol: FEATURES.timer.symbol, title: t('toolTimer'), hint: t('toolTimerHint'), path: FEATURES.timer.path },
     { id: 'calm', symbol: FEATURES.calm.symbol, title: t('toolCalm'), hint: t('toolCalmHint'), path: FEATURES.calm.path },
+    { id: 'check', symbol: 'clipboard', title: t('toolCheck'), hint: t('toolCheckHint'), path: `${FEATURES.parent.path}/check` },
   ]
 }
 
@@ -142,6 +144,7 @@ export function HomeAdult() {
   const hy = uiLang === 'ru' ? 'ru' : 'uz'
   const phrases = useMemo(() => quickPhrases(), [])
   const tools = useTools()
+  const resume = useResume()
   return (
     <Page width="normal" className={styles.home} gap="tight">
       <header className={styles.adultTop}>
@@ -188,6 +191,8 @@ export function HomeAdult() {
           })}
         </ul>
       </section>
+
+      <ContinueCard variant="adult" resume={resume} />
 
       <section className={styles.adultSection} aria-labelledby="home-tools">
         <div className={styles.sectionHead}>

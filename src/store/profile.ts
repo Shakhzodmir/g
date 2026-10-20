@@ -118,13 +118,14 @@ export const useProfileStore = create<ProfileState>()((set, get) => ({
     const rest = get().profiles.filter((p) => p.id !== id)
     set({ profiles: rest })
     if (await dbAvailable()) {
-      await db.transaction('rw', [db.profiles, db.cards, db.recordings, db.events, db.schedules, db.stickers], async () => {
+      await db.transaction('rw', [db.profiles, db.cards, db.recordings, db.events, db.schedules, db.stickers, db.checks], async () => {
         await db.profiles.delete(id)
         await db.cards.where('profileId').equals(id).delete()
         await db.recordings.where('profileId').equals(id).delete()
         await db.events.where('profileId').equals(id).delete()
         await db.schedules.where('profileId').equals(id).delete()
         await db.stickers.where('profileId').equals(id).delete()
+        await db.checks.where('profileId').equals(id).delete()
       }).catch(() => undefined)
     }
     if (get().profile.id === id) {

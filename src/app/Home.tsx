@@ -12,6 +12,7 @@ import { useMotionPreset } from '../design/motion'
 import { Tile } from '../ui/Tile'
 import { useSpeechLevel } from '../ui/useSpeechLevel'
 import { BoardHint } from './BoardHint'
+import { ContinueCard, useResume } from './ContinueCard'
 import { HomeAdult } from './HomeAdult'
 import { ParentLock } from './ParentLock'
 import { FEATURES, type FeatureId } from './features'
@@ -42,6 +43,7 @@ export function HomeChild() {
   const name = useProfileStore((s) => s.profile.name)
   const preset = useMotionPreset()
   const level = useSpeechLevel()
+  const resume = useResume()
   const [state, setState] = useState<'idle' | 'speak' | 'happy'>('idle')
   const hy = uiLang === 'ru' ? 'ru' : 'uz'
 
@@ -67,7 +69,8 @@ export function HomeChild() {
       <BoardHint />
 
       {/* The tiles are what children press: one block, which is the reach zone on a whiteboard. */}
-      <div className={styles.zone} data-reach>
+      <div className={styles.zone} data-reach data-resume={resume ? '' : undefined}>
+      <ContinueCard variant="child" resume={resume} />
       <ul className={styles.plates} role="list">
         {MAIN.map((id, i) => (
           <li key={id}>

@@ -383,6 +383,11 @@
 @media print {
   .shell {
     display: block;
+    min-height: 0;
+  }
+  /* The printed sheets fill the A4 page exactly: spare padding below the last one would spill onto an empty extra page. */
+  .main {
+    padding-bottom: 0;
   }
 }
 

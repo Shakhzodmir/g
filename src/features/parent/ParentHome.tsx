@@ -1,4 +1,4 @@
-import { ChartNoAxesColumn, Database, HeartHandshake, Info, LayoutGrid, Printer, Settings2, Users } from 'lucide-react'
+import { ChartNoAxesColumn, ClipboardList, Database, HeartHandshake, Info, LayoutGrid, Printer, Settings2, Stethoscope, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { COMMON } from '../../i18n/common'
@@ -8,17 +8,20 @@ import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
+import DueBanners from '../check/DueBanners'
 import styles from './parent.module.css'
 import { avatarSymbol, StorageBanner, useProfileTitle, useT } from './shared'
 import type { StrKey } from './strings'
 
 const ITEMS: Array<{ path: string; title: StrKey; hint: StrKey; icon: ReactNode }> = [
   { path: 'progress', title: 'secProgress', hint: 'secProgressHint', icon: <ChartNoAxesColumn /> },
+  { path: 'check', title: 'secCheck', hint: 'secCheckHint', icon: <ClipboardList /> },
   { path: 'tips', title: 'secTips', hint: 'secTipsHint', icon: <HeartHandshake /> },
   { path: 'cards', title: 'secCards', hint: 'secCardsHint', icon: <LayoutGrid /> },
   { path: 'profiles', title: 'secProfiles', hint: 'secProfilesHint', icon: <Users /> },
   { path: 'settings', title: 'secSettings', hint: 'secSettingsHint', icon: <Settings2 /> },
   { path: 'data', title: 'secData', hint: 'secDataHint', icon: <Database /> },
+  { path: 'help', title: 'secHelp', hint: 'secHelpHint', icon: <Stethoscope /> },
   { path: 'print', title: 'secPrint', hint: 'secPrintHint', icon: <Printer /> },
   { path: 'about', title: 'secAbout', hint: 'secAboutHint', icon: <Info /> },
 ]
@@ -42,6 +45,7 @@ export default function ParentHome() {
           </span>
         </div>
         <StorageBanner />
+        <DueBanners />
         <ul className={styles.homeGrid}>
           {ITEMS.map((it) => (
             <li key={it.path}>

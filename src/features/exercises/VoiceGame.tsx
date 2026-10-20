@@ -14,12 +14,13 @@ import { Musicha, type MascotState } from '../../ui/mascot/Musicha'
 import { PageHeader } from '../../ui/PageHeader'
 import { SymbolImg } from '../../ui/SymbolImg'
 import styles from './exercises.module.css'
-import { AdultSettings, HoldButton, LevelMeter, MicOverlay } from './parts'
+import { AdultSettings, HoldButton, MicOverlay } from './parts'
 import { useMic } from './sensors/useMic'
 import { createFlight, STAR_HEIGHTS } from './sensors/voiceFlight'
 import { createVoiceActivity } from './sensors/voiceActivity'
 import { useExerciseSettings } from './settings'
 import { bi, S } from './strings'
+import { VoiceMeter } from './VoiceMeter'
 
 export { STAR_HEIGHTS }
 const HOLD_LEVEL = 0.6
@@ -47,6 +48,8 @@ export default function VoiceGame() {
   const happyUntil = useRef(0)
 
   useEffect(() => va.current.setSensitivity(sensitivity), [sensitivity])
+  /** The voice level for the "we hear you" bar (the bar smooths it itself). */
+  const readMeter = useCallback(() => level.current, [])
 
   const { status: micStatus, start: startMic, stop: stopMic, noisy } = useMic(
     (f) => {
@@ -260,10 +263,10 @@ export default function VoiceGame() {
         ) : (
           micStatus === 'running' && (
             <div className={styles.micBlock}>
+              <VoiceMeter read={readMeter} active />
               <p className={styles.micStatus}>
                 <Mic aria-hidden="true" className={styles.micIcon} />
                 <span>{t('micOn')}</span>
-                <LevelMeter value={beak} label={t('micOn')} />
               </p>
               {noisy && (
                 <p className={styles.adultNote} role="status">

@@ -246,6 +246,12 @@
   min-width: 0;
 }
 
+/* The hub item has one track that never grows past its column: a long word at large text must not push the chips
+   (or the tile) out of the column. */
+.hubGrid > li {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .choices {
   --pic: clamp(4.5rem, calc(15 * var(--dvh)), 10rem);
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -863,6 +869,7 @@
   display: grid;
   gap: var(--section-gap);
   padding-inline: var(--pad-l) var(--pad-r);
+  container-type: inline-size;
 }
 
 .hubGrid {
@@ -878,9 +885,58 @@
   }
 }
 
+/*
+ * Large text on a narrow phone (rem follows the real root font size in container queries, so this only matches when
+ * the text is enlarged): two plates side by side are too small for their titles and chips, so they stack one per row.
+ */
+@container (max-width: 16rem) {
+  .hubGrid {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(100%, 22rem);
+  }
+}
+/* No container queries (Chrome < 105, Safari < 16): the viewport stands in for the container (media rem = 16 px, so this
+   only matches a tiny viewport; such engines keep two plates per row, which is the layout every phone had before). */
+@supports not (container-type: inline-size) {
+  @media (max-width: 16rem) {
+    .hubGrid {
+      grid-template-columns: minmax(0, 1fr);
+      width: min(100%, 22rem);
+    }
+  }
+}
+
 .page[data-board] .hub {
   flex: 1;
   align-content: end;
+}
+
+/*
+ * Age and size of a game under its tile. Each chip is a short phrase that wraps as a whole: the row wraps, a chip never
+ * grows past its column, and a very long word breaks as a last resort, so nothing is ever cut off.
+ */
+.hubChips {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: var(--s-1);
+  padding-top: var(--s-2);
+  min-width: 0;
+}
+
+.chip {
+  max-width: 100%;
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 /* The album card is as wide as the plates above it on phones, and a calm centred card on larger screens. */

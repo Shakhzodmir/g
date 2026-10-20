@@ -8,6 +8,8 @@
 // Usage: node e2e/audit.mjs <baseUrl> [outJson]
 import { chromium } from '@playwright/test'
 import { writeFileSync } from 'node:fs'
+import { demoCheckRows } from './lib/checkRows.mjs'
+import { seedApp } from './lib/seed.mjs'
 
 const base = process.argv[2] ?? 'http://localhost:5207/'
 const outFile = process.argv[3]
@@ -17,6 +19,8 @@ const ROUTES = [
   '/games/syllables', '/games/colors', '/games/count', '/games/shapes', '/games/odd', '/games/routine', '/games/opposite', '/games/sound', '/games/point', '/games/build', '/games/stickers', '/exercises', '/exercises/blow', '/exercises/voice', '/exercises/mirror',
   '/exercises/mirror/smile', '/board-setup', '/parent?qa', '/parent/progress?qa', '/parent/tips?qa', '/parent/cards?qa',
   '/parent/profiles?qa', '/parent/settings?qa', '/parent/data?qa', '/parent/print?qa', '/parent/about?qa',
+  '/parent/check?qa', '/parent/check/child?qa', '/parent/check/asd?qa', '/parent/check/adult?qa', '/parent/check/child/run?qa', '/parent/check/child/run?retest=1&qa',
+  '/parent/check/asd/run?qa', '/parent/check/adult/run?qa', '/parent/check/child/report?qa', '/parent/check/asd/report?qa',
 ]
 const ONLY = (process.env.ONLY ?? '').split(',').filter(Boolean)
 const ROUTES_TO_RUN = ONLY.length ? ROUTES.filter((r) => ONLY.some((o) => r === o || r.startsWith(o + '/') || r.startsWith(o + '?'))) : ROUTES
@@ -113,6 +117,8 @@ for (const lang of LANGS) {
       [!!vp.board, lang],
     )
     const page = await ctx.newPage()
+    // The speech-check screens need a profile with results (plan, streak, due banner): seed one.
+    if (ROUTES_TO_RUN.some((r) => r.startsWith('/parent/check'))) await seedApp(page, base, { lang, kind: 'child', rows: demoCheckRows('p-test') })
     for (const r of ROUTES_TO_RUN) {
       await page.goto(`${base}#${r}`, { waitUntil: 'networkidle' })
       await page.waitForTimeout(450)

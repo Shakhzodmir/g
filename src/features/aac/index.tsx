@@ -5,7 +5,6 @@ import { topicsForKind } from '../../content/topics'
 import type { TopicId } from '../../content/types'
 import { wordById } from '../../content/vocab'
 import { useI18n, useLabel, useStrings } from '../../i18n'
-import { shy } from '../../lib/hyphenate'
 import { useMediaQuery } from '../../lib/useMediaQuery'
 import { useDevice } from '../../store/device'
 import { logEvent } from '../../store/events'
@@ -22,6 +21,9 @@ import { KeyboardPanel } from './KeyboardPanel'
 import { MessageBar } from './MessageBar'
 import { PainPanel, PhrasesPanel } from './Phrases'
 import { aacSpeak, stopAacSpeech } from './speak'
+import { topicCardCount } from './tabs'
+import { TopicTabs, type TabItem } from './TopicTabs'
+import { useCustomCardCounts } from './useCustomCards'
 import { isFull } from './message'
 import { useMessage } from './store'
 import { S } from './strings'
@@ -32,11 +34,8 @@ type View = { kind: 'topic'; topic: TopicId } | { kind: Mode }
 const MODES: readonly Mode[] = ['phrases', 'keyboard', 'pain']
 const GLOW_MS = 1600
 
-interface Tab {
-  id: string
+interface Tab extends TabItem {
   view: View
-  symbol: string
-  label: string
 }
 
 function useView(topicIds: ReadonlySet<string>): [View, (v: View) => void] {
@@ -79,6 +78,7 @@ export default function Aac() {
   const topics = useMemo(() => topicsForKind(kind), [kind])
   const topicIds = useMemo(() => new Set<string>(topics.map((x) => x.id)), [topics])
   const [view, setView] = useView(topicIds)
+  const customCounts = useCustomCardCounts(profile.id)
   const [modeling, setModeling] = useState(false)
   const [glowKey, setGlowKey] = useState<string | null>(null)
   const glowTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -136,11 +136,13 @@ export default function Aac() {
   const tabs = useMemo(() => {
     const list: Tab[] = []
     const [core, ...rest] = topics
+    const count = (id: TopicId) => topicCardCount(kind, id, profile.aac, customCounts.get(id) ?? 0)
     list.push({
       id: core.id,
       view: { kind: 'topic', topic: core.id },
       symbol: core.symbol,
       label: ui(core),
+      count: count(core.id),
     })
     list.push({
       id: 'phrases',
@@ -168,9 +170,10 @@ export default function Aac() {
         view: { kind: 'topic', topic: tp.id },
         symbol: tp.symbol,
         label: ui(tp),
+        count: count(tp.id),
       })
     return list
-  }, [ui, t, reader, adult, view.kind, topics])
+  }, [ui, t, reader, adult, view.kind, topics, kind, profile.aac, customCounts])
 
   /** The big Yes / No pair answers at once: it speaks, but does not go into the message. */
   const answers = [wordById('yes'), wordById('no')].filter((w) => w !== undefined)
@@ -209,23 +212,15 @@ export default function Aac() {
 
         {/* Topics + board + Yes/No: what a child presses. One block; the reach zone on a whiteboard (display: contents elsewhere). */}
         <div className={styles.zone} data-reach>
-        <nav className={styles.tabs} aria-label={t('topics')}>
-          {tabs.map((tab) => (
-            <Pressable
-              key={tab.id}
-              className={styles.tab}
-              label={tab.label}
-              scanGroup="tabs"
-              pressed={sameView(tab.view, view)}
-              onActivate={() => setView(tab.view)}
-            >
-              <span className={styles.tabIcon} aria-hidden="true">
-                <SymbolImg id={tab.symbol} />
-              </span>
-              <span className={styles.tabLabel}>{shy(tab.label, uiLang === 'ru' ? 'ru' : 'uz')}</span>
-            </Pressable>
-          ))}
-        </nav>
+        <TopicTabs
+          tabs={tabs}
+          activeId={tabs.find((x) => sameView(x.view, view))?.id ?? null}
+          onSelect={(id) => {
+            const tab = tabs.find((x) => x.id === id)
+            if (tab) setView(tab.view)
+          }}
+          hy={uiLang === 'ru' ? 'ru' : 'uz'}
+        />
 
         <section className={styles.panel} aria-label={panelName} data-view={view.kind === 'topic' ? view.topic : view.kind}>
           {view.kind === 'topic' && view.topic === 'core' && <CoreBoard kind={kind} aac={profile.aac} onTap={onTap} glowKey={glowKey} name={panelName} />}

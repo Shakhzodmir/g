@@ -1,0 +1,692 @@
+/* "Nutq tekshiruvi / Проверка речи". Reuses the adult-area look (parent.module.css); only what is specific lives here.
+   Rules: a band is ALWAYS icon + text + a different border weight (never colour alone); every row wraps instead of
+   overflowing at 320 px and at 200 % text; targets are at least var(--touch-min). */
+
+/* ---------- Band badge ---------- */
+.band {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 100%;
+  padding: var(--s-1) var(--s-3);
+  border: 2px solid var(--outline);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.band svg {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.band[data-band='good'] {
+  background: var(--primary-container);
+  border-color: var(--primary);
+  color: var(--on-primary-container);
+}
+
+.band[data-band='watch'] {
+  background: var(--warm-container);
+  border-color: var(--warm);
+  border-style: dashed;
+  color: var(--text);
+}
+
+.band[data-band='attention'] {
+  background: var(--secondary-container);
+  border-color: var(--secondary);
+  border-width: 3px;
+  color: var(--text);
+}
+
+.bandIcon {
+  display: inline-flex;
+}
+
+.tight {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.h3 {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ---------- Domain rows ---------- */
+.domains {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.domainRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+}
+
+.domainName {
+  flex: 1 1 11rem;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.overallRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  font-weight: 700;
+}
+
+/* ---------- Notes: disclaimer, banner, privacy ---------- */
+.note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--outline);
+  border-left-width: 5px;
+  border-radius: var(--r-chip);
+  background: var(--surface-2);
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.note svg {
+  width: 1.375rem;
+  height: 1.375rem;
+  margin-top: 0.1rem;
+}
+
+.note p {
+  margin: 0;
+}
+
+.note p + p {
+  margin-top: var(--s-1);
+}
+
+.noteStrong {
+  font-weight: 800;
+}
+
+.banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 2px solid var(--warm);
+  border-radius: var(--r-card);
+  background: var(--warm-container);
+  color: var(--text);
+}
+
+.bannerHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--s-3);
+}
+
+.bannerHead svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.bannerTitle {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.bannerText {
+  margin: var(--s-1) 0 0;
+  line-height: 1.45;
+}
+
+.calmCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 2px solid var(--secondary);
+  border-radius: var(--r-card);
+  background: var(--secondary-container);
+  color: var(--text);
+}
+
+.goodCard {
+  composes: calmCard;
+  border-color: var(--primary);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.whereList {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+/* ---------- Hub cards ---------- */
+.privacyLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  margin: 0;
+}
+
+.inlineIcon {
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.1rem;
+}
+
+.kindMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-2);
+  margin-top: var(--s-1);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 0 var(--s-2);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--fs-nav);
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.tag svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.tagDue {
+  composes: tag;
+  border-color: var(--warm);
+  background: var(--warm-container);
+}
+
+/* ---------- Questions ---------- */
+.runHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-1) var(--s-3);
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+}
+
+.bar {
+  height: 0.5rem;
+  border-radius: var(--r-pill);
+  background: var(--outline-soft);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--primary);
+  transition: width var(--dur-med) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barFill {
+    transition: none;
+  }
+}
+
+.question {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.answers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: var(--s-3);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: 4rem;
+  width: 100%;
+  padding: var(--s-2) var(--s-4);
+  border: 2px solid var(--outline-strong);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.choice svg {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.choice[aria-pressed='true'] {
+  border-width: 4px;
+  border-color: var(--primary);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.choice[data-pressed='true'] {
+  transform: scale(0.98);
+}
+
+/* Lists of big choices (age, worries): one column, left aligned. */
+.choiceList {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choiceRow {
+  composes: choice;
+  justify-content: flex-start;
+  text-align: start;
+}
+
+/* ---------- Plan ---------- */
+.tasks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-card);
+  background: var(--surface);
+}
+
+.task[data-done] {
+  border-color: var(--primary);
+  border-width: 2px;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.taskHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--s-3);
+}
+
+.taskIcon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--r-chip);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.taskIcon svg,
+.taskIcon img {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.taskTitle {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.taskBody {
+  margin: 0;
+  line-height: var(--lh-body);
+}
+
+.taskActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+/* ---------- Tracking ---------- */
+.milestones {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.milestone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+}
+
+.milestoneText {
+  flex: 1 1 11rem;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.history {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historyRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-1);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+}
+
+.historyTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-1) var(--s-3);
+  font-weight: 700;
+}
+
+.flame {
+  width: 1.5rem;
+  height: 1.5rem;
+  vertical-align: -0.2em;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-3);
+}
+
+/* ---------- Report ---------- */
+.reportControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-4);
+}
+
+.preview {
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-cell);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-adult);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.sheetWrap {
+  display: grid;
+  justify-items: center;
+}
+
+/* Paper preview: always white, whatever the app theme. */
+.sheet {
+  box-sizing: border-box;
+  width: min(100%, 42rem);
+  padding: var(--s-5);
+  border-radius: 6px;
+  background: #fff;
+  color: #1e2633;
+  box-shadow: var(--elev-2);
+  font-family: var(--font-adult);
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+.sheet h2,
+.sheet h3 {
+  margin: 0;
+  color: #1e2633;
+}
+
+.sheetTitle {
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+
+.sheetKind {
+  margin-top: 0.125rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.sheetMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin: var(--s-2) 0 var(--s-3);
+  padding-bottom: var(--s-2);
+  border-bottom: 2px solid #1e2633;
+  font-size: 0.9375rem;
+}
+
+.sheet table {
+  width: 100%;
+  /* fixed columns: long Russian words break inside their cell instead of widening the table past a 320 px screen */
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-bottom: var(--s-3);
+}
+
+.sheet caption {
+  padding-bottom: 0.25rem;
+  text-align: start;
+  font-weight: 800;
+}
+
+.sheet th,
+.sheet td {
+  overflow-wrap: anywhere;
+  padding: 0.375rem 0.5rem;
+  border-bottom: 1px solid #b9bfca;
+  text-align: start;
+  vertical-align: top;
+  font-weight: 400;
+}
+
+.sheet th[scope='row'] {
+  width: 52%;
+  font-weight: 600;
+}
+
+/* Bilingual pair: the interface language first, the other one smaller beneath. */
+.p {
+  display: block;
+  font-weight: 700;
+}
+
+.s {
+  display: block;
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+.sheetBand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 700;
+  white-space: normal;
+}
+
+.sheetBand svg {
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.sheetBand[data-band='watch'] svg {
+  stroke-dasharray: 3 2;
+}
+
+.sheetNote {
+  margin-top: var(--s-3);
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #1e2633;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+}
+
+.sheetNote strong {
+  display: block;
+}
+
+.sheetFoot {
+  margin-top: var(--s-3);
+  color: #4a5568;
+  font-size: 0.8125rem;
+}
+
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  .sheetWrap {
+    display: block;
+  }
+  .sheet {
+    width: 186mm;
+    max-height: 272mm;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+    break-inside: avoid;
+    font-size: 11pt;
+  }
+  .sheetTitle {
+    font-size: 17pt;
+  }
+  .sheetKind {
+    font-size: 13pt;
+  }
+  .sheetMeta {
+    font-size: 10.5pt;
+  }
+  .s {
+    font-size: 9.5pt;
+  }
+  .sheetFoot {
+    font-size: 9pt;
+  }
+  .sheet th,
+  .sheet td {
+    padding: 1.2mm 1.5mm;
+  }
+  .sheetNote {
+    font-size: 10.5pt;
+  }
+}
+
+.dueKind {
+  margin: 0;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Small phones: tighter paper so long Russian words (Произношение, Наблюдаем) fit their cell on one line. */
+@media screen and (max-width: 420px) {
+  .sheet {
+    padding: var(--s-3);
+  }
+  .sheet th,
+  .sheet td {
+    padding: 0.375rem 0.25rem;
+  }
+  .p {
+    font-size: 0.9375rem;
+  }
+  .sheetBand svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}

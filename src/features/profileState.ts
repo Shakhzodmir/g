@@ -1,3 +1,4 @@
+import { useCheckStore } from './check/store'
 import { clearAllLevels, clearProfileLevels } from './games/logic/levelKey'
 import { useStickerMemory } from './games/stickers'
 import { clearScheduleMemory, useScheduleUi } from './schedule/useSchedule'
@@ -10,6 +11,7 @@ import { useTokenStore } from './tokens/store'
  *   gapimiz.tokens           star board and reward                    (board per profile)
  *   gapimiz.games.level.*    difficulty of each game                  (key per profile + game)
  *   in memory                stickers and schedules held while IndexedDB is unavailable
+ *   in memory                speech / communication checks (the rows themselves are in IndexedDB: table `checks`)
  *   gapimiz.schedule.ui      last schedule view (device-wide)         (only cleared with everything)
  *
  * The adult area calls these when a profile is deleted / all data is erased, so nothing of one child can
@@ -23,6 +25,7 @@ export function clearProfileLocalState(profileId: string): void {
   clearProfileLevels(profileId)
   useStickerMemory.getState().clear(profileId)
   clearScheduleMemory(profileId)
+  useCheckStore.getState().forget(profileId)
 }
 
 /** Forget the local state of every profile (erase all data). `profileIds` are the known profiles; stale keys are swept too. */
@@ -32,6 +35,7 @@ export function clearAllLocalState(profileIds: string[] = []): void {
   clearAllLevels(profileIds)
   useStickerMemory.getState().clear()
   clearScheduleMemory()
+  useCheckStore.getState().forget()
   useScheduleUi.setState({ mode: 'day' })
   useScheduleUi.persist.clearStorage()
   useTimerStore.persist.clearStorage()

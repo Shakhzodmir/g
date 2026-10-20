@@ -4,6 +4,8 @@
 //   node e2e/overflow.mjs http://localhost:5251/        (dev server: ?qa unlocks the adult area)
 //   ONLY=/talk,/timer node e2e/overflow.mjs http://localhost:5251/
 import { chromium } from '@playwright/test'
+import { demoCheckRows } from './lib/checkRows.mjs'
+import { seedApp } from './lib/seed.mjs'
 
 const base = process.argv[2] ?? 'http://localhost:5251/'
 const ROUTES = [
@@ -12,6 +14,9 @@ const ROUTES = [
   '/games/syllables', '/games/stickers', '/exercises', '/exercises/blow', '/exercises/voice', '/exercises/mirror',
   '/exercises/mirror/smile', '/board-setup', '/parent?qa', '/parent/progress?qa', '/parent/tips?qa', '/parent/cards?qa',
   '/parent/profiles?qa', '/parent/settings?qa', '/parent/data?qa', '/parent/print?qa', '/parent/about?qa',
+  '/parent/print?sheet=diary&qa', '/parent/print?sheet=routine&qa', '/parent/print?sheet=artic&qa', '/parent/print?sheet=contacts&qa', '/parent/help?qa',
+  '/parent/check?qa', '/parent/check/child?qa', '/parent/check/asd?qa', '/parent/check/adult?qa', '/parent/check/child/run?qa', '/parent/check/child/run?retest=1&qa',
+  '/parent/check/asd/run?qa', '/parent/check/adult/run?qa', '/parent/check/child/report?qa', '/parent/check/asd/report?qa',
 ]
 const ONLY = (process.env.ONLY ?? '').split(',').filter(Boolean)
 const routes = ONLY.length ? ROUTES.filter((r) => ONLY.some((o) => r === o || r.startsWith(o + '/') || r.startsWith(o + '?'))) : ROUTES
@@ -61,6 +66,7 @@ for (const lang of LANGS) {
         localStorage.setItem('gapimiz.device', JSON.stringify({ state: { uiLang: l, uzScript: 'latn', onboarded: true, activeProfileId: null, boardMode: false, boardHintDismissed: true, boardCalibration: null, parentPinHash: null }, version: 1 }))
       }, lang)
       const page = await ctx.newPage()
+      if (routes.some((r) => r.startsWith('/parent/check'))) await seedApp(page, base, { lang, kind: 'child', rows: demoCheckRows('p-test') })
       for (const r of routes) {
         await page.goto(`${base}#${r}`, { waitUntil: 'networkidle' })
         if (big) {
