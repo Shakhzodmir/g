@@ -166,7 +166,8 @@ export const Pressable = forwardRef<HTMLElement, PressableProps>(function Pressa
     ...rest,
     className,
     style: { ...style, '--dwell-ms': `${touch.dwellMs}ms`, '--hold-ms': `${touch.holdMs}ms` } as CSSProperties,
-    'aria-label': label,
+    // An empty name must not be written as aria-label="" (it would hide the visible text from the accessible name).
+    'aria-label': label || undefined,
     'aria-disabled': disabled || undefined,
     'aria-pressed': pressed,
     'data-pressable': '',

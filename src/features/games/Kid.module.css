@@ -1,0 +1,311 @@
+/* Drawn pictures and extra layouts of the children's games (the card grid itself is Games.module.css). */
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.numeral {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 800;
+  font-size: calc(var(--pic, 6rem) * 0.78);
+  line-height: 1;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A symbol with a drawn overlay (clean / dirty shirt). */
+.comp {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.sparkle {
+  position: absolute;
+  top: -4%;
+  right: -2%;
+  width: 38%;
+  height: 38%;
+}
+
+/* ---------- Header strips between the prompt and the cards ---------- */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  min-height: 0;
+}
+
+.bigPic {
+  width: clamp(5rem, calc(16 * var(--dvh)), 9rem);
+  aspect-ratio: 1;
+  padding: var(--s-2);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+}
+
+.bigPicCaption {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-1);
+  font-weight: 800;
+  font-size: var(--fs-title);
+}
+
+/* Counting panel: the objects to count. */
+.objects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-3);
+  list-style: none;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+}
+
+.obj {
+  --o: clamp(3.25rem, calc(9.5 * var(--dvh)), 5.5rem);
+  position: relative;
+  display: block;
+  width: var(--o);
+  height: var(--o);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-card);
+  background: transparent;
+  touch-action: manipulation;
+}
+
+:global([data-board]) .obj {
+  --o: clamp(4rem, calc(11 * var(--dvh)), 7rem);
+}
+
+.obj[data-counted] {
+  background: var(--surface-2);
+}
+
+.objNum {
+  position: absolute;
+  inset-inline-end: -2px;
+  top: -2px;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  padding-inline: 4px;
+  border-radius: var(--r-pill);
+  background: var(--primary);
+  color: var(--on-primary, #fff);
+  font-weight: 800;
+  font-size: var(--fs-label);
+}
+
+.obj[data-hint] {
+  box-shadow: 0 0 0 4px var(--warm);
+  box-shadow:
+    0 0 0 4px var(--warm),
+    0 0 18px 4px color-mix(in srgb, var(--warm) 40%, transparent);
+}
+
+/* Sequence strip (routines): placed steps, then empty places. */
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
+  margin: 0;
+  padding: var(--s-2);
+  list-style: none;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+}
+
+.step {
+  --st: clamp(2.75rem, min(calc(10 * var(--dvh)), 17vw), 6rem);
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: var(--st);
+}
+
+.stepPic {
+  width: var(--st);
+  height: var(--st);
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-card);
+  background: var(--surface-2);
+}
+
+.stepPic[data-empty] {
+  background: transparent;
+  border: 3px dashed var(--outline-soft);
+  color: var(--text-muted);
+  font-weight: 800;
+  font-size: var(--fs-title);
+}
+
+.stepPic img {
+  width: 82%;
+  height: 82%;
+}
+
+.stepName {
+  display: none;
+}
+
+:global([data-board]) .stepName {
+  display: block;
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  text-align: center;
+  max-width: 8rem;
+}
+
+.arrow {
+  color: var(--text-muted);
+  font-size: var(--fs-title);
+  font-weight: 800;
+}
+
+/* Build a word: slots and syllable beads. */
+.build {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.build > :first-child {
+  align-self: stretch;
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot {
+  min-width: 3.75rem;
+  min-height: 3.75rem;
+  display: grid;
+  place-items: center;
+  padding-inline: var(--s-3);
+  border-radius: var(--r-card);
+  border: 3px dashed var(--outline-soft);
+  font-weight: 800;
+  font-size: var(--fs-title);
+  color: var(--text);
+}
+
+.slot[data-filled] {
+  border: 3px solid var(--primary);
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+}
+
+.slot[data-done] {
+  border-color: var(--success);
+}
+
+.tray {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bead {
+  min-width: 4rem;
+  min-height: 4rem;
+  padding-inline: var(--s-3);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--elev-2);
+  font-weight: 800;
+  font-size: var(--fs-title);
+  touch-action: manipulation;
+  transition:
+    opacity var(--dur-med) var(--ease-out),
+    box-shadow 900ms var(--ease-out);
+}
+
+.bead[data-used] {
+  opacity: 0.25;
+}
+
+.bead[data-hint] {
+  box-shadow: 0 0 0 4px var(--warm);
+  box-shadow:
+    0 0 0 4px var(--warm),
+    0 0 22px 6px color-mix(in srgb, var(--warm) 45%, transparent);
+}
+
+
+.buildPic {
+  width: clamp(4.5rem, calc(14 * var(--dvh)), 12rem);
+  aspect-ratio: 1;
+}
+
+.speaker {
+  display: grid;
+  place-items: center;
+}
+
+/* Whiteboard: the picture strips and the word tray stay small so everything sits above the bottom bar. */
+:global([data-board]) .bigPic {
+  width: 6rem;
+}
+
+:global([data-board]) .step {
+  --st: 5rem;
+}
+
+:global([data-board]) .objects .obj {
+  --o: 6rem;
+}
+
+:global([data-board]) .buildPic {
+  width: 7rem;
+}
+
+:global([data-board]) .bead,
+:global([data-board]) .slot {
+  min-width: 5rem;
+  min-height: 5rem;
+  font-size: var(--fs-title);
+}

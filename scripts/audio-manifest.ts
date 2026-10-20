@@ -2,6 +2,8 @@
 // Used by scripts/build-audio-manifest.ts (writes the JSON for gen_audio.py) and by the coverage test
 // src/audio/manifest.test.ts (fails when code speaks a statically-known key that has no manifest entry).
 // Uzbek is sent to the synthesizer in Cyrillic (unambiguous ў/ғ; the Silero Latin alphabet has no ʻ).
+import { adultSpoken } from '../src/content/adultgamedata'
+import { GAME_LINES, LISTEN_SENTENCES, LISTEN_TASKS } from '../src/content/gamedata'
 import { SOUND_MAKERS } from '../src/content/animals'
 import { ARTICULATION } from '../src/content/exercises'
 import { FEELINGS, HELPERS } from '../src/content/feelings'
@@ -84,6 +86,11 @@ export function buildManifest(): ManifestEntry[] {
   }
   for (const t of TOPICS as W[]) add(`t.${t.id}`, t.uz, t.ruTts ?? t.ru)
   for (const p of PHRASES as W[]) add(`p.${p.id}`, p.uzTts ?? p.uz, p.ruTts ?? p.ru)
+
+  // Adult training games (src/features/games/adult): names of their own items, cues, sentences, questions, situations: keys `g.ad.*`.
+  for (const s of adultSpoken()) add(s.key, s.uz, s.ruTts)
+  // Children's games added in round 3 (src/features/games/*Game.tsx, src/content/gamedata.ts): keys `g.count.*`, `g.odd.*`, `g.routine.*`, `g.sound.*`, `g.build.*`, `g.opp.*`, `g.point.*`.
+  for (const l of [...GAME_LINES, ...LISTEN_SENTENCES, ...LISTEN_TASKS]) add(l.key, l.uz, l.ruTts ?? l.ru)
 
   // Sticker album (src/features/games/Album.tsx, schedule cards): key `sticker.<id>`.
   for (const s of STICKERS as W[]) add(`sticker.${s.id}`, s.uzTts ?? s.uz, s.ruTts ?? STICKER_RU_TTS[s.id] ?? s.ru)

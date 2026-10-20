@@ -5,9 +5,11 @@
 .toast {
   position: fixed;
   z-index: 60;
-  left: 50%;
+  /* centred without transform: motion may own the transform, and old WebViews lack the individual `translate` property */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
   top: calc(var(--safe-top) + 4rem);
-  translate: -50% 0;
   width: min(92vw, 32rem);
   max-height: 7rem;
   overflow: hidden;

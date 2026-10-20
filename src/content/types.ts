@@ -3,7 +3,10 @@ import type { Bi } from '../i18n/types'
 /** Part-of-speech colour class (modified Fitzgerald key). Colour is never the only carrier of meaning. */
 export type Fitz = 'people' | 'action' | 'describe' | 'thing' | 'social' | 'question' | 'negation' | 'misc'
 
-export type TopicId =
+export type Audience = 'child' | 'adult' | 'both'
+
+/** Known topic ids; any other lowercase ascii id is also allowed so new topics don't need a union edit. */
+export type KnownTopicId =
   | 'core'
   | 'food'
   | 'drinks'
@@ -18,7 +21,11 @@ export type TopicId =
   | 'school'
   | 'time'
 
+export type TopicId = KnownTopicId | (string & {})
+
 export interface Word extends Bi {
+  /** Who should meet this word: kids' games/boards, adult boards, or both (default 'both'). */
+  audience?: Audience
   /** Stable ascii id, unique across all words, e.g. `water`. Used in audio keys `w.<id>`. */
   id: string
   fitz: Fitz
@@ -39,6 +46,8 @@ export interface Topic extends Bi {
   id: TopicId
   symbol: string
   fitz: Fitz
+  /** Who sees this topic on the communicator tabs and in games (default 'both'). */
+  audience?: Audience
 }
 
 export interface Phrase extends Bi {
@@ -47,6 +56,8 @@ export interface Phrase extends Bi {
   ruTts?: string
   uzTts?: string
   audience: 'kid' | 'adult' | 'both'
+  /** Optional category id (adult phrases: need, pain, med, talk, emergency, social, shop, work, phone, family, feel, polite, frame). */
+  group?: string
 }
 
 /** Animal / vehicle for the "Who says what?" game. */

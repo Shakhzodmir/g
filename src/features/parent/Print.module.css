@@ -8,6 +8,8 @@
 }
 
 .sheet {
+  /* --u is 1% of the sheet width. Engines without container query units (Chrome < 105, Safari < 16) compute it from the viewport. */
+  --u: calc(min(100vw - 2 * var(--gutter) - var(--safe-left) - var(--safe-right), 42rem) / 100);
   container-type: inline-size;
   width: min(100%, 42rem);
   aspect-ratio: 210 / 297;
@@ -19,20 +21,33 @@
   box-shadow: var(--elev-2);
 }
 
+@supports (container-type: inline-size) {
+  .sheet {
+    --u: 1cqi;
+  }
+}
+@supports not (container-type: inline-size) {
+  @media print {
+    .sheet {
+      --u: 1.9mm;
+    }
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
-  /* margin in cqi (relative to the sheet); padding on the container itself would not resolve against it */
-  margin: 4.5cqi;
-  height: calc(100% - 9cqi);
+  /* margin in --u (1% of the sheet); padding on the container itself would not resolve against it */
+  margin: calc(4.5 * var(--u));
+  height: calc(100% - calc(9 * var(--u)));
   border-top: 1px dashed #8a8f98;
   border-left: 1px dashed #8a8f98;
 }
 
 .cell {
   display: grid;
-  padding: 2.2cqi;
+  padding: calc(2.2 * var(--u));
   border-right: 1px dashed #8a8f98;
   border-bottom: 1px dashed #8a8f98;
   min-height: 0;
@@ -44,10 +59,10 @@
   grid-template-rows: minmax(0, 1fr) minmax(auto, 42%);
   justify-items: center;
   align-items: center;
-  gap: 1cqi;
-  padding: 2cqi;
-  border: 0.7cqi solid #d3d7de;
-  border-radius: 2.6cqi;
+  gap: calc(1 * var(--u));
+  padding: calc(2 * var(--u));
+  border: calc(0.7 * var(--u)) solid #d3d7de;
+  border-radius: calc(2.6 * var(--u));
   min-height: 0;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
@@ -71,7 +86,7 @@
 
 .photo {
   object-fit: cover;
-  border-radius: 1.6cqi;
+  border-radius: calc(1.6 * var(--u));
 }
 
 .label {
@@ -81,7 +96,7 @@
   font-family: var(--font-ui);
   font-weight: 800;
   /* proportional on paper; never below the 14 px reading floor on a phone preview */
-  font-size: max(3.9cqi, var(--fs-caption));
+  font-size: max(calc(3.9 * var(--u)), var(--fs-caption));
   line-height: 1.15;
   /* built-in words carry soft hyphens (shy); anywhere only catches long words typed by the adult */
   overflow-wrap: anywhere;
@@ -92,7 +107,7 @@
 
 /* Long names get a smaller size so they fit in three lines instead of being cut. */
 .label[data-long] {
-  font-size: max(3.1cqi, var(--fs-caption));
+  font-size: max(calc(3.1 * var(--u)), var(--fs-caption));
 }
 
 .label > span {
@@ -106,7 +121,7 @@
 
 .second {
   font-weight: 600;
-  font-size: max(2.9cqi, var(--fs-nav));
+  font-size: max(calc(2.9 * var(--u)), var(--fs-nav));
   color: #4a5568;
 }
 

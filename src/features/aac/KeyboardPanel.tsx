@@ -1,6 +1,6 @@
 import { Delete, Space, Volume2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { wordById, WORDS } from '../../content/vocab'
+import { wordById, wordsForKind } from '../../content/vocab'
 import { useLabel, useStrings } from '../../i18n'
 import { displayUz } from '../../i18n/orthography'
 import { useDevice } from '../../store/device'
@@ -55,7 +55,7 @@ export function KeyboardPanel() {
   const [spoken, setSpoken] = useState(0)
   const input = useRef<HTMLInputElement>(null)
   const history = useHistoryWords(profile.id, label, spoken)
-  const vocab = useMemo(() => WORDS.map((w) => label(w)), [label])
+  const vocab = useMemo(() => wordsForKind(profile.kind).map((w) => label(w)), [label, profile.kind])
   const suggestions = useMemo(() => predict({ text, vocab, history, limit: 4 }), [text, vocab, history])
 
   const type = (s: string) => setText((v) => v + s)

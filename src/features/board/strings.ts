@@ -13,6 +13,11 @@ export const BOARD_X = defineStrings({
     previewNav: 'Pastki panel',
     previewZone: 'Qoʻl yetadigan qism',
     sampleText: 'Aa',
+    liveNote: 'Doska rejimi yoqilgan: oʻzgarishlar darhol qoʻllanadi va saqlanadi.',
+    previewBtn: 'Doska rejimida koʻrish',
+    previewBar: 'Koʻrib chiqish: doska rejimi shu sozlamalar bilan. Saqlansinmi?',
+    previewSave: 'Saqlash',
+    previewBack: 'Sozlashga qaytish',
   },
   ru: {
     exitShort: 'Выйти',
@@ -25,5 +30,10 @@ export const BOARD_X = defineStrings({
     previewNav: 'Нижняя панель',
     previewZone: 'Зона досягаемости',
     sampleText: 'Аа',
+    liveNote: 'Режим доски включён: изменения применяются сразу и сохраняются.',
+    previewBtn: 'Посмотреть в режиме доски',
+    previewBar: 'Предпросмотр: режим доски с этими настройками. Сохранить?',
+    previewSave: 'Сохранить',
+    previewBack: 'Вернуться к настройке',
   },
 })

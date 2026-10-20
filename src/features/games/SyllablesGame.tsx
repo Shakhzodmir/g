@@ -1,10 +1,13 @@
-import { Ear } from 'lucide-react'
+import { Ear, Hand } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { speak, stopSpeaking } from '../../audio/speech'
 import { playSfx } from '../../audio/sfx'
 import type { Word } from '../../content/types'
 import { WORDS } from '../../content/vocab'
+import adultStyles from './adult/Adult.module.css'
+import { A } from './adult/strings'
+import { poolWordsFor } from './logic/pools'
 import { useMotionPreset } from '../../design/motion'
 import { useLabel, useStrings } from '../../i18n'
 import { shy } from '../../lib/hyphenate'
@@ -25,8 +28,9 @@ let lastTarget: string | undefined
 export default function SyllablesGame() {
   const t = useStrings(S)
   const session = useGameSession('syllables')
+  const adult = useProfileStore((s) => s.profile.kind === 'adult')
   return (
-    <GameShell session={session} title={t('syllables')} symbol="drum">
+    <GameShell session={session} title={adult ? t('syllablesAdult') : t('syllables')} symbol={adult ? 'microphone' : 'drum'}>
       <Clap key={`${session.round}-${session.level}`} session={session} />
     </GameShell>
   )
@@ -34,16 +38,18 @@ export default function SyllablesGame() {
 
 function Clap({ session }: { session: GameSession }) {
   const t = useStrings(S)
+  const a = useStrings(A)
+  const adult = useProfileStore((s) => s.profile.kind === 'adult')
   const label = useLabel()
   const preset = useMotionPreset()
   const lang = useProfileStore((s) => s.profile.speechLang)
   const repeatMs = useProfileStore((s) => s.profile.touch.ignoreRepeatMs)
   const level = session.level
   const items = useMemo(() => {
-    const r = makeRound(syllableWords(WORDS, level, lang), { options: 1, previous: lastTarget })
+    const r = makeRound(syllableWords(adult ? poolWordsFor('adult') : WORDS, level, lang), { options: 1, size: session.total, previous: lastTarget })
     lastTarget = r[r.length - 1]?.target.id
     return r
-  }, [level, lang])
+  }, [level, lang, adult, session.total])
   const [index, setIndex] = useState(0)
   const [hits, setHits] = useState(0)
   const [demo, setDemo] = useState(-1)
@@ -123,11 +129,11 @@ function Clap({ session }: { session: GameSession }) {
           </Button>
         </div>
         <div className={styles.beadRow}>
-          <ol className={styles.beads} aria-label={syl.join(' - ')}>
+          <ol className={adult ? adultStyles.beadsPlain : styles.beads} aria-label={syl.map((s) => label({ uz: s, ru: s })).join(' - ')}>
             {syl.map((s, i) => (
               <motion.li
                 key={i}
-                className={styles.bead}
+                className={adult ? adultStyles.bead : styles.bead}
                 data-on={lit(i) || undefined}
                 animate={preset.movement && lit(i) ? { scale: [1, 1.12, 1] } : { scale: 1 }}
                 transition={{ duration: 0.3 }}
@@ -136,24 +142,32 @@ function Clap({ session }: { session: GameSession }) {
               </motion.li>
             ))}
           </ol>
-          <span className={styles.clapMascot} aria-hidden="true">
-            <Musicha key={hop} state={complete ? 'happy' : hop ? 'happy' : 'idle'} size={84} calm={!preset.idleLoops} title="" />
-          </span>
+          {!adult && (
+            <span className={styles.clapMascot} aria-hidden="true">
+              <Musicha key={hop} state={complete ? 'happy' : hop ? 'happy' : 'idle'} size={84} calm={!preset.idleLoops} title="" />
+            </span>
+          )}
         </div>
       </div>
 
       <div className={styles.clapControls} data-reach>
-        <Pressable
-          className={styles.drum}
-          label={t('drum')}
-          data-done={complete || undefined}
-          touch={{ ignoreRepeatMs: Math.min(repeatMs, 180) }}
-          onActivate={() => void drum()}
-        >
-          <span className={styles.drumPic} aria-hidden="true">
-            <SymbolImg id="drum" />
-          </span>
-        </Pressable>
+        {adult ? (
+          <Button variant="primary" size="xl" icon={<Hand />} touch={{ ignoreRepeatMs: Math.min(repeatMs, 180) }} disabled={complete} onActivate={() => void drum()}>
+            {a('sylTap')}
+          </Button>
+        ) : (
+          <Pressable
+            className={styles.drum}
+            label={t('drum')}
+            data-done={complete || undefined}
+            touch={{ ignoreRepeatMs: Math.min(repeatMs, 180) }}
+            onActivate={() => void drum()}
+          >
+            <span className={styles.drumPic} aria-hidden="true">
+              <SymbolImg id="drum" />
+            </span>
+          </Pressable>
+        )}
       </div>
     </div>
   )

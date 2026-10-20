@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   defaultCalibration,
+  migrateDevice,
   effectiveScale,
   maxScaleFor,
   reachClamp,
@@ -119,5 +120,66 @@ describe('reach zone layout math', () => {
     const top = (r: number) => navTop - reachZoneHeight(1080, r, rem)
     expect(top(0.15)).toBeGreaterThan(top(0.4))
     expect(top(0.4)).toBeGreaterThan(top(0.8))
+  })
+})
+
+describe('migrateDevice (saved state survives a version bump)', () => {
+  const saved = {
+    uiLang: 'ru',
+    uzScript: 'latn',
+    onboarded: true,
+    activeProfileId: 'p1',
+    boardMode: true,
+    boardHintDismissed: true,
+    boardCalibration: { diagonalIn: 86, bottomEdgeM: 0.7, ageGroup: '3-4', distanceM: 5, scale: 1.6, reach: 0.5 },
+    parentPinHash: 'abc123',
+  }
+
+  it('keeps every known field from an older or newer version', () => {
+    for (const v of [0, 1, 2, 7]) expect(migrateDevice({ ...saved, someFutureField: 1 }, v)).toEqual(saved)
+  })
+
+  it('never resets onboarded, the PIN or the calibration when a field is malformed or missing', () => {
+    const m = migrateDevice({ onboarded: true, parentPinHash: 'h', boardCalibration: { diagonalIn: 65, scale: 'big' }, uiLang: 'xx' }, 3)
+    expect(m.onboarded).toBe(true)
+    expect(m.parentPinHash).toBe('h')
+    expect(m.boardCalibration).toMatchObject({ diagonalIn: 65, ageGroup: '5-8', scale: 1 })
+    expect(m.uiLang).toBe('uz')
+  })
+
+  it('returns defaults for garbage input', () => {
+    expect(migrateDevice(null, 1)).toMatchObject({ onboarded: false, parentPinHash: null, boardCalibration: null, uiLang: 'uz' })
+    expect(migrateDevice('nope', 1).uzScript).toBe('latn')
+  })
+
+  it('is used by the store: a version-0 blob is hydrated, not dropped', async () => {
+    localStorage.setItem('gapimiz.device', JSON.stringify({ state: saved, version: 0 }))
+    await useDevice.persist.rehydrate()
+    expect(useDevice.getState().parentPinHash).toBe('abc123')
+    expect(useDevice.getState().onboarded).toBe(true)
+    expect(useDevice.getState().boardCalibration?.diagonalIn).toBe(86)
+  })
+})
+
+describe('board preview', () => {
+  const calib = { diagonalIn: 65, bottomEdgeM: 0.7, ageGroup: '3-4' as const, distanceM: 5, scale: 1.3, reach: 0.4 }
+  it('shows the draft without storing it; cancel returns to the real settings, commit keeps the draft', () => {
+    useDevice.setState({ boardMode: false, boardCalibration: null, boardPreviewBase: null })
+    useDevice.getState().startBoardPreview(calib)
+    expect(useDevice.getState()).toMatchObject({ boardMode: true, boardCalibration: calib })
+    // storage keeps the pre-preview values
+    expect(JSON.parse(localStorage.getItem('gapimiz.device') ?? '{}').state).toMatchObject({ boardMode: false, boardCalibration: null })
+    useDevice.getState().cancelBoardPreview()
+    expect(useDevice.getState()).toMatchObject({ boardMode: false, boardCalibration: null, boardPreviewBase: null })
+    useDevice.getState().startBoardPreview(calib)
+    useDevice.getState().commitBoardPreview()
+    expect(useDevice.getState()).toMatchObject({ boardMode: true, boardCalibration: calib, boardPreviewBase: null })
+    expect(JSON.parse(localStorage.getItem('gapimiz.device') ?? '{}').state).toMatchObject({ boardMode: true })
+  })
+  it('an explicit on/off choice ends a running preview', () => {
+    useDevice.setState({ boardMode: false, boardCalibration: null, boardPreviewBase: null })
+    useDevice.getState().startBoardPreview(calib)
+    useDevice.getState().setBoardMode(false)
+    expect(useDevice.getState()).toMatchObject({ boardMode: false, boardPreviewBase: null })
   })
 })

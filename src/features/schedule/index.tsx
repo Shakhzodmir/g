@@ -1,5 +1,6 @@
 import { Check, Lock, Printer } from 'lucide-react'
-import { useState } from 'react'
+import { useScreenTitle } from '../../app/adultTitles'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { SCHEDULE_TEMPLATES } from '../../content/schedules'
 import { useI18n, useStrings } from '../../i18n'
 import { COMMON } from '../../i18n/common'
@@ -22,11 +23,18 @@ import { useSchedule, useScheduleUi } from './useSchedule'
 
 export default function Schedule() {
   const t = useStrings(S)
+  const title = useScreenTitle('schedule', t('title'))
   const tc = useStrings(COMMON)
   const { ui } = useI18n()
   const mode = useScheduleUi((s) => s.mode)
   const setMode = useScheduleUi((s) => s.setMode)
   const { row, update } = useSchedule(mode)
+  // Room under the content for the fixed "done" bar. Marked from here: `.screen:has([data-bar])` is unknown to Chrome < 105.
+  const screenRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const el = screenRef.current
+    if (el) el.toggleAttribute('data-bar-below', !!el.querySelector('[data-bar]'))
+  })
   const custom = useCustomCards()
   const refs = row?.items.map((i) => i.ref) ?? []
   const cards = useCardViews(refs, custom)
@@ -47,10 +55,10 @@ export default function Schedule() {
 
   return (
     <>
-      <PageHeader title={t('title')} symbol={<SymbolImg id="calendar" />} />
+      <PageHeader title={title} symbol={<SymbolImg id="calendar" />} />
 
       <Page width="normal">
-        <div className={styles.screen} data-no-print>
+        <div className={styles.screen} ref={screenRef} data-no-print>
           <div className={styles.modeBar}>
             <Segmented<ScheduleKind>
               label={t('mode')}

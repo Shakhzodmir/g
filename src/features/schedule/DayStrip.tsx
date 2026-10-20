@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Plus, RotateCcw, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, Plus, RotateCcw, X } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useRef } from 'react'
 import { playSfx } from '../../audio/sfx'
@@ -8,6 +8,7 @@ import { useI18n, useLabel, useStrings } from '../../i18n'
 import { SCHEDULE_TEMPLATES } from '../../content/schedules'
 import type { ScheduleItem } from '../../store/db'
 import { logEvent } from '../../store/events'
+import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { EmptyState } from '../../ui/misc'
 import { Pressable } from '../../ui/Pressable'
@@ -45,6 +46,8 @@ export function DayStrip({
   const { ui } = useI18n()
   const label = useLabel()
   const preset = useMotionPreset()
+  // Adults: a plain check mark and a plain «Bajarildi / Готово», no star sticker.
+  const adult = useProfileStore((s) => s.profile.kind === 'adult')
   const cur = currentIndex(items)
   const finished = allDone(items)
   const currentRef = useRef<HTMLLIElement>(null)
@@ -70,7 +73,7 @@ export function DayStrip({
     if (card) logEvent('schedule_done', card.ref, { kind: 'day' })
     const nextCard = cards.slice(cur + 1).find((c, k) => c && !items[cur + 1 + k]?.done)
     if (nextCard) void speakSequence([voice('sched_item_done'), voice('sched_next'), nextCard.speech])
-    else void speakSequence([voice('sched_all_done')])
+    else void speakSequence([voice(adult ? 'sched_item_done' : 'sched_all_done')])
   }
 
   // A finished row can be taken back with one gentle tap (no confirmation): a slip of the finger is not final.
@@ -85,7 +88,7 @@ export function DayStrip({
         <div className={styles.editTools} data-no-print>
           <p className={styles.editHint}>{t('templates')}</p>
           <div className={styles.templateRow}>
-            {SCHEDULE_TEMPLATES.map((tpl) => (
+            {SCHEDULE_TEMPLATES.filter((tpl) => !(adult && tpl.id === 'kindergarten')).map((tpl) => (
               <Button key={tpl.id} variant="soft" onActivate={() => onTemplate(tpl.id)}>
                 {ui(tpl.title)}
               </Button>
@@ -186,7 +189,7 @@ export function DayStrip({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={preset.pop}
                   >
-                    <SymbolImg id="glowing_star" />
+                    {adult ? <Check /> : <SymbolImg id="glowing_star" />}
                   </motion.span>
                 )}
               </Pressable>
@@ -197,7 +200,7 @@ export function DayStrip({
       {bar && <DoneBar name={cards[cur] ? label(cards[cur].label) : ''} scanGroup="day-current" onDone={markDone} />}
       {finished && (
         <div className={styles.finished} role="status">
-          <p className={styles.finishedText}>{t('allDone')}</p>
+          <p className={styles.finishedText}>{adult ? t('allDoneAdult') : t('allDone')}</p>
           <Button variant="soft" icon={<RotateCcw />} onActivate={() => onUpdate(resetDone)}>
             {t('again')}
           </Button>

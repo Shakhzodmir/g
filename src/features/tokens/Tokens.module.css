@@ -7,6 +7,7 @@
 
 .display {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: var(--s-4);
   min-width: 0;
@@ -14,6 +15,7 @@
 
 .controls {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-4);
   width: min(100%, var(--col));
   margin-inline: auto;
@@ -29,6 +31,7 @@
 /* ---------- Reward preview ---------- */
 .rewardBox {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: var(--s-3);
@@ -49,6 +52,8 @@
 
 .rewardCard {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: var(--s-3);
   min-height: var(--cell-min);
@@ -130,6 +135,7 @@
 
 .starFill {
   fill: var(--warm);
+  stroke: var(--warm);
   stroke: color-mix(in srgb, var(--warm) 60%, var(--text));
   stroke-width: 4;
   stroke-linejoin: round;

@@ -2,6 +2,7 @@
 .screen {
   container-type: inline-size;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--section-gap);
   min-width: 0;
 }
@@ -26,7 +27,8 @@
   padding-inline: var(--s-2);
   font-weight: 800;
   font-size: var(--fs-label);
-  white-space: nowrap;
+  /* wraps when the text is enlarged (a nowrap label pushed the page sideways) */
+  overflow-wrap: break-word;
 }
 
 .editingBanner {
@@ -127,7 +129,7 @@
   display: grid;
   place-items: center;
   /* Phones: 4.5-6rem so two slots plus the Done bar fit 360 x 740; grows with the screen. */
-  width: clamp(4.5rem, min(22vw, 17dvh), 13rem);
+  width: clamp(4.5rem, min(22vw, calc(17 * var(--dvh))), 13rem);
   aspect-ratio: 1;
 }
 
@@ -194,7 +196,7 @@
 
 @media (orientation: landscape) and (max-height: 520px) {
   .bigArt {
-    width: clamp(4.5rem, 24dvh, 8rem);
+    width: clamp(4.5rem, calc(24 * var(--dvh)), 8rem);
   }
   .slot {
     gap: var(--s-2);
@@ -232,7 +234,7 @@
 }
 
 /* Room under the content so the last row is never hidden behind the bar. */
-.screen:has([data-bar]) {
+.screen[data-bar-below] {
   padding-bottom: calc(var(--touch-min) * 1.6 + var(--s-6));
 }
 
@@ -256,6 +258,7 @@
 /* ---------- Day strip ---------- */
 .day {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-3);
   width: min(100%, 40rem);
   margin-inline: auto;
@@ -269,6 +272,7 @@
 
 .strip {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-2);
   margin: 0;
   padding: 0;
@@ -286,7 +290,7 @@
 .rowCard,
 .row {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--s-3);
   width: 100%;
@@ -310,8 +314,8 @@
 .rowArt {
   display: grid;
   place-items: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: min(3.5rem, 22vw);
+  height: min(3.5rem, 22vw);
 }
 
 .rowName {
@@ -335,6 +339,7 @@
 .current {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: var(--s-3);
   margin-block: var(--s-2);
@@ -349,7 +354,7 @@
   position: absolute;
   top: calc(-1 * var(--s-4));
   left: 50%;
-  translate: -50% 0;
+  transform: translateX(-50%);
   padding: var(--s-1) var(--s-5);
   border-radius: var(--r-pill);
   background: var(--primary);
@@ -379,7 +384,7 @@
 .currentArt {
   display: grid;
   place-items: center;
-  width: clamp(6rem, min(36vw, 22dvh), 11rem);
+  width: clamp(6rem, min(36vw, calc(22 * var(--dvh))), 11rem);
   aspect-ratio: 1;
 }
 
@@ -441,6 +446,19 @@
   .rowTools {
     grid-column: 1 / -1;
     justify-content: flex-end;
+  }
+}
+/* No container queries: the viewport minus the page gutters (2 x 1rem) stands in for the container. */
+@supports not (container-type: inline-size) {
+  @media (max-width: 25.75rem) {
+    .row {
+      grid-template-columns: auto 1fr;
+      padding-right: var(--s-2);
+    }
+    .rowTools {
+      grid-column: 1 / -1;
+      justify-content: flex-end;
+    }
   }
 }
 
@@ -522,7 +540,7 @@
   pointer-events: auto;
 }
 
-:global(html[data-board='true']) .screen:has([data-bar]) {
+:global(html[data-board='true']) .screen[data-bar-below] {
   padding-bottom: 0;
 }
 

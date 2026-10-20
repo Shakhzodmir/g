@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.22"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<linearGradient id="g1" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#b8b9f0"/><stop offset="0.5" stop-color="#8d8ee6"/><stop offset="1" stop-color="#6e6fb3"/></linearGradient>
+<radialGradient id="g2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff" stop-opacity="0.5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>
+<ellipse cx="128" cy="228" rx="78" ry="11" fill="url(#g0)"/>
+<path d="M123.1 36.9 Q128 26 132.9 36.9 L152.5 80.6 Q157.4 91.5 169.3 92.8 L216.9 98 Q228.8 99.2 219.9 107.3 L184.4 139.4 Q175.6 147.5 178 159.2 L187.8 206 Q190.3 217.8 179.9 211.8 L138.4 188 Q128 182 117.6 188 L76.1 211.8 Q65.7 217.8 68.2 206 L78 159.2 Q80.4 147.5 71.6 139.4 L36.1 107.3 Q27.2 99.2 39.1 98 L86.7 92.8 Q98.6 91.5 103.5 80.6 Z" fill="url(#g1)" stroke="#5c5c96" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="112" cy="96" rx="30" ry="14" transform="rotate(-40 112 96)" fill="url(#g2)"/>
+</svg>

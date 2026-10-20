@@ -1,4 +1,5 @@
 import { ArrowRight, Check, Volume2 } from 'lucide-react'
+import { useScreenTitle } from '../../app/adultTitles'
 import { useState } from 'react'
 import { Route, Routes, useNavigate, useParams } from 'react-router'
 import { speak, speakSequence } from '../../audio/speech'
@@ -46,12 +47,13 @@ function Ask({ text, listen, line, as: As = 'p', id }: { text: string; listen: s
 
 function FeelingGrid() {
   const t = useStrings(S)
+  const title = useScreenTitle('feelings', t('title'))
   const lang = useProfileStore((s) => s.profile.speechLang)
   const label = useLabel()
   const navigate = useNavigate()
   return (
     <div className={styles.page}>
-      <PageHeader title={t('title')} />
+      <PageHeader title={title} />
       <div className={styles.body}>
         <Ask text={t('ask')} listen={t('listenAsk')} line="feel_ask" />
         <ul className={styles.feelings} role="list" data-reach>
@@ -87,11 +89,12 @@ function FeelingDetail() {
   const { id } = useParams()
   const feeling = feelingById(id)
   const t = useStrings(S)
+  const title = useScreenTitle('feelings', t('title'))
   const navigate = useNavigate()
   if (!feeling) {
     return (
       <div className={styles.page}>
-        <PageHeader title={t('title')} back="/feelings" />
+        <PageHeader title={title} back="/feelings" />
         <EmptyState symbol="compass" title={t('notFound')} action={<Button onActivate={() => navigate('/feelings')}>{t('toFeelings')}</Button>} />
       </div>
     )
@@ -101,6 +104,7 @@ function FeelingDetail() {
 
 function FeelingHelp({ feeling }: { feeling: Feeling }) {
   const t = useStrings(S)
+  const title = useScreenTitle('feelings', t('title'))
   const tc = useStrings(COMMON)
   const label = useLabel()
   const lang = useProfileStore((s) => s.profile.speechLang)
@@ -112,7 +116,7 @@ function FeelingHelp({ feeling }: { feeling: Feeling }) {
 
   return (
     <div className={styles.page}>
-      <PageHeader title={t('title')} back="/feelings" />
+      <PageHeader title={title} back="/feelings" />
       <div className={styles.body}>
         <Pressable className={styles.hero} label={feelingName} onActivate={() => void speak(feelingItem(feeling))}>
           <span className={styles.heroFace} aria-hidden="true">

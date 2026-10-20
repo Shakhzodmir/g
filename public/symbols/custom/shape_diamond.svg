@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.22"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<linearGradient id="g1" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#b8b9f0"/><stop offset="0.5" stop-color="#8d8ee6"/><stop offset="1" stop-color="#6e6fb3"/></linearGradient>
+<radialGradient id="g2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff" stop-opacity="0.5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>
+<ellipse cx="128" cy="228" rx="78" ry="11" fill="url(#g0)"/>
+<path d="M116.8 37.4 Q128 26 139.2 37.4 L212.8 112.6 Q224 124 212.8 135.4 L139.2 210.6 Q128 222 116.8 210.6 L43.2 135.4 Q32 124 43.2 112.6 Z" fill="url(#g1)" stroke="#5c5c96" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="106" cy="82" rx="34" ry="14" transform="rotate(-45 106 82)" fill="url(#g2)"/>
+</svg>

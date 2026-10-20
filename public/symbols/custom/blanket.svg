@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.22"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<linearGradient id="g1" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#b0d8c5"/><stop offset="0.5" stop-color="#7fc0a2"/><stop offset="1" stop-color="#63967e"/></linearGradient>
+<linearGradient id="g2" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#f8e7b6"/><stop offset="0.5" stop-color="#f4d98a"/><stop offset="1" stop-color="#bea96c"/></linearGradient>
+<linearGradient id="g3" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#c8e9d9"/><stop offset="0.5" stop-color="#a7dcc2"/><stop offset="1" stop-color="#82ac97"/></linearGradient>
+</defs>
+<ellipse cx="128" cy="226" rx="100" ry="11" fill="url(#g0)"/>
+<path d="M24 70 L232 70 L232 196 L24 196 Z" fill="url(#g1)" stroke="#3f8a6a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="34" y="80" width="44" height="32" rx="6" fill="url(#g2)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="34" y="118" width="44" height="32" rx="6" fill="url(#g3)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="34" y="156" width="44" height="32" rx="6" fill="url(#g2)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="84" y="80" width="44" height="32" rx="6" fill="url(#g3)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="84" y="118" width="44" height="32" rx="6" fill="url(#g2)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="84" y="156" width="44" height="32" rx="6" fill="url(#g3)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="134" y="80" width="44" height="32" rx="6" fill="url(#g2)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="134" y="118" width="44" height="32" rx="6" fill="url(#g3)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="134" y="156" width="44" height="32" rx="6" fill="url(#g2)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="184" y="80" width="44" height="32" rx="6" fill="url(#g3)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="184" y="118" width="44" height="32" rx="6" fill="url(#g2)" stroke="#3f8a6a" stroke-width="1.5"/>
+<rect x="184" y="156" width="44" height="32" rx="6" fill="url(#g3)" stroke="#3f8a6a" stroke-width="1.5"/>
+</svg>

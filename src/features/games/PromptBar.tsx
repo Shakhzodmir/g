@@ -13,11 +13,15 @@ export function PromptBar({ text, listenLabel, onListen, children }: { text: str
   const level = useSpeechLevel()
   const preset = useMotionPreset()
   const lang = useProfileStore((s) => s.profile.speechLang)
+  // Adult profiles have no mascot: the question is a plain line of text.
+  const adult = useProfileStore((s) => s.profile.kind === 'adult')
   return (
     <div className={styles.prompt}>
-      <span className={styles.promptMascot} aria-hidden="true">
-        <Musicha state={level > 0.02 ? 'speak' : 'idle'} level={level} size={72} calm={!preset.idleLoops} title="" />
-      </span>
+      {!adult && (
+        <span className={styles.promptMascot} aria-hidden="true">
+          <Musicha state={level > 0.02 ? 'speak' : 'idle'} level={level} size={72} calm={!preset.idleLoops} title="" />
+        </span>
+      )}
       <p className={styles.promptText} aria-live="polite">
         {shy(text, lang === 'ru' ? 'ru' : 'uz')}
       </p>

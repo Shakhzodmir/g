@@ -1,6 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import symbolMap from '../../scripts/symbol-map.json'
+// scripts/symbol-map.json plus every scripts/symbol-map.<name>.json (authors keep separate files to avoid write clashes)
+const mapFiles = import.meta.glob<Record<string, string>>('../../scripts/symbol-map*.json', { eager: true, import: 'default' })
+const symbolMap: Record<string, string> = Object.assign({}, ...Object.values(mapFiles))
 import { isKeptLatin, uzLatnToCyrl } from '../i18n/orthography'
 import { shy, syllablesOf } from '../lib/hyphenate'
 import * as animals from './animals'
@@ -131,15 +133,16 @@ describe('vocabulary', () => {
     expect(Math.max(...cols) - Math.min(...cols)).toBeLessThanOrEqual(2)
   })
 
-  it('every topic except core has 14–24 words and wordsByTopic keeps them', () => {
-    expect(TOPICS).toHaveLength(13)
+  it('every topic except core has 14–40 words and wordsByTopic keeps them', () => {
+    expect(TOPICS.length).toBeGreaterThanOrEqual(13)
     expect(TOPICS[0].id).toBe('core')
-    expect(new Set(TOPICS.map((t) => t.id)).size).toBe(13)
+    expect(new Set(TOPICS.map((t) => t.id)).size).toBe(TOPICS.length)
     for (const t of TOPICS) {
       const words = wordsByTopic(t.id as TopicId)
       if (t.id === 'core') continue
       expect(words.length, t.id).toBeGreaterThanOrEqual(14)
-      expect(words.length, t.id).toBeLessThanOrEqual(24)
+      // adult topics are practical vocabularies (symptoms, documents, home) and may be longer than a child's tab
+      expect(words.length, t.id).toBeLessThanOrEqual(t.audience === 'adult' ? 48 : 40)
     }
     expect(wordById('water')?.uz).toBe('suv')
     expect(wordById('nope')).toBeUndefined()
@@ -217,7 +220,7 @@ describe('speech text', () => {
 })
 
 describe('symbols', () => {
-  it('every referenced symbol exists in scripts/symbol-map.json', () => {
+  it('every referenced symbol exists in scripts/symbol-map*.json', () => {
     const missing = new Set<string>()
     for (const { key, value, path } of allStrings()) if (key === 'symbol' && !(value in SYMBOLS)) missing.add(`${path}: ${value}`)
     expect([...missing]).toEqual([])

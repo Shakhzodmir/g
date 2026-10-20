@@ -46,9 +46,12 @@ test('first launch goes through onboarding to the child home', async ({ page }) 
   await expect(page).toHaveURL(/#\/onboarding/)
   await page.getByRole('button', { name: 'Русский' }).click()
   await page.getByRole('button', { name: /Ребёнок/ }).click()
-  // the name is required: Next stays disabled until it is filled in
-  await expect(page.getByRole('button', { name: 'Дальше' })).toBeDisabled()
+  // the name is required: Next without it shows an error and stays on the name step
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await expect(page.getByLabel('Имя')).toBeVisible()
+  await expect(page.getByRole('status').filter({ hasText: /\S/ })).toBeVisible()
   await page.getByLabel('Имя').fill('Азиз')
+  await page.waitForTimeout(400) // the repeat guard (300 ms) ignores a second press of the same button that is too quick
   await page.getByRole('button', { name: 'Дальше' }).click()
   await page.getByRole('button', { name: 'Пропустить' }).click()
   await expect(page).toHaveURL(/#\/$/)

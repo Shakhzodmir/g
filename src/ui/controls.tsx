@@ -1,6 +1,7 @@
 import { Minus, Plus } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 import { useStrings } from '../i18n'
+import { clearFocusVisible, markFocusVisible } from '../lib/focusVisible'
 import { Button } from './Button'
 import styles from './controls.module.css'
 import { UI } from './strings'
@@ -146,6 +147,8 @@ export function Segmented<T extends string>({
               value={o.value}
               checked={o.value === value}
               onChange={() => onChange(o.value)}
+              onFocus={markFocusVisible}
+              onBlur={clearFocusVisible}
               className="visually-hidden"
             />
             {o.icon && <span aria-hidden="true">{o.icon}</span>}

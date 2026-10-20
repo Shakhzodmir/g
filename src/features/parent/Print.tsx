@@ -45,7 +45,7 @@ function PrintCard({ item, both, colour, top }: { item: PrintItem; both: boolean
         <img className={[ps.img, photo && ps.photo].filter(Boolean).join(' ')} src={photo ?? symbolUrl(item.symbol)} alt="" loading="eager" decoding="sync" />
         <span className={ps.label} data-long={label(item.label).length > 14 || undefined}>
           <span>{shy(label(item.label), uiLang === 'ru' ? 'ru' : 'uz')}</span>
-          {both && second && second !== label(item.label) && <span className={ps.second}>{shy(second, uiLang === 'ru' ? 'uz' : 'ru')}</span>}
+          {both && second && second !== label(item.label) && <span className={ps.second} lang={speechLang === 'ru' ? (uzScript === 'cyrl' ? 'uz-Cyrl' : 'uz-Latn') : 'ru'}>{shy(second, uiLang === 'ru' ? 'uz' : 'ru')}</span>}
         </span>
       </div>
     </div>

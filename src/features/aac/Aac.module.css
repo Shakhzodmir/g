@@ -4,20 +4,20 @@
  */
 .screen {
   container-type: inline-size;
-  height: calc(100dvh - 5.0625rem - var(--safe-bottom));
+  height: calc(var(--dvh100) - 5.0625rem - var(--safe-bottom));
   min-height: 22rem;
   margin-bottom: calc(-1 * var(--s-4));
 }
 
 @media (min-width: 840px) {
   .screen {
-    height: 100dvh;
+    height: var(--dvh100);
     margin-bottom: calc(-1 * var(--s-8));
   }
 }
 
 .screen[data-board] {
-  height: var(--board-main-h, calc(100dvh - 6.875rem));
+  height: var(--board-main-h, calc(var(--dvh100) - 6.875rem));
   margin-bottom: 0;
 }
 
@@ -125,7 +125,7 @@
   position: absolute;
   left: var(--s-2);
   top: 50%;
-  translate: 0 -50%;
+  transform: translateY(-50%);
   z-index: 1;
   color: var(--text-muted);
   font-size: var(--fs-title);
@@ -153,6 +153,8 @@
 }
 
 .barHint {
+  min-width: 0;
+  overflow-wrap: break-word;
   color: var(--text-muted);
   font-size: var(--fs-caption);
   font-weight: 700;
@@ -256,7 +258,7 @@
   }
   .barMore {
     top: var(--s-1);
-    translate: 0 0;
+    transform: none;
     font-size: var(--fs-body);
   }
   .chip {
@@ -286,6 +288,60 @@
   .barSpeak svg {
     width: 1.5rem;
     height: 1.5rem;
+  }
+}
+@supports not (container-type: inline-size) {
+  @media (max-width: 599px) {
+    .bar {
+      min-height: 5.5rem;
+      touch-action: manipulation;
+    }
+    .chips {
+      flex-wrap: wrap;
+      align-content: flex-start;
+      max-height: 4.125rem;
+      row-gap: 2px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      touch-action: pan-y;
+    }
+    .chips[data-more-before] {
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem);
+      mask-image: linear-gradient(to bottom, transparent 0, #000 1.5rem);
+    }
+    .barMore {
+      top: var(--s-1);
+      transform: none;
+      font-size: var(--fs-body);
+    }
+    .chip {
+      grid-auto-flow: column;
+      align-items: center;
+      justify-items: start;
+      gap: var(--s-1);
+      min-width: 0;
+      min-height: 2rem;
+      padding: 0 var(--s-2) 0 var(--s-1);
+    }
+    .chipSymbol {
+      width: 1.375rem;
+      height: 1.375rem;
+    }
+    /* The strip needs every pixel: the speaker is a plain glyph, not a button-sized disc. */
+    .barSpeak {
+      width: 1.75rem;
+      height: 1.75rem;
+      background: transparent;
+      color: var(--primary);
+    }
+    .bar[data-empty='true'] .barSpeak {
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .barSpeak svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
   }
 }
 
@@ -378,6 +434,13 @@
     padding-inline: calc(4px + var(--safe-left)) calc(4px + var(--safe-right));
   }
 }
+@supports not (container-type: inline-size) {
+  @media (max-width: 419px) {
+    .panel[data-view='core'] {
+      padding-inline: calc(4px + var(--safe-left)) calc(4px + var(--safe-right));
+    }
+  }
+}
 
 /* Fixed 6×6 core. Cells fit the panel (width and height); below 52 px the panel scrolls instead. */
 .core {
@@ -460,6 +523,8 @@
 .cellLabel {
   flex: none;
   max-width: 100%;
+  /* Fallback without container units (Chrome < 105): cells of the 6x6 core know their own width (--cell, set by Boards.tsx). */
+  font-size: clamp(0.8125rem, calc(var(--cell, 4.5rem) * 0.17), 1.5rem);
   font-size: clamp(0.8125rem, 17cqi, 1.5rem);
   font-weight: 800;
   line-height: 1.08;
@@ -474,6 +539,7 @@
   width: 100%;
   aspect-ratio: 1;
   border-radius: min(var(--r-cell), 18%);
+  background: var(--surface-2);
   background: color-mix(in srgb, var(--outline-soft) 28%, transparent);
 }
 .core .placeholder {
@@ -486,6 +552,9 @@
 .phrase[data-glow='true'],
 .painBtn[data-glow='true'],
 .yn[data-glow='true'] {
+  box-shadow:
+    0 0 0 4px var(--surface),
+    0 0 0 9px var(--warm) !important;
   box-shadow:
     0 0 0 4px var(--surface),
     0 0 0 9px var(--warm),
@@ -503,6 +572,7 @@
 
 .phrase {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: var(--s-3);
   width: 100%;
@@ -530,6 +600,8 @@
 }
 
 .phraseText {
+  min-width: 0;
+  overflow-wrap: break-word;
   font-weight: 800;
   font-size: var(--fs-card-title);
   line-height: 1.2;
@@ -538,6 +610,7 @@
 /* ---------- Pain scale ---------- */
 .pain {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-3);
   max-width: 56rem;
   margin-inline: auto;
@@ -550,7 +623,8 @@
 
 .painScale {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  /* six across on a phone; with large text fewer, never wider than the screen (3rem scales with the text) */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(3rem, 15%)), 1fr));
   gap: var(--s-2);
 }
 @container (min-width: 44rem) {
@@ -558,11 +632,20 @@
     grid-template-columns: repeat(11, minmax(0, 1fr));
   }
 }
+@supports not (container-type: inline-size) {
+  @media (min-width: 62rem) {
+    .painScale {
+      grid-template-columns: repeat(11, minmax(0, 1fr));
+    }
+  }
+}
 
 .painBtn {
   min-height: 4rem;
+  border: 2px solid var(--fitz-action-border);
   border: 2px solid color-mix(in srgb, var(--fitz-thing-border) calc(var(--n) * 10%), var(--fitz-action-border));
   border-radius: var(--r-cell);
+  background: var(--fitz-action-bg);
   background: color-mix(in srgb, var(--fitz-thing-bg) calc(var(--n) * 10%), var(--fitz-action-bg));
   color: var(--fitz-text);
   font-size: var(--fs-display);
@@ -570,6 +653,21 @@
   font-variant-numeric: tabular-nums;
   box-shadow: var(--elev-1);
   touch-action: manipulation;
+}
+/* No color-mix: four calm bands (green, yellow, orange, red) instead of a continuous ramp. */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .painBtn[data-band='1'] {
+    border-color: var(--fitz-people-border);
+    background: var(--fitz-people-bg);
+  }
+  .painBtn[data-band='2'] {
+    border-color: var(--fitz-thing-border);
+    background: var(--fitz-thing-bg);
+  }
+  .painBtn[data-band='3'] {
+    border-color: var(--fitz-negation-border);
+    background: var(--fitz-negation-bg);
+  }
 }
 .painBtn[aria-pressed='true'] {
   outline: 4px solid var(--text);
@@ -649,6 +747,7 @@
 .kbSuggestEmpty {
   min-height: var(--touch-min);
   border-radius: var(--r-pill);
+  background: var(--surface-2);
   background: color-mix(in srgb, var(--outline-soft) 30%, transparent);
 }
 
@@ -672,6 +771,21 @@
     grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: var(--s-1);
     justify-content: center;
+  }
+}
+@supports not (container-type: inline-size) {
+  @media (min-width: 56.5rem) {
+    .kbKeys {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--s-1);
+    }
+    .kbRow {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--s-1);
+      justify-content: center;
+    }
   }
 }
 
@@ -702,7 +816,8 @@
 .dock {
   grid-area: dock;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, ...): large text shrinks the pair instead of pushing the screen sideways */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--s-2);
   padding: var(--s-1) calc(var(--gutter) + var(--safe-right)) var(--s-2) calc(var(--gutter) + var(--safe-left));
 }
@@ -712,7 +827,7 @@
   display: contents;
 }
 .dock[data-extra] {
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   align-items: center;
 }
 
@@ -720,11 +835,13 @@
   --cell-bg: var(--surface);
   --cell-border: var(--outline-soft);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--s-2);
+  gap: 0 var(--s-2);
+  min-width: 0;
   min-height: 3.5rem;
-  padding: var(--s-1) var(--s-4);
+  padding: var(--s-1) min(var(--s-4), 6.5vw);
   border: 2px solid var(--cell-border);
   border-radius: var(--r-pill);
   background: var(--cell-bg);
@@ -795,6 +912,53 @@
     padding-top: var(--s-2);
   }
 }
+@supports not (container-type: inline-size) {
+  @media (min-width: 600px) {
+    .layout {
+      grid-template-columns: 8rem minmax(0, 1fr);
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        'head head'
+        'bar bar'
+        'tabs panel'
+        'tabs dock';
+    }
+    .tabs {
+      flex-direction: column;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding: var(--s-1) 0 var(--s-2) calc(var(--gutter) + var(--safe-left));
+      gap: var(--s-2);
+    }
+    .tab {
+      width: 100%;
+      min-height: 4.75rem;
+    }
+    .panel {
+      padding-left: var(--s-4);
+    }
+    .dock {
+      padding-left: var(--s-4);
+    }
+    .barRow {
+      padding-bottom: var(--s-3);
+    }
+    .bar {
+      min-height: 5.25rem;
+    }
+    .chip {
+      width: 4.5rem;
+      min-height: 4.25rem;
+    }
+    .chipSymbol {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+    .dock {
+      padding-top: var(--s-2);
+    }
+  }
+}
 
 /* Short screens (phone landscape): Yes / No move up next to the message bar. */
 @media (max-height: 540px) {
@@ -826,6 +990,36 @@
       padding-bottom: var(--s-2);
     }
   }
+  @supports not (container-type: inline-size) {
+    @media (min-width: 600px) {
+      .layout {
+        grid-template-columns: 8rem minmax(0, 1fr) auto;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-areas:
+          'head head head'
+          'bar bar dock'
+          'tabs panel panel';
+      }
+      .dock {
+        grid-template-columns: auto auto;
+        padding: 0 calc(var(--gutter) + var(--safe-right)) var(--s-2) 0;
+        align-items: stretch;
+      }
+      .yn {
+        flex-direction: column;
+        gap: 0;
+        padding: var(--s-1) var(--s-3);
+        border-radius: var(--r-card);
+        font-size: var(--fs-card-title);
+      }
+      .bar {
+        min-height: 4.25rem;
+      }
+      .barRow {
+        padding-bottom: var(--s-2);
+      }
+      }
+  }
 }
 
 /* Interactive whiteboard: the message is shown on top; everything a child presses sits low, in reach. */
@@ -854,6 +1048,9 @@
 .screen[data-board] .panel {
   display: flex;
   flex-direction: column;
+  /* The panel scrolls inside the reach zone: absolutely placed content (visually-hidden key names) is positioned
+     against it, so it can never stick out below the zone and make the zone look clipped. */
+  position: relative;
 }
 /* Auto margin (not justify-content) keeps tall content scrollable from its top. */
 .screen[data-board] .panel > * {
@@ -926,5 +1123,47 @@
 }
 
 .screen[data-board] .cellLabel {
+  font-size: clamp(0.875rem, calc(var(--cell, 6rem) * 0.19), 2rem);
   font-size: clamp(0.875rem, 19cqi, 2rem);
+}
+
+/* ---------- Adult mode: the message bar is text-first (small symbol, readable words) ---------- */
+.screen[data-kind='adult'] .bar {
+  min-height: 4rem;
+  border-radius: var(--r-cell);
+}
+.screen[data-kind='adult'] .chip {
+  grid-auto-flow: column;
+  justify-items: start;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: var(--s-1) var(--s-3) var(--s-1) var(--s-2);
+}
+.screen[data-kind='adult'] .chipSymbol {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.screen[data-kind='adult'] .chipLabel {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.screen[data-kind='adult'][data-board] .chip {
+  min-height: 4.5rem;
+}
+.screen[data-kind='adult'][data-board] .chipSymbol {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+.screen[data-kind='adult'][data-board] .chipLabel {
+  font-size: 1.25rem;
+}
+
+/* Adult cells are text-first: the word is a little larger and calmer than on the child's picture board. */
+.screen[data-kind='adult'] .cellLabel {
+  font-size: clamp(0.875rem, calc(var(--cell, 4.5rem) * 0.19), 1.625rem);
+  font-size: clamp(0.875rem, 19cqi, 1.625rem);
+  font-weight: 700;
+  letter-spacing: 0;
 }

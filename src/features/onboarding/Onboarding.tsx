@@ -10,6 +10,7 @@ import { useDevice } from '../../store/device'
 import { useProfileStore } from '../../store/profile'
 import type { AgeGroup } from '../../store/profileTypes'
 import { Button } from '../../ui/Button'
+import { MessageCircle } from 'lucide-react'
 import { Musicha } from '../../ui/mascot/Musicha'
 import { Page } from '../../ui/Page'
 import { Pressable } from '../../ui/Pressable'
@@ -186,7 +187,9 @@ export default function Onboarding() {
   }
 
   const infos = [
-    { title: t('info1Title'), text: t('info1Text'), symbol: 'family' },
+    kind === 'adult'
+      ? { title: tx('infoAdult1Title'), text: tx('infoAdult1Text'), symbol: 'speech_balloon' }
+      : { title: t('info1Title'), text: t('info1Text'), symbol: 'family' },
     { title: t('info2Title'), text: t('info2Text'), symbol: 'locked' },
     { title: t('info3Title'), text: t('info3Text'), symbol: 'key' },
   ]
@@ -194,9 +197,21 @@ export default function Onboarding() {
   return (
     <main className={styles.page}>
       <Page width="narrow" className={styles.body}>
-        <div className={styles.mascot}>
-          <Musicha state={step === 'info' ? 'happy' : 'idle'} size={120} title="" />
-        </div>
+        {/* The mascot belongs to the child's mode only; before the choice (and for adults) a calm brand mark. */}
+        {kind === 'child' && (step === 'name' || step === 'info') ? (
+          <div className={styles.mascot}>
+            <Musicha state={step === 'info' ? 'happy' : 'idle'} size={120} title="" />
+          </div>
+        ) : (
+          <div className={styles.brandMark} data-testid="brand-mark" role="img" aria-label={tc('appName')}>
+            <span className={styles.brandIcon} aria-hidden="true">
+              <MessageCircle />
+            </span>
+            <span className={styles.brandName} aria-hidden="true">
+              {tc('appName')}
+            </span>
+          </div>
+        )}
 
         {step === 'lang' && (
           <section className={styles.step} aria-labelledby="ob-lang">

@@ -1,0 +1,25 @@
+/* The teacher's "does this look right?" bar while a board preview runs. Fixed over the page, never in the reach zone. */
+.bar {
+  position: fixed;
+  z-index: 60;
+  top: var(--s-3);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  max-width: min(60rem, calc(100vw - 2 * var(--gutter)));
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--elev-3, var(--elev-2));
+  outline: 2px solid var(--primary);
+}
+
+.text {
+  margin: 0;
+  font-weight: 700;
+}

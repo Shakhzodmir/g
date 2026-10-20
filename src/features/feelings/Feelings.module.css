@@ -17,6 +17,7 @@
 /* ---------- Spoken question ---------- */
 .ask {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--s-3);
 }
@@ -32,23 +33,23 @@
 }
 
 /* ---------- Feeling faces ---------- */
+/* Two across on a phone, four from tablet width; with large text the tiles stack instead of overflowing (8rem scales with the text). */
 .feelings {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(8rem, 23%)), 1fr));
   gap: var(--s-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-@media (min-width: 600px) {
-  .feelings {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+.feelings > li {
+  min-width: 0;
 }
 
 .feeling {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 1fr auto;
   justify-items: center;
   align-items: center;

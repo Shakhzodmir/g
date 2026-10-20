@@ -48,6 +48,11 @@ export interface Profile {
   kind: 'child' | 'adult'
   ageGroup: AgeGroup
   speechLang: SpeechLang
+  /**
+   * True (default): the spoken language is the UI language (uz / uzc → 'uz', ru → 'ru') and changes with it.
+   * False: the speech language was set separately (advanced override in the adult area).
+   */
+  speechLangFollowsUi: boolean
   theme: ThemeId
   sensory: Sensory
   aac: AacSettings
@@ -71,18 +76,55 @@ export type ProfilePatch = Partial<Omit<Profile, 'aac' | 'touch' | 'scanning' | 
 
 export const DEFAULT_PROFILE_ID = 'default'
 
+/** The speech language that matches an interface language (Uzbek Latin and Cyrillic are both spoken as Uzbek). */
+export function speechLangForUi(ui: 'uz' | 'uzc' | 'ru'): SpeechLang {
+  return ui === 'ru' ? 'ru' : 'uz'
+}
+
+/**
+ * Brings a profile in line with the interface language: a profile that follows it gets the matching speech language.
+ * A profile saved before `speechLangFollowsUi` existed (the field is absent in `raw`) follows only if its speech
+ * language already matched; otherwise it keeps the language it had (the override).
+ */
+export function applyUiLangToProfile(p: Profile, ui: 'uz' | 'uzc' | 'ru', raw?: unknown): Profile {
+  const want = speechLangForUi(ui)
+  let follows = p.speechLangFollowsUi
+  if (raw !== undefined && isObj(raw) && typeof raw.speechLangFollowsUi !== 'boolean') follows = p.speechLang === want
+  if (follows && p.speechLang !== want) return { ...p, speechLangFollowsUi: true, speechLang: want }
+  return follows === p.speechLangFollowsUi ? p : { ...p, speechLangFollowsUi: follows }
+}
+
+/**
+ * What differs between the two modes at the start (child = warm, picture-first; adult = neutral, text + picture,
+ * the whole core vocabulary at once). Touch, scanning and voice start the same for both.
+ */
+export const KIND_DEFAULTS: Record<
+  Profile['kind'],
+  { ageGroup: AgeGroup; theme: ThemeId; sensory: Sensory; level: AacSettings['level']; showLabels: boolean; labelPos: AacSettings['labelPos']; colorCoding: boolean }
+> = {
+  child: { ageGroup: '5-7', theme: 'bolajon', sensory: 'normal', level: 2, showLabels: true, labelPos: 'bottom', colorCoding: true },
+  adult: { ageGroup: '13+', theme: 'kattalar', sensory: 'normal', level: 3, showLabels: true, labelPos: 'bottom', colorCoding: true },
+}
+
+/** The settings a profile gets when it switches to `kind` (theme, sensory level, AAC level); name, language, avatar stay. */
+export function kindSwitchPatch(kind: Profile['kind']): ProfilePatch {
+  const d = KIND_DEFAULTS[kind]
+  return { theme: d.theme, sensory: d.sensory, aac: { level: d.level, showLabels: d.showLabels, labelPos: d.labelPos, colorCoding: d.colorCoding } }
+}
+
 export function defaultProfile(patch: ProfilePatch = {}): Profile {
-  const adult = patch.kind === 'adult'
+  const d = KIND_DEFAULTS[patch.kind === 'adult' ? 'adult' : 'child']
   const base: Profile = {
     id: DEFAULT_PROFILE_ID,
     name: '',
     avatar: 'musicha',
     kind: 'child',
-    ageGroup: adult ? '13+' : '5-7',
+    ageGroup: d.ageGroup,
     speechLang: 'uz',
-    theme: adult ? 'kattalar' : 'bolajon',
-    sensory: 'normal',
-    aac: { level: 2, showLabels: true, labelPos: 'bottom', colorCoding: true, hiddenWordIds: [] },
+    speechLangFollowsUi: true,
+    theme: d.theme,
+    sensory: d.sensory,
+    aac: { level: d.level, showLabels: d.showLabels, labelPos: d.labelPos, colorCoding: d.colorCoding, hiddenWordIds: [] },
     touch: { activateOnRelease: true, holdMs: 0, ignoreRepeatMs: 300, dwellMs: 0 },
     scanning: { mode: 'off', intervalMs: 1500, audioCue: false },
     voice: { rate: 1, preferSystem: false, volume: 1, sfxVolume: 0.6, musicVolume: 0 },
@@ -144,6 +186,7 @@ export function sanitizeProfile(raw: unknown, fallbackProfile?: Profile): Profil
     kind,
     ageGroup: pick(raw.ageGroup, AGE_GROUPS, fallback.ageGroup),
     speechLang: pick(raw.speechLang, ['uz', 'ru'] as const, fallback.speechLang),
+    speechLangFollowsUi: bool(raw.speechLangFollowsUi, fallback.speechLangFollowsUi),
     theme: pick(raw.theme, THEME_IDS, fallback.theme),
     sensory: pick(raw.sensory, SENSORY, fallback.sensory),
     aac: {

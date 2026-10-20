@@ -7,7 +7,10 @@
   gap: var(--s-2);
   min-height: var(--touch-min);
   min-width: var(--touch-min);
-  padding: 0 var(--s-5);
+  /* never wider than the column: a long label wraps instead (large text, 320 px) */
+  max-width: 100%;
+  /* 1.25rem normally; trims on a narrow screen when the text is enlarged so a long word still fits */
+  padding: 0 min(var(--s-5), 6vw);
   border: 0;
   border-radius: var(--r-pill);
   background: var(--btn-bg);

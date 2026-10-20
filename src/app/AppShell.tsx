@@ -12,9 +12,11 @@ import { BOARD_X } from '../features/board/strings'
 import { Pressable } from '../ui/Pressable'
 import { SymbolImg } from '../ui/SymbolImg'
 import styles from './AppShell.module.css'
-import { FEATURES } from './features'
+import { FEATURES, featureTitle } from './features'
 import { BOARD, SHELL, SHELL_EXTRA } from './strings'
+import { BoardPreviewBar } from './BoardPreviewBar'
 import { UnspokenOverlay } from './UnspokenOverlay'
+import { DelayedSplash } from './Splash'
 
 interface NavItem {
   path: string
@@ -27,8 +29,9 @@ function useNavItems(): NavItem[] {
   const t = useStrings(COMMON)
   const kind = useProfileStore((s) => s.profile.kind)
   const home = { path: '/', symbol: 'house', label: t('navHome') }
-  const f = (id: keyof typeof FEATURES) => ({ path: FEATURES[id].path, symbol: FEATURES[id].symbol, label: ui(FEATURES[id].title) })
-  return kind === 'adult' ? [home, f('aac'), f('schedule'), f('exercises')] : [home, f('aac'), f('schedule'), f('games'), f('exercises')]
+  const f = (id: keyof typeof FEATURES) => ({ path: FEATURES[id].path, symbol: FEATURES[id].symbol, label: ui(featureTitle(FEATURES[id], kind)) })
+  // Child: Home, Talk, My day, Games, Warm-up. Adult: Home, Talk, Training, Plan, Voice (same engines, grown-up names).
+  return kind === 'adult' ? [home, f('aac'), f('games'), f('schedule'), f('exercises')] : [home, f('aac'), f('schedule'), f('games'), f('exercises')]
 }
 
 /** Whole-page fullscreen state for the teacher rail. */
@@ -105,6 +108,7 @@ export function AppShell() {
   const { pathname } = useLocation()
   const kind = useProfileStore((s) => s.profile.kind)
   const board = useDevice((s) => s.boardMode)
+  const boardPreview = useDevice((s) => s.boardPreviewBase !== null)
   const inParent = pathname.startsWith('/parent')
   const showBreak = kind === 'child' && !inParent && !pathname.startsWith('/calm')
   // The teacher's quiet mode lasts for the board session only (it ends when board mode ends, however that happens).
@@ -127,18 +131,21 @@ export function AppShell() {
     navigate(FEATURES.calm.path)
   }, [navigate])
 
-  // Alt+B: the Break button for keyboard users (works wherever the button is shown).
+  // Alt+B: the Break button for keyboard users (works wherever the button is shown). Adults have no Break button;
+  // for them Alt+B quietly opens the calm corner (nothing is spoken).
+  const altB = kind === 'child' ? showBreak : !inParent && !pathname.startsWith('/calm')
+  const needPause = useCallback(() => navigate(FEATURES.calm.path), [navigate])
   useEffect(() => {
-    if (!showBreak) return
+    if (!altB) return
     const onKey = (e: KeyboardEvent) => {
       if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyB' || e.key.toLowerCase() === 'b')) {
         e.preventDefault()
-        if (!e.repeat) needBreak()
+        if (!e.repeat) (kind === 'child' ? needBreak : needPause)()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [showBreak, needBreak])
+  }, [altB, kind, needBreak, needPause])
 
   return (
     <div className={styles.shell} data-kind={kind} data-board={board || undefined} data-break={showBreak || undefined}>
@@ -190,12 +197,13 @@ export function AppShell() {
       </nav>
 
       <main className={styles.main} id="main" ref={mainRef} tabIndex={-1}>
-        <Suspense fallback={<div className={styles.loading} aria-busy="true" />}>
+        <Suspense fallback={<DelayedSplash />}>
           <Outlet />
         </Suspense>
       </main>
 
       {board && <TeacherRail />}
+      {boardPreview && <BoardPreviewBar />}
 
       <UnspokenOverlay />
     </div>

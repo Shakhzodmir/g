@@ -4,6 +4,8 @@
   --tile-ink: var(--text);
   position: relative;
   display: grid;
+  /* the tile never grows past its column (large text); words keep overflow-wrap: normal, so they never break mid-word */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 1fr auto auto;
   justify-items: center;
   align-items: center;
@@ -30,6 +32,12 @@
   border-radius: var(--r-card);
 }
 
+/* Screen on its way (see Tile.tsx): quieter, never animated. */
+.tile[data-pending='true'] {
+  opacity: 0.8;
+  box-shadow: var(--elev-1);
+}
+
 /* Rishtan plate: a glazed rim ring around a calm centre */
 .plate {
   border-radius: 50%;
@@ -37,6 +45,9 @@
   min-height: 0;
   grid-template-rows: 1fr auto;
   padding: 14% 12% 16%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--tile-bg) 0 61%, transparent 61.5%),
+    var(--tile-rim);
   background:
     radial-gradient(circle at 50% 50%, var(--tile-bg) 0 61%, transparent 61.5%),
     conic-gradient(from 0deg, var(--tile-rim), color-mix(in srgb, var(--tile-rim) 65%, var(--surface)) 25%, var(--tile-rim) 50%, color-mix(in srgb, var(--tile-rim) 65%, var(--surface)) 75%, var(--tile-rim));

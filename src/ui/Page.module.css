@@ -3,6 +3,8 @@
   margin-inline: auto;
   padding: 0 calc(var(--gutter) + var(--safe-right)) var(--s-8) calc(var(--gutter) + var(--safe-left));
   display: grid;
+  /* minmax(0, 1fr): an unbreakable word or a wide row can never stretch the column past the screen (large text, 320 px) */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--section-gap);
   align-content: start;
   min-width: 0;

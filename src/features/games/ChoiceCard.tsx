@@ -10,7 +10,9 @@ import styles from './Games.module.css'
 export type ChoiceState = 'idle' | 'hint' | 'right' | 'dim'
 
 export interface ChoiceCardProps extends Omit<PressableProps, 'children'> {
-  symbol: string
+  symbol?: string
+  /** A drawn picture (swatch, shape, numeral) instead of a symbol. */
+  visual?: ReactNode
   /** Visible caption (optional: non-readers rely on the picture). */
   caption?: string
   state?: ChoiceState
@@ -22,7 +24,7 @@ export interface ChoiceCardProps extends Omit<PressableProps, 'children'> {
 }
 
 /** Big picture card for choice games. Never red, never a "wrong" sound: only a small wiggle. */
-export function ChoiceCard({ symbol, caption, state = 'idle', wiggle = 0, bob = 0, badge, className, ...rest }: ChoiceCardProps) {
+export function ChoiceCard({ symbol, visual, caption, state = 'idle', wiggle = 0, bob = 0, badge, className, ...rest }: ChoiceCardProps) {
   const preset = useMotionPreset()
   const lang = useProfileStore((s) => s.profile.speechLang)
   const [scope, animate] = useAnimate<HTMLSpanElement>()
@@ -43,7 +45,7 @@ export function ChoiceCard({ symbol, caption, state = 'idle', wiggle = 0, bob = 
     <Pressable {...rest} className={[styles.choice, className].filter(Boolean).join(' ')} data-state={state}>
       <motion.span ref={scope} className={styles.choiceInner}>
         <span className={styles.choicePic} aria-hidden="true">
-          <SymbolImg id={symbol} />
+          {visual ?? <SymbolImg id={symbol ?? ''} />}
         </span>
         {caption && <span className={styles.choiceCaption}>{shy(caption, lang === 'ru' ? 'ru' : 'uz')}</span>}
       </motion.span>

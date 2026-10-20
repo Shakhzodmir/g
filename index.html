@@ -5,17 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0A7584" />
     <meta name="color-scheme" content="light dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Gapimiz" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta
       name="description"
       content="Gapimiz — nutqida qiyinchiligi bor bolalar va kattalar uchun muloqot kartochkalari, oʻyinlar va mashqlar. Общение и развитие речи для детей и взрослых."
     />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-180.png" />
     <title>Gapimiz</title>
+    <!--
+      First paint without JavaScript: the calm background of the default theme and Musicha's turquoise circle, in the same
+      place and size as the React <Splash> that follows (src/app/Splash.tsx), so nothing jumps. React replaces #root's
+      content when it mounts. Plain CSS only (no dvh/color-mix) so it also renders on very old engines.
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #f4f8f7;
+      }
+      #gz-splash {
+        box-sizing: border-box;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        text-align: center;
+        font-family: 'Nunito Variable', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+        color: #0a7584;
+      }
+      #gz-splash .gz-dot {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 12px;
+        border-radius: 50%;
+        background: #cdeff2;
+        box-shadow: inset 0 0 0 8px #0a7584;
+        animation: gz-breathe 2.4s ease-in-out infinite;
+      }
+      #gz-splash .gz-name {
+        font-weight: 900;
+        font-size: 1.5rem;
+      }
+      #gz-splash .gz-msg {
+        max-width: 28rem;
+        margin: 12px 0 0;
+        font-size: 1.125rem;
+        line-height: 1.5;
+        color: #1e2633;
+      }
+      #gz-splash .gz-msg a,
+      #gz-splash .gz-msg button {
+        margin-top: 8px;
+        padding: 12px 24px;
+        border: 0;
+        border-radius: 999px;
+        background: #0a7584;
+        color: #fff;
+        font: inherit;
+        font-weight: 800;
+      }
+      @keyframes gz-breathe {
+        50% {
+          transform: scale(0.88);
+          opacity: 0.8;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #gz-splash .gz-dot {
+          animation: none;
+        }
+      }
+    </style>
+    <noscript><style>#gz-splash .gz-dot { animation: none; }</style></noscript>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="gz-splash" role="status">
+        <span class="gz-dot" aria-hidden="true"></span>
+        <span class="gz-name">Gapimiz</span>
+        <p class="gz-msg" id="gz-msg" hidden></p>
+      </div>
+    </div>
     <noscript>Gapimiz ishlashi uchun JavaScript kerak. Для работы Gapimiz нужен JavaScript.</noscript>
+    <!--
+      Old-browser guard (plain ES5, runs before the module script). An engine that lacks what the app needs would show a
+      blank page forever; this says so in both languages. A slow first load gets a calm hint after 20 s.
+    -->
+    <script>
+      ;(function () {
+        var msg = document.getElementById('gz-msg')
+        if (!msg) return
+        function show(html) {
+          msg.innerHTML = html
+          msg.hidden = false
+        }
+        var ok = false
+        try {
+          ok = !!(
+            window.Promise &&
+            window.fetch &&
+            window.Symbol &&
+            window.Map &&
+            window.CSS &&
+            CSS.supports &&
+            CSS.supports('display', 'grid') &&
+            'noModule' in document.createElement('script')
+          )
+        } catch (e) {}
+        if (!ok) {
+          show(
+            'Brauzerni yangilang.<br />Обновите браузер.<br /><small>Gapimiz yangiroq brauzerni talab qiladi (Chrome 90+, Safari 14+). / Нужен более новый браузер.</small>',
+          )
+          return
+        }
+        setTimeout(function () {
+          // still the plain splash after 20 s: the scripts did not arrive (no network on the very first visit?)
+          if (document.getElementById('gz-msg') === msg) {
+            show(
+              'Yuklanmayapti. Internetni tekshiring va qayta urining.<br />Не загружается. Проверьте интернет и попробуйте ещё раз.<br /><button type="button" onclick="location.reload()">Qayta yuklash / Обновить</button>',
+            )
+          }
+        }, 20000)
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

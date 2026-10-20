@@ -38,6 +38,66 @@ export interface DeviceState {
   dismissBoardHint: () => void
   setBoardCalibration: (c: BoardCalibration | null) => void
   setParentPinHash: (hash: string | null) => void
+  /**
+   * Board-mode preview (never persisted): the teacher sees the layout with the draft values before saving.
+   * `boardPreviewBase` holds the real settings to come back to; null = no preview running.
+   */
+  boardPreviewBase: { boardMode: boolean; boardCalibration: BoardCalibration | null } | null
+  startBoardPreview: (c: BoardCalibration) => void
+  commitBoardPreview: () => void
+  cancelBoardPreview: () => void
+}
+
+/** Lowest / highest reach fraction the layout supports. */
+export const REACH_MIN = 0.15
+export const REACH_MAX = 0.8
+/** Interface scale limits. */
+export const SCALE_MIN = 1
+export const SCALE_MAX = 2.6
+
+/** The persisted (data) part of the device state. */
+type PersistedDevice = Pick<
+  DeviceState,
+  'uiLang' | 'uzScript' | 'onboarded' | 'activeProfileId' | 'boardMode' | 'boardHintDismissed' | 'boardCalibration' | 'parentPinHash'
+>
+
+const UI_LANGS: readonly UiLang[] = ['uz', 'uzc', 'ru']
+const UZ_SCRIPTS: readonly UzScript[] = ['latn', 'cyrl', 'latn2026']
+const REACH_AGES: readonly ReachAge[] = ['3-4', '5-8', '9-12', 'adult']
+const num = (v: unknown, def: number, lo = -Infinity, hi = Infinity): number => (typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def)
+
+function sanitizeCalibration(v: unknown): BoardCalibration | null {
+  if (!v || typeof v !== 'object') return null
+  const c = v as Record<string, unknown>
+  return {
+    diagonalIn: num(c.diagonalIn, 75, 10, 200),
+    bottomEdgeM: num(c.bottomEdgeM, 0.8, 0, 3),
+    ageGroup: REACH_AGES.includes(c.ageGroup as ReachAge) ? (c.ageGroup as ReachAge) : '5-8',
+    distanceM: num(c.distanceM, 4, 0.3, 30),
+    scale: num(c.scale, 1, SCALE_MIN, SCALE_MAX),
+    reach: num(c.reach, 0.45, REACH_MIN, REACH_MAX),
+  }
+}
+
+/**
+ * Upgrades saved device state from ANY version (older or newer than this build) without losing it: known fields are
+ * kept (type-checked), missing or malformed ones fall back to defaults. Without a `migrate`, zustand throws away the
+ * whole saved object on a version mismatch, which would silently erase the adult PIN, the board calibration and the
+ * "onboarded" flag and send the family back to onboarding. Never bump `version` without extending this function.
+ */
+export function migrateDevice(persisted: unknown, _version?: number): PersistedDevice {
+  const p = persisted && typeof persisted === 'object' ? (persisted as Record<string, unknown>) : {}
+  const uiLang = UI_LANGS.includes(p.uiLang as UiLang) ? (p.uiLang as UiLang) : 'uz'
+  return {
+    uiLang,
+    uzScript: UZ_SCRIPTS.includes(p.uzScript as UzScript) ? (p.uzScript as UzScript) : uiLang === 'uzc' ? 'cyrl' : 'latn',
+    onboarded: p.onboarded === true,
+    activeProfileId: typeof p.activeProfileId === 'string' ? p.activeProfileId : null,
+    boardMode: p.boardMode === true,
+    boardHintDismissed: p.boardHintDismissed === true,
+    boardCalibration: sanitizeCalibration(p.boardCalibration),
+    parentPinHash: typeof p.parentPinHash === 'string' && p.parentPinHash ? p.parentPinHash : null,
+  }
 }
 
 export const useDevice = create<DeviceState>()(
@@ -51,6 +111,16 @@ export const useDevice = create<DeviceState>()(
       boardHintDismissed: false,
       boardCalibration: null,
       parentPinHash: null,
+      boardPreviewBase: null,
+      startBoardPreview: (c) =>
+        set((st) => ({
+          boardPreviewBase: st.boardPreviewBase ?? { boardMode: st.boardMode, boardCalibration: st.boardCalibration },
+          boardMode: true,
+          boardCalibration: c,
+        })),
+      commitBoardPreview: () => set({ boardPreviewBase: null }),
+      cancelBoardPreview: () =>
+        set((st) => (st.boardPreviewBase ? { boardMode: st.boardPreviewBase.boardMode, boardCalibration: st.boardPreviewBase.boardCalibration, boardPreviewBase: null } : {})),
       setUiLang: (uiLang) => set({ uiLang, uzScript: uiLang === 'uzc' ? 'cyrl' : 'latn' }),
       setUzScript: (uzScript) => set({ uzScript }),
       setOnboarded: (onboarded) => set({ onboarded }),
@@ -58,6 +128,8 @@ export const useDevice = create<DeviceState>()(
       setBoardMode: (boardMode) =>
         set((st) => ({
           boardMode,
+          // An explicit choice ends any preview.
+          boardPreviewBase: null,
           // Switching on without a calibration must not run with arbitrary defaults: derive one from the viewport.
           boardCalibration: boardMode && !st.boardCalibration ? defaultCalibration(currentViewport()) : st.boardCalibration,
         })),
@@ -65,7 +137,26 @@ export const useDevice = create<DeviceState>()(
       setBoardCalibration: (boardCalibration) => set({ boardCalibration }),
       setParentPinHash: (parentPinHash) => set({ parentPinHash }),
     }),
-    { name: 'gapimiz.device', version: 1, storage: createJSONStorage(safeLocalStorage) },
+    {
+      name: 'gapimiz.device',
+      version: 1,
+      storage: createJSONStorage(safeLocalStorage),
+      // Only data is stored; a running board preview stores the settings it will return to, never the draft.
+      partialize: (st): PersistedDevice => {
+        const base = st.boardPreviewBase
+        return {
+          uiLang: st.uiLang,
+          uzScript: st.uzScript,
+          onboarded: st.onboarded,
+          activeProfileId: st.activeProfileId,
+          boardMode: base ? base.boardMode : st.boardMode,
+          boardHintDismissed: st.boardHintDismissed,
+          boardCalibration: base ? base.boardCalibration : st.boardCalibration,
+          parentPinHash: st.parentPinHash,
+        }
+      },
+      migrate: (persisted, version) => migrateDevice(persisted, version) as DeviceState,
+    },
   ),
 )
 
@@ -77,9 +168,6 @@ export function screenHeightM(diagonalIn: number): number {
   return (diagonalIn * 0.0254 * 9) / Math.sqrt(16 * 16 + 9 * 9)
 }
 
-/** Lowest / highest reach fraction the layout supports. */
-export const REACH_MIN = 0.15
-export const REACH_MAX = 0.8
 
 /** Unclamped reach fraction (can be < 0 or > 1 for odd inputs): what the physical geometry really says. */
 export function reachRaw(c: Pick<BoardCalibration, 'diagonalIn' | 'bottomEdgeM' | 'ageGroup'>): number {
@@ -104,9 +192,6 @@ export interface Viewport {
   height: number
 }
 
-/** Interface scale limits. */
-export const SCALE_MIN = 1
-export const SCALE_MAX = 2.6
 /** The scaled layout must keep at least this many CSS px of height / width (below that, controls fall behind the nav). */
 export const MIN_EFFECTIVE_H = 700
 export const MIN_EFFECTIVE_W = 1000

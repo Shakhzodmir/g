@@ -131,7 +131,7 @@ describe('adult settings are behind the adult gate on a child profile (B11)', ()
     at('/exercises/blow', <BlowGame />)
     fireEvent.click(screen.getByRole('button', { name: /Kattalar uchun sozlamalar/ }))
     expect(screen.queryByRole('slider')).toBeNull()
-    expect(screen.getByRole('button', { name: /3 soniya/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /1,5 soniya/ })).toBeInTheDocument()
   })
 
   it('an adult profile opens them directly', () => {

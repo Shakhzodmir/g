@@ -1,7 +1,7 @@
 import { Eye } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { TOPICS } from '../../content/topics'
+import { topicsForKind } from '../../content/topics'
 import type { TopicId } from '../../content/types'
 import { wordById } from '../../content/vocab'
 import { useI18n, useLabel, useStrings } from '../../i18n'
@@ -30,7 +30,6 @@ type Mode = 'phrases' | 'keyboard' | 'pain'
 type View = { kind: 'topic'; topic: TopicId } | { kind: Mode }
 
 const MODES: readonly Mode[] = ['phrases', 'keyboard', 'pain']
-const TOPIC_IDS = new Set<string>(TOPICS.map((t) => t.id))
 const GLOW_MS = 1600
 
 interface Tab {
@@ -40,7 +39,7 @@ interface Tab {
   label: string
 }
 
-function useView(): [View, (v: View) => void] {
+function useView(topicIds: ReadonlySet<string>): [View, (v: View) => void] {
   const [params, setParams] = useSearchParams()
   const mode = params.get('mode')
   const topic = params.get('topic')
@@ -48,7 +47,7 @@ function useView(): [View, (v: View) => void] {
     ? { kind: mode as Mode }
     : {
         kind: 'topic',
-        topic: topic && TOPIC_IDS.has(topic) ? (topic as TopicId) : 'core',
+        topic: topic && topicIds.has(topic) ? (topic as TopicId) : 'core',
       }
   const select = useCallback(
     (v: View) => {
@@ -76,7 +75,10 @@ export default function Aac() {
   // Below 420 px the header has no room next to the "Break" button, so the toggle sits by the bar tools.
   const roomy = useMediaQuery('(min-width: 420px)') || profile.kind === 'adult'
   const dispatch = useMessage((s) => s.dispatch)
-  const [view, setView] = useView()
+  const kind = profile.kind
+  const topics = useMemo(() => topicsForKind(kind), [kind])
+  const topicIds = useMemo(() => new Set<string>(topics.map((x) => x.id)), [topics])
+  const [view, setView] = useView(topicIds)
   const [modeling, setModeling] = useState(false)
   const [glowKey, setGlowKey] = useState<string | null>(null)
   const glowTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -133,7 +135,7 @@ export default function Aac() {
 
   const tabs = useMemo(() => {
     const list: Tab[] = []
-    const [core, ...rest] = TOPICS
+    const [core, ...rest] = topics
     list.push({
       id: core.id,
       view: { kind: 'topic', topic: core.id },
@@ -168,7 +170,7 @@ export default function Aac() {
         label: ui(tp),
       })
     return list
-  }, [ui, t, reader, adult, view.kind])
+  }, [ui, t, reader, adult, view.kind, topics])
 
   /** The big Yes / No pair answers at once: it speaks, but does not go into the message. */
   const answers = [wordById('yes'), wordById('no')].filter((w) => w !== undefined)
@@ -226,10 +228,11 @@ export default function Aac() {
         </nav>
 
         <section className={styles.panel} aria-label={panelName} data-view={view.kind === 'topic' ? view.topic : view.kind}>
-          {view.kind === 'topic' && view.topic === 'core' && <CoreBoard aac={profile.aac} onTap={onTap} glowKey={glowKey} name={panelName} />}
+          {view.kind === 'topic' && view.topic === 'core' && <CoreBoard kind={kind} aac={profile.aac} onTap={onTap} glowKey={glowKey} name={panelName} />}
           {view.kind === 'topic' && view.topic !== 'core' && (
             <TopicBoard
               key={view.topic}
+              kind={kind}
               topic={view.topic}
               profileId={profile.id}
               aac={profile.aac}

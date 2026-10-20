@@ -1,8 +1,7 @@
 import { Check, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { COMMON } from '../../i18n/common'
-import { useStrings, type SpeechLang } from '../../i18n'
-import { useDevice } from '../../store/device'
+import { useStrings } from '../../i18n'
 import { useProfileStore, type AgeGroup, type Profile } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Segmented } from '../../ui/controls'
@@ -13,17 +12,17 @@ import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
 import { MAX_NAME_LEN } from './model'
 import styles from './parent.module.css'
-import { AGE_GROUPS, defaultAgeFor, patchFromForm, saveProfileEdit, validName, type ProfileForm } from './profileEdit'
+import { AGE_GROUPS, defaultAgeFor, patchFromForm, saveProfileEdit, switchesKind, validName, type ProfileForm } from './profileEdit'
 import { AVATARS, avatarSymbol, ConfirmDialog, Section, StorageBanner, useT, useTk } from './shared'
 import { clearProfileDeviceState } from './wipe'
 
 /** A fresh form: nothing is remembered from the previous time the dialog was open. */
-function blankForm(uiRu: boolean): ProfileForm {
-  return { name: '', avatar: AVATARS[0], ageGroup: defaultAgeFor('child'), kind: 'child', speechLang: uiRu ? 'ru' : 'uz' }
+function blankForm(): ProfileForm {
+  return { name: '', avatar: AVATARS[0], ageGroup: defaultAgeFor('child'), kind: 'child' }
 }
 
 function formOf(p: Profile): ProfileForm {
-  return { name: p.name, avatar: p.avatar, ageGroup: p.ageGroup, kind: p.kind, speechLang: p.speechLang }
+  return { name: p.name, avatar: p.avatar, ageGroup: p.ageGroup, kind: p.kind }
 }
 
 /** Shared fields of the create and edit dialogs. */
@@ -80,15 +79,6 @@ function ProfileFields({ form, setForm, touchedAge, onAge, showError }: { form: 
           ))}
         </div>
       </div>
-      <Segmented<SpeechLang>
-        label={t('speechLang')}
-        value={form.speechLang}
-        onChange={(speechLang) => set({ speechLang })}
-        options={[
-          { value: 'uz', label: t('langUz') },
-          { value: 'ru', label: t('langRu') },
-        ]}
-      />
     </>
   )
 }
@@ -97,9 +87,8 @@ function CreateDialog({ open, onClose }: { open: boolean; onClose: () => void })
   const t = useT()
   const tc = useStrings(COMMON)
   const create = useProfileStore((s) => s.create)
-  // The speech language starts from the interface language, never from the previously created profile.
-  const uiRu = useDevice((s) => s.uiLang === 'ru')
-  const [form, setForm] = useState<ProfileForm>(() => blankForm(uiRu))
+  // The speech language of a new profile follows the interface language (see profile store create()).
+  const [form, setForm] = useState<ProfileForm>(() => blankForm())
   const [touchedAge, setTouchedAge] = useState(false)
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -107,11 +96,11 @@ function CreateDialog({ open, onClose }: { open: boolean; onClose: () => void })
   // Every time the dialog opens it starts from the same blank form (no leftovers from the last profile).
   useEffect(() => {
     if (!open) return
-    setForm(blankForm(uiRu))
+    setForm(blankForm())
     setTouchedAge(false)
     setTried(false)
     setBusy(false)
-  }, [open, uiRu])
+  }, [open])
 
   const submit = async () => {
     setTried(true)
@@ -146,29 +135,50 @@ function CreateDialog({ open, onClose }: { open: boolean; onClose: () => void })
 function EditDialog({ profile, onClose }: { profile: Profile | null; onClose: () => void }) {
   const t = useT()
   const tc = useStrings(COMMON)
-  const [form, setForm] = useState<ProfileForm>(() => (profile ? formOf(profile) : blankForm(false)))
+  const [form, setForm] = useState<ProfileForm>(() => (profile ? formOf(profile) : blankForm()))
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   useEffect(() => {
     if (!profile) return
     setForm(formOf(profile))
     setTried(false)
     setBusy(false)
+    setConfirming(false)
   }, [profile])
 
-  const submit = async () => {
-    setTried(true)
-    if (!profile || validName(form.name) === null || busy) return
+  const save = async () => {
+    if (!profile || busy) return
     setBusy(true)
     await saveProfileEdit(profile, patchFromForm(profile, form))
     setBusy(false)
+    setConfirming(false)
     onClose()
+  }
+  const submit = async () => {
+    setTried(true)
+    if (!profile || validName(form.name) === null || busy) return
+    // Child ↔ adult changes the look, the home screen and the defaults: ask first.
+    if (switchesKind(profile, form)) {
+      setConfirming(true)
+      return
+    }
+    await save()
   }
 
   return (
+    <>
+    <ConfirmDialog
+      open={confirming}
+      title={t('kindSwitchTitle')}
+      text={t('kindSwitchQ')}
+      confirm={t('kindSwitchYes')}
+      onConfirm={() => void save()}
+      onClose={() => setConfirming(false)}
+    />
     <Dialog
-      open={!!profile}
+      open={!!profile && !confirming}
       onClose={onClose}
       title={t('editProfile')}
       footer={
@@ -184,6 +194,7 @@ function EditDialog({ profile, onClose }: { profile: Profile | null; onClose: ()
     >
       <ProfileFields form={form} setForm={setForm} touchedAge onAge={() => undefined} showError={tried} />
     </Dialog>
+    </>
   )
 }
 

@@ -16,6 +16,7 @@ import { ChoiceCard } from './ChoiceCard'
 import { AdultBar, GameShell } from './GameShell'
 import styles from './Games.module.css'
 import { FIND_TOPICS, pictureWords } from './logic/pools'
+import AdultFind from './adult/AdultFind'
 import { makeRound, optionCount } from './logic/rounds'
 import { ModeSwitch } from './ModeSwitch'
 import { PromptBar } from './PromptBar'
@@ -29,7 +30,13 @@ const askText = (w: Word): Bi => ({ uz: `Qani ${w.uz}?`, ru: `Где ${w.ru}?` }
 
 let lastTarget: string | undefined
 
+/** Children get the picture game with the mascot; adults get the same task with adult topics and plain wording. */
 export default function FindGame() {
+  const adult = useProfileStore((s) => s.profile.kind === 'adult')
+  return adult ? <AdultFind /> : <ChildFind />
+}
+
+function ChildFind() {
   const t = useStrings(S)
   const label = useLabel()
   const session = useGameSession('find')

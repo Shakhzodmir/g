@@ -1,6 +1,6 @@
 /* Full-height, vertically centred; the content itself is a <Page width="narrow"> (shared gutter and rhythm). */
 .page {
-  min-height: 100dvh;
+  min-height: var(--dvh100);
   display: grid;
   align-content: center;
   padding-top: calc(var(--s-6) + var(--safe-top));
@@ -204,4 +204,32 @@
 :global(html[data-theme='hc-light']) .chip,
 :global(html[data-theme='hc-dark']) .chip {
   border-color: var(--outline);
+}
+
+/* Calm brand mark: shown before the mode is chosen and for adults (the mascot is for children only). */
+.brandMark {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-2);
+  min-height: 7.5rem;
+  align-content: center;
+  color: var(--primary);
+}
+.brandIcon {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+.brandIcon svg {
+  width: 2rem;
+  height: 2rem;
+}
+.brandName {
+  font-size: var(--fs-section);
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }

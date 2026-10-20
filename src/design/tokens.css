@@ -3,6 +3,23 @@
  * Themes are selected with html[data-theme]; sensory level with html[data-sensory]; board mode with html[data-board].
  */
 
+/*
+ * Viewport-height units for old engines. 100dvh needs Chrome 108 / Safari 15.4; classroom panels and old WebViews
+ * often run older ones, and a declaration they do not understand is dropped (the screen then collapses or overflows).
+ * Use var(--dvh100) for 100dvh and calc(N * var(--dvh)) for N dvh. Without dvh support src/lib/viewportUnit.ts keeps
+ * both in sync with the real window height (innerHeight); until it runs they fall back to vh.
+ */
+:root {
+  --dvh: 1vh;
+  --dvh100: 100vh;
+}
+@supports (height: 1dvh) {
+  :root {
+    --dvh: 1dvh;
+    --dvh100: 100dvh;
+  }
+}
+
 :root {
   /* Type families */
   --font-ui: 'Nunito Variable', 'Nunito', 'Segoe UI', system-ui, sans-serif;

@@ -134,7 +134,7 @@ export function HoldButton({ onHoldChange, label }: { onHoldChange: (held: boole
 
 /**
  * Gear button in the header that opens adult-only sensor settings. On a child profile it goes through the
- * hold-3-seconds adult gate first (the settings change what the game counts, a child must not wander into them).
+ * hold-1.5-seconds adult gate first (the settings change what the game counts, a child must not wander into them).
  * `children` may be a function receiving `close`, so an action inside the sheet can close it.
  */
 export function AdultSettings({ children }: { children: ReactNode | ((close: () => void) => ReactNode) }) {

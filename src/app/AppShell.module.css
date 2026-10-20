@@ -5,9 +5,9 @@
   --nav-bottom: calc(6rem + var(--safe-bottom));
   /* Switch scanning must not highlight anything hidden behind the bottom bar (see design/global.css) */
   --scan-inset-bottom: calc(var(--nav-bottom) + var(--s-2));
-  min-height: 100dvh;
+  min-height: var(--dvh100);
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 1fr auto;
   grid-template-areas:
     'main'
@@ -28,6 +28,7 @@
   bottom: 0;
   z-index: 20;
   padding: var(--s-2) calc(var(--s-2) + var(--safe-right)) calc(var(--s-2) + var(--safe-bottom)) calc(var(--s-2) + var(--safe-left));
+  background: var(--surface);
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter: blur(10px);
   box-shadow: 0 -1px 0 var(--outline-soft);
@@ -130,7 +131,7 @@
     position: sticky;
     top: 0;
     bottom: auto;
-    height: 100dvh;
+    height: var(--dvh100);
     padding: calc(var(--s-4) + var(--safe-top)) var(--s-2) var(--s-4) calc(var(--s-2) + var(--safe-left));
     box-shadow: 1px 0 0 var(--outline-soft);
     /* If the rail is still taller than the screen (very large text), it scrolls instead of clipping an item */
@@ -182,7 +183,7 @@
   --board-nav-h: 7rem;
   --teacher-w: 6.5rem;
   --nav-bottom: var(--board-nav-h);
-  --board-main-h: calc(100dvh - var(--board-nav-h));
+  --board-main-h: calc(var(--dvh100) - var(--board-nav-h));
   /* Vertical space is scarce on a board (the bottom bar is tall): tighter rhythm between sections. */
   --section-gap: var(--s-4);
   --reach-h: max(10rem, calc(var(--board-main-h) * var(--reach)));
@@ -376,7 +377,7 @@
 }
 
 .loading {
-  min-height: 50dvh;
+  min-height: calc(50 * var(--dvh));
 }
 
 @media print {
@@ -448,12 +449,3 @@
   box-shadow: none;
 }
 
-.main:has([data-pw='narrow']) {
-  --page-w: var(--width-narrow);
-}
-.main:has([data-pw='normal']) {
-  --page-w: var(--width-normal);
-}
-.main:has([data-pw='wide']) {
-  --page-w: var(--width-wide);
-}

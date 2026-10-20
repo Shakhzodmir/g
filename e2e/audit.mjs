@@ -14,7 +14,7 @@ const outFile = process.argv[3]
 const ROUTES = [
   '/', '/talk', '/talk?mode=keyboard', '/talk?mode=phrases', '/talk?mode=pain', '/day', '/timer', '/tokens', '/calm',
   '/feelings', '/feelings/hug', '/stories', '/stories/doctor', '/games', '/games/animals', '/games/find', '/games/memory',
-  '/games/syllables', '/games/stickers', '/exercises', '/exercises/blow', '/exercises/voice', '/exercises/mirror',
+  '/games/syllables', '/games/colors', '/games/count', '/games/shapes', '/games/odd', '/games/routine', '/games/opposite', '/games/sound', '/games/point', '/games/build', '/games/stickers', '/exercises', '/exercises/blow', '/exercises/voice', '/exercises/mirror',
   '/exercises/mirror/smile', '/board-setup', '/parent?qa', '/parent/progress?qa', '/parent/tips?qa', '/parent/cards?qa',
   '/parent/profiles?qa', '/parent/settings?qa', '/parent/data?qa', '/parent/print?qa', '/parent/about?qa',
 ]

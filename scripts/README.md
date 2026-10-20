@@ -20,3 +20,13 @@ node scripts/fetch-symbols.mjs --force  # перекачать всё
 
 ## Шрифты
 `node scripts/copy-fonts.mjs` копирует подмножества Nunito и Onest (latin, latin-ext, cyrillic, cyrillic-ext) в `src/design/fonts/`.
+
+## Детские символы (раунд 3)
+```bash
+node scripts/gen-child-symbols.mjs        # рисует собственные SVG (цвета, фигуры, мебель, кухня, схемы положения, части тела)
+node scripts/gen-number-symbols.mjs       # плитки number_11 … number_20 в стиле кейкапов Fluent
+node scripts/build-child-symbol-map.mjs   # собирает scripts/symbol-map.child.json по src/content/more.ts (нужен tsx)
+node scripts/fetch-symbols.mjs            # скачивает недостающие картинки Fluent
+node scripts/child-symbol-sheet.mjs <папка> [id,id,…]   # контактные листы PNG для просмотра
+```
+Новый собственный id нужно добавить в `CUSTOM_SYMBOLS` (`src/ui/SymbolImg.tsx`).

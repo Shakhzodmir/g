@@ -5,6 +5,8 @@
 }
 
 .area {
+  /* a word wider than the whole line breaks instead of pushing the page sideways (large text on a phone) */
+  overflow-wrap: break-word;
   font-family: var(--font-adult);
   --fs-body: 1.0625rem;
 }
@@ -24,12 +26,14 @@
 
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-4);
   min-width: 0;
 }
 
 .tight {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-2);
   min-width: 0;
 }
@@ -91,6 +95,7 @@
 
 .section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: var(--s-4);
   min-width: 0;
@@ -125,7 +130,7 @@
 
 .homeCard {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--s-4);
   width: 100%;
@@ -165,6 +170,7 @@
 
 .homeText {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-1);
   min-width: 0;
 }
@@ -173,7 +179,8 @@
   font-weight: 700;
   font-size: var(--fs-card-title);
   line-height: 1.2;
-  overflow-wrap: normal;
+  /* a word breaks only when it is wider than the whole line (large text on a phone), never otherwise */
+  overflow-wrap: break-word;
   hyphens: manual;
 }
 
@@ -181,7 +188,7 @@
   color: var(--text-muted);
   font-size: var(--fs-card-meta);
   line-height: 1.4;
-  overflow-wrap: normal;
+  overflow-wrap: break-word;
   hyphens: manual;
 }
 
@@ -328,6 +335,7 @@
 /* ---------- Lists ---------- */
 .list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-2);
   margin: 0;
   padding: 0;
@@ -336,7 +344,7 @@
 
 .itemRow {
   display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  grid-template-columns: min(3rem, 18%) minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--s-3);
   padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3);
@@ -363,6 +371,7 @@
 
 .itemText {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
 }
 
@@ -381,7 +390,7 @@
 }
 
 .itemFixed {
-  overflow-wrap: normal;
+  overflow-wrap: break-word;
   hyphens: manual;
 }
 
@@ -432,7 +441,7 @@
 /* Phones: actions drop under the text so labels stay readable. */
 @media (max-width: 420px) {
   .itemRow[data-wide] {
-    grid-template-columns: 3rem minmax(0, 1fr);
+    grid-template-columns: min(3rem, 18%) minmax(0, 1fr);
   }
   .itemRow[data-wide] .actions {
     grid-column: 1 / -1;
@@ -757,6 +766,7 @@
 
 .licenses {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-2);
   margin: 0;
   padding: 0;
@@ -765,9 +775,16 @@
 
 .licenses li {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0;
   padding-bottom: var(--s-2);
   border-bottom: 1px solid var(--outline-soft);
+}
+
+/* the link text has no break opportunity: it may wrap anywhere, but only when it is wider than the screen */
+.url {
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
 }
 
 .licName {

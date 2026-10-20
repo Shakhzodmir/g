@@ -1,8 +1,11 @@
 /* Calm corner: one soft gradient, one slow breathing flower, helpers and "I am ready" in reach. */
 .page {
-  --petal: color-mix(in srgb, var(--primary) 34%, var(--surface));
-  --petal-inner: color-mix(in srgb, var(--primary) 52%, var(--surface));
-  --core: color-mix(in srgb, var(--primary-container) 55%, var(--surface));
+  /* Solid theme colours first. These are custom properties, so an engine without color-mix would accept the mixed
+     value below and then paint the flower solid black; the @supports block after this rule applies the mix only
+     where it exists. */
+  --petal: var(--primary);
+  --petal-inner: var(--primary);
+  --core: var(--primary-container);
   --halo: var(--primary-container);
   --breath: 0.6;
   position: relative;
@@ -10,16 +13,25 @@
   display: flex;
   flex-direction: column;
   /* Fill the screen down to the navigation, the gradient running under main's bottom padding. */
-  min-height: calc(100dvh - 6rem - var(--safe-bottom));
+  min-height: calc(var(--dvh100) - 6rem - var(--safe-bottom));
   margin-bottom: calc(-1 * var(--s-4));
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--bg) 100%);
   background:
     radial-gradient(120% 70% at 50% 18%, color-mix(in srgb, var(--primary-container) 75%, transparent), transparent 70%),
     linear-gradient(180deg, color-mix(in srgb, var(--primary-container) 45%, var(--bg)) 0%, var(--bg) 100%);
 }
 
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .page {
+    --petal: color-mix(in srgb, var(--primary) 34%, var(--surface));
+    --petal-inner: color-mix(in srgb, var(--primary) 52%, var(--surface));
+    --core: color-mix(in srgb, var(--primary-container) 55%, var(--surface));
+  }
+}
+
 @media (min-width: 840px) {
   .page {
-    min-height: 100dvh;
+    min-height: var(--dvh100);
     margin-bottom: calc(-1 * var(--s-8));
   }
 }
@@ -45,6 +57,7 @@
   width: 46vmax;
   height: 46vmax;
   border-radius: 50%;
+  background: var(--primary-container);
   background: color-mix(in srgb, var(--primary-container) 80%, var(--secondary-container));
   opacity: 0.55;
   filter: blur(48px);
@@ -59,11 +72,13 @@
 .blob:nth-child(2) {
   right: -16vmax;
   top: 30%;
+  background: var(--primary-container);
   background: color-mix(in srgb, var(--primary-container) 70%, var(--surface));
 }
 .blob:nth-child(3) {
   left: 20%;
   bottom: -22vmax;
+  background: var(--secondary-container);
   background: color-mix(in srgb, var(--secondary-container) 60%, var(--primary-container));
 }
 
@@ -115,7 +130,7 @@
 }
 
 .shape {
-  width: clamp(10rem, min(56vw, 30dvh), 24rem);
+  width: clamp(10rem, min(56vw, calc(30 * var(--dvh))), 24rem);
   aspect-ratio: 1;
   transform: scale(var(--breath));
   will-change: transform;
@@ -154,6 +169,16 @@
 
 .core {
   fill: var(--core);
+}
+
+/* Without color-mix the petals are the full primary colour made soft by opacity: about the same tint over the background. */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .petal {
+    opacity: 0.32;
+  }
+  .petalInner {
+    opacity: 0.45;
+  }
 }
 
 :global(html[data-theme='hc-light']) .petal,
@@ -204,7 +229,8 @@
 
 .helpers {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* four across; with large text fewer, never wider than the screen (4.5rem scales with the text) */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(4.5rem, 23%)), 1fr));
   gap: var(--s-2);
   margin: 0;
   padding: 0;
@@ -224,6 +250,7 @@
   padding: var(--s-2) var(--s-1);
   border: 3px solid transparent;
   border-radius: var(--r-cell);
+  background: var(--surface);
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   color: var(--text);
   box-shadow: var(--elev-1);
@@ -262,6 +289,7 @@
 .helperLabel {
   font-weight: 800;
   /* Four columns everywhere: the label follows the column width so words do not break. */
+  font-size: clamp(var(--fs-caption), 3.2vw, var(--fs-label));
   font-size: clamp(var(--fs-caption), 3.3cqi, var(--fs-label));
   line-height: 1.15;
   text-align: center;
@@ -299,7 +327,7 @@
     column-gap: var(--s-8);
   }
   .shape {
-    width: clamp(10rem, min(36vw, 52dvh), 26rem);
+    width: clamp(10rem, min(36vw, calc(52 * var(--dvh))), 26rem);
   }
 }
 
@@ -309,7 +337,7 @@
     gap: var(--s-3);
   }
   .shape {
-    width: clamp(8rem, min(48vw, 20dvh), 24rem);
+    width: clamp(8rem, min(48vw, calc(20 * var(--dvh))), 24rem);
   }
   .guide {
     min-height: var(--touch-min);
@@ -326,7 +354,7 @@
 
 @media (max-width: 599px) and (max-height: 760px) and (orientation: portrait) {
   .shape {
-    width: clamp(7rem, min(48vw, 16dvh), 24rem);
+    width: clamp(7rem, min(48vw, calc(16 * var(--dvh))), 24rem);
   }
 }
 
@@ -336,7 +364,7 @@
     column-gap: var(--s-4);
   }
   .shape {
-    width: clamp(8rem, 44dvh, 14rem);
+    width: clamp(8rem, calc(44 * var(--dvh)), 14rem);
   }
   .helper {
     min-height: 4.75rem;
@@ -387,7 +415,7 @@
 }
 
 :global(html[data-board='true']) .shape {
-  width: clamp(7rem, 15dvh, 16rem);
+  width: clamp(7rem, calc(15 * var(--dvh)), 16rem);
 }
 
 :global(html[data-board='true']) .stage {

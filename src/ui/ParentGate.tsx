@@ -13,7 +13,7 @@ import { UI } from './strings'
 
 export { hashPin, verifyPin } from './pin'
 
-const HOLD_MS = 3000
+const HOLD_MS = 1500
 
 // Failed PINs are counted for the lifetime of the page (closing and reopening the gate does not reset them).
 let pinFailures = 0
@@ -32,7 +32,7 @@ const KEYPAD = [
 ] as const
 
 /**
- * Adult gate: press and hold for 3 s (children rarely do this by accident), then the optional PIN.
+ * Adult gate: press and hold for 1.5 s (a child rarely does this by accident), then the optional PIN.
  * No arithmetic puzzles (WCAG 3.3.8) — adults with aphasia must be able to pass it too.
  * Assistive technology gets a hold-free path: a screen-reader click, Enter/Space, or — when switch scanning
  * is on — an explicit «Ochish / Открыть» button.

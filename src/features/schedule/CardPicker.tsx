@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { STICKERS } from '../../content/stickers'
-import { TOPICS } from '../../content/topics'
+import { topicsForKind } from '../../content/topics'
+import { useProfileStore } from '../../store/profile'
 import { wordsByTopic } from '../../content/vocab'
 import { useI18n, useLabel, useStrings } from '../../i18n'
 import { COMMON } from '../../i18n/common'
@@ -50,19 +51,20 @@ export function CardPicker({
   const { ui } = useI18n()
   const label = useLabel()
   const custom = useCustomCards()
+  const kind = useProfileStore((s) => s.profile.kind)
 
   const defs = useMemo<GroupDef[]>(() => {
     const out: GroupDef[] = []
     for (const g of groups) {
       if (g === 'activities') out.push({ id: 'activities', symbol: 'spiral_calendar', label: t('groupActivities'), refs: scheduleActivityRefs() })
-      if (g === 'stickers') out.push({ id: 'stickers', symbol: 'glowing_star', label: t('groupStickers'), refs: STICKERS.map((s) => `st.${s.id}`) })
+      if (g === 'stickers' && kind !== 'adult') out.push({ id: 'stickers', symbol: 'glowing_star', label: t('groupStickers'), refs: STICKERS.map((s) => `st.${s.id}`) })
       if (g === 'mine' && custom.size > 0) out.push({ id: 'mine', symbol: 'framed_picture', label: t('groupMine'), refs: [...custom.keys()].map((id) => `c.${id}`) })
       if (g === 'topics') {
-        for (const tp of TOPICS) out.push({ id: tp.id, symbol: tp.symbol, label: ui(tp), refs: wordsByTopic(tp.id).map((w) => w.id) })
+        for (const tp of topicsForKind(kind)) out.push({ id: tp.id, symbol: tp.symbol, label: ui(tp), refs: wordsByTopic(tp.id).map((w) => w.id) })
       }
     }
     return out
-  }, [groups, custom, t, ui])
+  }, [groups, custom, t, ui, kind])
 
   const [groupId, setGroupId] = useState<string | null>(null)
   const group = defs.find((d) => d.id === groupId) ?? defs[0]

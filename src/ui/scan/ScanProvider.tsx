@@ -20,8 +20,10 @@ export function isTyping(target: EventTarget | null): boolean {
 /**
  * Enables switch access app-wide according to the profile: `auto1` (one switch, automatic highlight;
  * Space/Enter select) or `step2` (two switches: Space moves, Enter selects). Escape leaves a row.
+ * `resetKey` (the current route) restarts the scan from the first item whenever the screen changes: a position kept
+ * from the previous screen would land on an arbitrary element of the new one.
  */
-export function ScanProvider({ children, onCue }: { children: ReactNode; onCue?: (label: string) => void }) {
+export function ScanProvider({ children, onCue, resetKey }: { children: ReactNode; onCue?: (label: string) => void; resetKey?: string }) {
   const mode = useProfileStore((s) => s.profile.scanning.mode)
   const intervalMs = useProfileStore((s) => s.profile.scanning.intervalMs)
   const ignoreRepeatMs = useProfileStore((s) => s.profile.touch.ignoreRepeatMs)
@@ -70,7 +72,7 @@ export function ScanProvider({ children, onCue }: { children: ReactNode; onCue?:
       if (timer) clearInterval(timer)
       scanner.clear()
     }
-  }, [mode, intervalMs, ignoreRepeatMs, onCue])
+  }, [mode, intervalMs, ignoreRepeatMs, onCue, resetKey])
 
   return <>{children}</>
 }

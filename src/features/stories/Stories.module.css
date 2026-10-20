@@ -4,12 +4,12 @@
   width: 100%;
   max-width: var(--width-normal);
   margin-inline: auto;
-  min-height: calc(100dvh - 6rem - var(--s-4) - var(--safe-bottom));
+  min-height: calc(var(--dvh100) - 6rem - var(--s-4) - var(--safe-bottom));
 }
 
 @media (min-width: 840px) {
   .page {
-    min-height: calc(100dvh - var(--s-8));
+    min-height: calc(var(--dvh100) - var(--s-8));
   }
 }
 
@@ -46,7 +46,7 @@
     gap: var(--s-3);
   }
   .list > li > * {
-    grid-template-columns: 5.5rem minmax(0, 1fr);
+    grid-template-columns: min(5.5rem, 35%) minmax(0, 1fr);
     grid-template-rows: auto auto;
     align-content: center;
     justify-items: start;
@@ -57,7 +57,7 @@
   }
   .list > li > * > span:first-child {
     grid-row: 1 / span 2;
-    width: 5.5rem;
+    width: min(5.5rem, 100%);
   }
   .list > li > * > span:nth-child(2) {
     align-self: end;
@@ -113,7 +113,7 @@
 }
 
 .art {
-  width: clamp(7rem, min(52vw, 30dvh), 17rem);
+  width: clamp(7rem, min(52vw, calc(30 * var(--dvh))), 17rem);
   aspect-ratio: 1;
 }
 
@@ -154,6 +154,7 @@
 }
 
 .dot[data-done] {
+  background: var(--primary);
   background: color-mix(in srgb, var(--primary) 45%, var(--surface));
 }
 
@@ -218,7 +219,7 @@
     padding: var(--s-3) var(--s-6);
   }
   .art {
-    width: clamp(5rem, 34dvh, 9rem);
+    width: clamp(5rem, calc(34 * var(--dvh)), 9rem);
   }
   .text {
     text-align: start;
@@ -236,7 +237,7 @@
 }
 
 :global(html[data-board='true']) .art {
-  width: clamp(8rem, 28dvh, 16rem);
+  width: clamp(8rem, calc(28 * var(--dvh)), 16rem);
 }
 
 /* Phone landscape: all three stories in one row. */

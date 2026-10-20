@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router'
 import { speak } from '../../audio/speech'
 import { wordById } from '../../content/vocab'
 import { COMMON } from '../../i18n/common'
-import { useStrings, type SpeechLang, type UiLang } from '../../i18n'
+import { formatNumber, formatQuantity, useI18n, useStrings, type SpeechLang, type UiLang } from '../../i18n'
 import { useDevice } from '../../store/device'
 import { defaultProfile, useProfileStore, type ScanMode, type Sensory, type ThemeId } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Segmented, Slider, Toggle } from '../../ui/controls'
-import { Dialog } from '../../ui/Dialog'
+import { TextSizeControl } from '../../ui/TextSizeControl'
 import { Page } from '../../ui/Page'
 import { PageHeader } from '../../ui/PageHeader'
 import { hashPin } from '../../ui/ParentGate'
@@ -47,7 +47,7 @@ function ThemePicker() {
                 <span style={{ background: c.primary }} />
                 <span className={styles.swatchText} style={{ color: c.text }}>
                   <span className={styles.swatchAa} style={{ background: c.surface }}>
-                    Aa
+                    {t('swatchAa')}
                   </span>
                 </span>
               </span>
@@ -156,9 +156,6 @@ function PinSettings() {
   )
 }
 
-/** Speech language that matches an interface language (Uzbek Latin and Cyrillic are both spoken as `uz`). */
-const speechFor = (ui: UiLang): SpeechLang => (ui === 'ru' ? 'ru' : 'uz')
-
 /**
  * ONE language control. The script follows the interface language (Latin / Cyrillic / Russian), so the screens can
  * never end up half in one script; the 2026 Latin alphabet is an extra experimental switch shown only for Uzbek.
@@ -169,9 +166,6 @@ function InterfaceLanguage() {
   const uzScript = useDevice((s) => s.uzScript)
   const setUiLang = useDevice((s) => s.setUiLang)
   const setUzScript = useDevice((s) => s.setUzScript)
-  const speechLang = useProfileStore((s) => s.profile.speechLang)
-  const update = useProfileStore((s) => s.update)
-  const [ask, setAsk] = useState<SpeechLang | null>(null)
 
   // Old saved states could pair a language with the wrong script (uz + Cyrillic, uzc + Latin): derive it again.
   useEffect(() => {
@@ -181,9 +175,8 @@ function InterfaceLanguage() {
 
   const change = (next: UiLang) => {
     if (next === uiLang) return
-    setUiLang(next) // also derives the script
-    const wanted = speechFor(next)
-    if (wanted !== speechLang) setAsk(wanted)
+    // Derives the script and switches the speech language of every profile that follows the interface language.
+    setUiLang(next)
   }
 
   return (
@@ -202,28 +195,6 @@ function InterfaceLanguage() {
       />
       {uiLang === 'uz' && <Toggle label={t('script2026')} hint={t('script2026Hint')} checked={uzScript === 'latn2026'} onChange={(v) => setUzScript(v ? 'latn2026' : 'latn')} />}
       <p className={styles.hint}>{t('uiLangHint')}</p>
-      <Dialog
-        open={ask !== null}
-        onClose={() => setAsk(null)}
-        title={t('followSpeechTitle')}
-        footer={
-          <>
-            <Button variant="ghost" onActivate={() => setAsk(null)}>
-              {t('followSpeechNo')}
-            </Button>
-            <Button
-              onActivate={() => {
-                if (ask) void update({ speechLang: ask })
-                setAsk(null)
-              }}
-            >
-              {ask === 'ru' ? t('followSpeechYesRu') : t('followSpeechYesUz')}
-            </Button>
-          </>
-        }
-      >
-        <p>{ask === 'ru' ? t('followSpeechQRu') : t('followSpeechQUz')}</p>
-      </Dialog>
     </>
   )
 }
@@ -242,6 +213,7 @@ function ResetDefaults({ onReset }: { onReset: () => void }) {
       theme: d.theme,
       sensory: d.sensory,
       textScale: d.textScale,
+      speechLangFollowsUi: true,
       touch: d.touch,
       scanning: d.scanning,
       voice: d.voice,
@@ -289,8 +261,11 @@ function SettingsBody() {
   const p = useProfileStore((s) => s.profile)
   const update = useProfileStore((s) => s.update)
   const boardMode = useDevice((s) => s.boardMode)
-  const ms = (v: number) => (v === 0 ? t('off') : v >= 1000 ? t('sec', { n: String(v / 1000) }) : t('ms', { n: v }))
-  const pct = (v: number) => `${Math.round(v * 100)}%`
+  const setBoardMode = useDevice((s) => s.setBoardMode)
+  const { uiLang: lang } = useI18n()
+  // Localised numbers and units everywhere (decimal comma; «мс»/«с» in Cyrillic): never a raw "1.5 s".
+  const ms = (v: number) => (v === 0 ? t('off') : v >= 1000 ? formatQuantity(v / 1000, 's', lang) : formatQuantity(v, 'ms', lang))
+  const pct = (v: number) => `${formatNumber(Math.round(v * 100), lang, 0)}%`
   const labelsValue = !p.aac.showLabels ? 'off' : p.aac.labelPos
   const sample = wordById('water')
 
@@ -311,6 +286,7 @@ function SettingsBody() {
           options={(['calm', 'normal', 'festive'] as const).map((v) => ({ value: v, label: tk(`sensory_${v}`) }))}
         />
         <p className={styles.hint}>{t('sensoryHint')}</p>
+        <TextSizeControl />
       </Section>
 
       <Section title={t('touchSection')}>
@@ -337,16 +313,27 @@ function SettingsBody() {
       </Section>
 
       <Section title={t('voiceSection')}>
-        <Segmented<SpeechLang>
-          label={t('speechLang')}
-          value={p.speechLang}
-          onChange={(v) => void update({ speechLang: v })}
-          options={[
-            { value: 'uz', label: t('langUz') },
-            { value: 'ru', label: t('langRu') },
-          ]}
+        <Toggle
+          label={t('speechSeparate')}
+          hint={t('speechSeparateHint')}
+          checked={!p.speechLangFollowsUi}
+          onChange={(v) => void update(v ? { speechLangFollowsUi: false } : { speechLangFollowsUi: true })}
         />
-        <Slider label={t('rate')} value={p.voice.rate} min={0.6} max={1.4} step={0.1} format={(v) => `${v.toFixed(1)}×`} onChange={(v) => void update({ voice: { rate: Math.round(v * 10) / 10 } })} />
+        {!p.speechLangFollowsUi && (
+          <>
+            <Segmented<SpeechLang>
+              label={t('speechLang')}
+              value={p.speechLang}
+              onChange={(v) => void update({ speechLang: v })}
+              options={[
+                { value: 'uz', label: t('langUz') },
+                { value: 'ru', label: t('langRu') },
+              ]}
+            />
+            <p className={styles.hint}>{t('speechSeparateNote')}</p>
+          </>
+        )}
+        <Slider label={t('rate')} value={p.voice.rate} min={0.6} max={1.4} step={0.1} format={(v) => formatQuantity(v, 'x', lang)} onChange={(v) => void update({ voice: { rate: Math.round(v * 10) / 10 } })} />
         <Toggle label={t('preferSystem')} hint={t('preferSystemHint')} checked={p.voice.preferSystem} onChange={(v) => void update({ voice: { preferSystem: v } })} />
         <Slider label={t('volume')} value={p.voice.volume} min={0} max={1} step={0.05} format={pct} onChange={(v) => void update({ voice: { volume: v } })} />
         <Slider label={t('sfxVolume')} value={p.voice.sfxVolume} min={0} max={1} step={0.05} format={pct} onChange={(v) => void update({ voice: { sfxVolume: v } })} />
@@ -373,7 +360,7 @@ function SettingsBody() {
       <Section title={tc('boardMode')}>
         <p className={styles.hint}>{t('boardHint')}</p>
         <div className={styles.spread}>
-          <span className={boardMode ? styles.badgeOn : styles.badge}>{boardMode ? t('on') : t('off')}</span>
+          <Toggle label={tc('boardMode')} checked={boardMode} onChange={setBoardMode} />
           <Button variant="soft" icon={<MonitorSmartphone />} onActivate={() => navigate('/board-setup')}>
             {t('boardOpen')}
           </Button>

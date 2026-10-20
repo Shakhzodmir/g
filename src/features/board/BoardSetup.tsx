@@ -1,5 +1,5 @@
-import { TriangleAlert } from 'lucide-react'
-import { useState } from 'react'
+import { Eye, TriangleAlert } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { BOARD } from '../../app/strings'
 import { formatNumber, formatQuantity, useI18n, useStrings } from '../../i18n'
@@ -34,6 +34,8 @@ export default function BoardSetup() {
   const boardMode = useDevice((s) => s.boardMode)
   const setBoard = useDevice((s) => s.setBoardMode)
   const setCalib = useDevice((s) => s.setBoardCalibration)
+  const startPreview = useDevice((s) => s.startBoardPreview)
+  const previewing = useDevice((s) => s.boardPreviewBase !== null)
   const [diagonalIn, setDiag] = useState(saved?.diagonalIn ?? 75)
   const [bottomCm, setBottom] = useState(Math.round((saved?.bottomEdgeM ?? 0.8) * 100))
   const [ageGroup, setAge] = useState<ReachAge>(saved?.ageGroup ?? '5-8')
@@ -54,6 +56,22 @@ export default function BoardSetup() {
   const effH = Math.round(vp.height / applied)
 
   const current = (): BoardCalibration => ({ ...geom, distanceM, scale, reach })
+  // Board mode is on: every field changes the real layout at once (and is stored), there is nothing to "apply" later.
+  const live = boardMode && !previewing
+  const first = useRef(true)
+  useEffect(() => {
+    if (first.current) {
+      first.current = false
+      return
+    }
+    if (live) setCalib(current())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diagonalIn, bottomCm, ageGroup, distanceM, scale])
+  /** Shows the layout with the values on this page before anything is stored; the bar over the board asks to save. */
+  const preview = () => {
+    startPreview(current())
+    navigate('/')
+  }
   const save = () => {
     setCalib(current())
     setBoard(true)
@@ -72,6 +90,11 @@ export default function BoardSetup() {
       <PageHeader title={t('title')} />
       <Page width="wide" className={styles.page}>
         <p className={styles.intro}>{t('intro')}</p>
+        {live && (
+          <p className={styles.effective} role="status">
+            {tx('liveNote')}
+          </p>
+        )}
         <div className={styles.grid}>
           <Card className={styles.col}>
             <div className={styles.form}>
@@ -154,6 +177,11 @@ export default function BoardSetup() {
         </div>
 
         <div className={styles.actions}>
+          {!live && (
+            <Button size="lg" variant="soft" icon={<Eye />} onActivate={preview}>
+              {tx('previewBtn')}
+            </Button>
+          )}
           <Button size="lg" onActivate={save}>
             {t('save')}
           </Button>

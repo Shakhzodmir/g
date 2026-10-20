@@ -3,6 +3,7 @@ import { useId, useState } from 'react'
 import { useStrings } from '../../i18n'
 import { COMMON } from '../../i18n/common'
 import { useProfileStore } from '../../store/profile'
+import { clearFocusVisible, markFocusVisible } from '../../lib/focusVisible'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import { useAdultUnlock } from '../schedule/useAdultUnlock'
@@ -27,6 +28,8 @@ export function LevelRadios({ value, onChange, large }: { value: Level; onChange
               value={l}
               checked={l === value}
               onChange={() => onChange(l)}
+              onFocus={markFocusVisible}
+              onBlur={clearFocusVisible}
               className="visually-hidden"
               aria-label={t('levelLabel', { n: l })}
               data-scan=""
@@ -41,7 +44,7 @@ export function LevelRadios({ value, onChange, large }: { value: Level; onChange
 
 /**
  * Difficulty control. On a CHILD profile a stray tap must never change the game, so the control sits behind the
- * adult gate (a small gear opens a dialog after the 3 s hold). Adult profiles see the radios directly. A new level
+ * adult gate (a small gear opens a dialog after the 1.5 s hold). Adult profiles see the radios directly. A new level
  * starts with the next round: the round in progress is never thrown away.
  */
 export function LevelControl({ session }: { session: GameSession }) {

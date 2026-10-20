@@ -1,4 +1,4 @@
-import type { Fitz, TopicId, Word } from './types'
+import type { TopicId, Word } from './types'
 
 /*
  * Gapimiz vocabulary v0.1.
@@ -9,36 +9,9 @@ import type { Fitz, TopicId, Word } from './types'
  * Must be reviewed by a native speaker and a speech therapist before the pilot (docs/content-review-v0.1.md).
  */
 
-type Syl = [uz: string, ru: string]
-
-function core(
-  id: string,
-  uz: string,
-  ru: string,
-  ruTts: string,
-  fitz: Fitz,
-  symbol: string,
-  row: number,
-  col: number,
-  level: 1 | 2 | 3,
-): Word {
-  return { id, uz, ru, ruTts, fitz, symbol, topic: 'core', core: { row, col, level } }
-}
-
-function word(
-  topic: TopicId,
-  fitz: Fitz,
-  id: string,
-  uz: string,
-  ru: string,
-  ruTts: string,
-  symbol: string,
-  syl?: Syl,
-): Word {
-  const w: Word = { id, uz, ru, ruTts, fitz, symbol, topic }
-  if (syl) w.syllables = { uz: syl[0], ru: syl[1] }
-  return w
-}
+import { core, word } from './build'
+import { ADULT_WORDS } from './adult'
+import { MORE_WORDS } from './more'
 
 /*
  * Core grid (row, col), level in brackets:
@@ -365,6 +338,8 @@ export const WORDS: Word[] = [
   ...ANIMALS,
   ...SCHOOL,
   ...TIME,
+  ...MORE_WORDS,
+  ...ADULT_WORDS,
 ]
 
 const BY_ID = new Map(WORDS.map((w) => [w.id, w]))
@@ -376,4 +351,9 @@ export function wordsByTopic(t: TopicId): Word[] {
 
 export function wordById(id: string): Word | undefined {
   return BY_ID.get(id)
+}
+
+/** Words a profile of this kind should meet (kids never see adult-only words and the other way round). */
+export function wordsForKind(kind: 'child' | 'adult'): Word[] {
+  return WORDS.filter((w) => !w.audience || w.audience === 'both' || w.audience === kind)
 }

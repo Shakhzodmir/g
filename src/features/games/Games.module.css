@@ -2,7 +2,7 @@
 
 .page {
   /* The phone tab bar is about 6rem tall (two-line labels), taller than --nav-h; leave room for it. */
-  --avail-h: calc(100dvh - 6rem - var(--s-4) - var(--safe-bottom));
+  --avail-h: calc(var(--dvh100) - 6rem - var(--s-4) - var(--safe-bottom));
   /* One gutter for header, controls, stage and album: they all share the same left and right edge. */
   --pad-l: calc(var(--gutter) + var(--safe-left));
   --pad-r: calc(var(--gutter) + var(--safe-right));
@@ -17,13 +17,13 @@
 
 @media (min-width: 840px) {
   .page {
-    --avail-h: 100dvh;
+    --avail-h: var(--dvh100);
   }
 }
 
 .page[data-board] {
   padding-bottom: 0;
-  --avail-h: var(--board-main-h, calc(100dvh - var(--nav-h) - 1.5rem));
+  --avail-h: var(--board-main-h, calc(var(--dvh100) - var(--nav-h) - 1.5rem));
   width: min(100%, 110rem);
 }
 
@@ -95,7 +95,7 @@
   box-shadow: var(--elev-1);
 }
 
-.levelSeg:has(:focus-visible) {
+.levelSeg[data-focus] {
   outline: 3px solid var(--focus-outer);
   outline-offset: 1px;
 }
@@ -247,7 +247,7 @@
 }
 
 .choices {
-  --pic: clamp(4.5rem, 15dvh, 10rem);
+  --pic: clamp(4.5rem, calc(15 * var(--dvh)), 10rem);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   width: min(100%, calc(var(--n, 2) * 16rem));
   margin: auto auto 0;
@@ -256,19 +256,24 @@
 /* Three choices sit in one row on phones (no lone card); six sit in two rows of three. */
 .choices[data-n='3'],
 .choices[data-many] {
-  --pic: clamp(3.5rem, 11dvh, 8rem);
+  --pic: clamp(3.5rem, calc(11 * var(--dvh)), 8rem);
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--s-3);
 }
 
 .choices[data-n='4'] {
-  --pic: clamp(3.5rem, 11dvh, 8rem);
+  --pic: clamp(3.25rem, calc(9.5 * var(--dvh)), 8rem);
   gap: var(--s-3);
+}
+
+/* Two rows of two on a short phone: tighter cards so the second row stays above the tab bar. */
+.choices[data-n='4'] .choice {
+  padding: var(--s-2) var(--s-2);
 }
 
 @media (min-width: 600px) {
   .choices {
-    --pic: clamp(4.5rem, 18dvh, 10rem);
+    --pic: clamp(4.5rem, calc(18 * var(--dvh)), 10rem);
     grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr));
     gap: var(--s-4);
   }
@@ -284,12 +289,17 @@
 }
 
 .page[data-board] .choices {
-  --pic: min(9rem, calc(var(--reach-h, 100dvh * var(--reach)) - 7rem));
+  --pic: min(9rem, calc(var(--reach-h, var(--dvh100) * var(--reach)) - 7rem));
   margin-top: 0;
 }
 
+/* A picture strip between the prompt and the cards (children's games): the cards give it some room. */
+.page[data-board] .seek[data-hdr] .choices {
+  --pic: min(7rem, calc(var(--reach-h, var(--dvh100) * var(--reach)) - 10rem));
+}
+
 .exploreGrid {
-  --pic: clamp(4.5rem, 14dvh, 7rem);
+  --pic: clamp(4.5rem, calc(14 * var(--dvh)), 7rem);
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
   gap: var(--s-3);
 }
@@ -338,6 +348,7 @@
 
 /* Errorless hint: a soft warm halo appears (no blinking). */
 .choice[data-state='hint'] {
+  box-shadow: 0 0 0 4px var(--warm);
   box-shadow:
     0 0 0 4px var(--warm),
     0 0 26px 8px color-mix(in srgb, var(--warm) 45%, transparent);
@@ -422,7 +433,7 @@
 }
 
 .sayCard {
-  --pic: clamp(5rem, 18dvh, 14rem);
+  --pic: clamp(5rem, calc(18 * var(--dvh)), 14rem);
   width: min(100%, 20rem);
   margin-block: auto;
 }
@@ -556,6 +567,13 @@
   /* Level 3 (4 x 3) keeps every card at 72 px or more, even on a landscape phone. */
   min-height: 18rem;
   container-type: size;
+  /* Height available to the card board. Without container units (Chrome < 105) it is estimated from the screen. */
+  --stage-h: calc(var(--avail-h) - 15rem);
+}
+@supports (container-type: size) {
+  .memoryStage {
+    --stage-h: 100cqh;
+  }
 }
 
 .twoBoards {
@@ -605,14 +623,14 @@
   display: grid;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   gap: clamp(0.5rem, 2vmin, 1rem);
-  width: min(100%, calc((100cqh - 3rem) * var(--cols) / var(--rows)), calc(var(--cols) * 13rem));
+  width: min(100%, calc((var(--stage-h) - 3rem) * var(--cols) / var(--rows)), calc(var(--cols) * 13rem));
   min-width: min(100%, calc(var(--cols) * 4.5rem));
   margin-inline: auto;
   touch-action: manipulation;
 }
 
 .twoBoards .memoryBoard {
-  width: min(100%, calc((100cqh - 7rem) * var(--cols) / var(--rows)), calc(var(--cols) * 12rem));
+  width: min(100%, calc((var(--stage-h) - 7rem) * var(--cols) / var(--rows)), calc(var(--cols) * 12rem));
 }
 
 .memoryBoard[data-multi] {
@@ -634,9 +652,12 @@
   user-select: none;
 }
 
-.memCard[data-pressed='true'] .memInner,
-.memCard[data-pressed='true'] .memInnerFlat {
-  scale: 0.97;
+/* The press effect scales the card itself: .memInner carries the flip (inline transform from motion). */
+.memCard {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.memCard[data-pressed='true'] {
+  transform: scale(0.97);
 }
 
 .memInner,
@@ -645,7 +666,6 @@
   inset: 0;
   display: block;
   transform-style: preserve-3d;
-  transition: scale var(--dur-fast) var(--ease-out);
 }
 
 .memBack,
@@ -664,7 +684,9 @@
 /* Card back: a calm glazed lattice (ikat-like), low contrast, no focal point. */
 .memBack,
 .memBackFlat {
+  border: 3px solid var(--primary-container);
   border: 3px solid color-mix(in srgb, var(--primary) 35%, var(--primary-container));
+  background: var(--primary-container);
   background:
     repeating-linear-gradient(45deg, transparent 0 14px, color-mix(in srgb, var(--primary) 16%, transparent) 14px 17px),
     repeating-linear-gradient(-45deg, transparent 0 14px, color-mix(in srgb, var(--primary) 16%, transparent) 14px 17px),
@@ -716,7 +738,7 @@
 }
 
 .clapPicture {
-  width: clamp(4.5rem, 13dvh, 11rem);
+  width: clamp(4.5rem, calc(13 * var(--dvh)), 11rem);
   aspect-ratio: 1;
 }
 
@@ -795,7 +817,7 @@
 .drum {
   display: grid;
   place-items: center;
-  width: clamp(7rem, 18dvh, 12rem);
+  width: clamp(7rem, calc(18 * var(--dvh)), 12rem);
   aspect-ratio: 1;
   padding: 0;
   border: 0;
@@ -809,11 +831,11 @@
 }
 
 .page[data-board] .drum {
-  width: min(10rem, 22dvh);
+  width: min(10rem, calc(22 * var(--dvh)));
 }
 
 .page[data-board] .clapPicture {
-  width: min(8rem, 11dvh);
+  width: min(8rem, calc(11 * var(--dvh)));
 }
 
 /* The memory board lives in the reach zone: its size follows the zone, not the whole stage. */
@@ -869,7 +891,7 @@
 
 .albumTile {
   min-height: 0;
-  grid-template-columns: 5rem minmax(0, 1fr);
+  grid-template-columns: min(5rem, 35%) minmax(0, 1fr);
   grid-template-rows: auto auto;
   align-content: center;
   justify-items: start;
@@ -881,7 +903,7 @@
 .albumTile > :first-child {
   grid-row: 1 / span 2;
   align-self: center;
-  width: 5rem;
+  width: min(5rem, 100%);
 }
 
 .albumTile > :nth-child(2) {
@@ -973,7 +995,7 @@
   .choices[data-n='3'],
   .choices[data-n='4'],
   .choices[data-many] {
-    --pic: clamp(3rem, 22dvh, 6rem);
+    --pic: clamp(3rem, calc(22 * var(--dvh)), 6rem);
     gap: var(--s-3);
   }
   .choices {
@@ -993,12 +1015,25 @@
     font-size: var(--fs-body);
   }
   .clapPicture {
-    width: 22dvh;
+    width: calc(22 * var(--dvh));
   }
   .clapWord {
     font-size: var(--fs-title);
   }
   .drum {
-    width: 34dvh;
+    width: calc(34 * var(--dvh));
   }
+}
+
+/* Hub sections (listen / look / think / speak): shown as titled groups once there are many games */
+.hubSection {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.hubGroup {
+  font-size: var(--fs-card-title);
+  font-weight: 800;
+  color: var(--text-muted);
+  padding-inline: var(--s-1);
 }

@@ -36,6 +36,13 @@ function useSecondary() {
   return (bi: Bi) => (speechLang === 'ru' ? renderBi(bi, uzScript === 'cyrl' ? 'uzc' : 'uz', uzScript) : bi.ru)
 }
 
+/** `lang` of the other-language form (WCAG 3.1.2): Uzbek in the chosen script when the speech language is Russian, else Russian. */
+function useSecondaryLang(): string {
+  const speechLang = useProfileStore((s) => s.profile.speechLang)
+  const { uzScript } = useI18n()
+  return speechLang === 'ru' ? (uzScript === 'cyrl' ? 'uz-Cyrl' : 'uz-Latn') : 'ru'
+}
+
 /** Built-in words break at syllables (soft hyphens) instead of mid-syllable. */
 function useShy() {
   const { uiLang } = useI18n()
@@ -111,6 +118,7 @@ function CustomRow({ card, voiceLangs, onEdit, onDelete }: { card: CustomCard; v
   const t = useT()
   const label = useLabel()
   const secondary = useSecondary()
+  const secondaryLang = useSecondaryLang()
   const url = useObjectUrl(card.image ?? null)
   const bi = { uz: card.uz || card.ru, ru: card.ru || card.uz }
   const name = label(bi)
@@ -119,7 +127,7 @@ function CustomRow({ card, voiceLangs, onEdit, onDelete }: { card: CustomCard; v
       <SymbolImg id={card.symbol ?? 'framed_picture'} src={url} className={styles.itemSym} />
       <span className={styles.itemText}>
         <span className={styles.itemMain}>{name}</span>
-        <span className={styles.itemSub}>{secondary(bi)}</span>
+        <span className={styles.itemSub} lang={secondaryLang}>{secondary(bi)}</span>
         <span className={styles.badges}>
           {voiceLangs && (
             <span className={styles.badgeOn}>
@@ -156,14 +164,15 @@ function WordRow({ word, hidden, voiceLangs, onToggle, onVoice }: { word: Word; 
   const t = useT()
   const label = useLabel()
   const secondary = useSecondary()
+  const secondaryLang = useSecondaryLang()
   const soft = useShy()
   const name = label(word)
   return (
-    <li className={styles.itemRow} data-hidden={hidden || undefined}>
+    <li className={styles.itemRow} data-hidden={hidden || undefined} data-wide="">
       <SymbolImg id={word.symbol} className={styles.itemSym} />
       <span className={styles.itemText}>
         <span className={[styles.itemMain, styles.itemFixed].join(' ')}>{soft(name)}</span>
-        <span className={[styles.itemSub, styles.itemFixed].join(' ')}>{soft(secondary(word))}</span>
+        <span className={[styles.itemSub, styles.itemFixed].join(' ')} lang={secondaryLang}>{soft(secondary(word))}</span>
         <span className={styles.badges}>
           {word.core && <span className={styles.badge}>{t('levelBadge', { n: word.core.level })}</span>}
           {voiceLangs && (

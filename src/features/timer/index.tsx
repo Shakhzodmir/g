@@ -1,4 +1,5 @@
 import { Pause, Play, Plus, RotateCcw, X } from 'lucide-react'
+import { useScreenTitle } from '../../app/adultTitles'
 import { useEffect, useState } from 'react'
 import { speak, speakSequence } from '../../audio/speech'
 import { useMotionPreset } from '../../design/motion'
@@ -14,6 +15,7 @@ import { resolveCard, useCustomCards, voice } from '../schedule/cards'
 import { CardArt, CardPicker } from '../schedule/CardPicker'
 import { Dial } from './Dial'
 import { useTimer } from './store'
+import { useWakeLock } from './wakeLock'
 import { S } from './strings'
 import styles from './Timer.module.css'
 import { clampMinutes, formatClock, fractionLeft, MAX_MINUTES, MIN_MINUTES, pause, PRESET_MINUTES, remainingMs, reset, start } from './timerLogic'
@@ -55,6 +57,7 @@ function useNow(running: boolean, smooth: boolean): number {
 
 export default function Timer() {
   const t = useStrings(S)
+  const title = useScreenTitle('timer', t('title'))
   const label = useLabel()
   const preset = useMotionPreset()
   const adult = useProfileStore((s) => s.profile.kind === 'adult')
@@ -65,6 +68,7 @@ export default function Timer() {
   const [picking, setPicking] = useState(false)
 
   const running = timer.status === 'running'
+  useWakeLock(running)
   const now = useNow(running, preset.movement)
 
   // The end signal (chime, voice, toast) comes from the global watcher so it also plays when this screen is closed.
@@ -93,7 +97,7 @@ export default function Timer() {
 
   return (
     <>
-      <PageHeader title={t('title')} symbol={<SymbolImg id="hourglass" />} />
+      <PageHeader title={title} symbol={<SymbolImg id="hourglass" />} />
       <Page width="normal">
         <div className={styles.layout}>
           <section className={styles.display} aria-live="off">

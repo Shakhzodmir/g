@@ -64,12 +64,16 @@ export function recoverFromChunkError(): boolean {
 
 function tr(key: keyof (typeof SHELL_EXTRA)['uz']): string {
   let lang: 'uz' | 'uzc' | 'ru' = 'uz'
+  let script: 'latn' | 'cyrl' | 'latn2026' = 'latn'
   try {
-    lang = useDevice.getState().uiLang
+    const d = useDevice.getState()
+    lang = d.uiLang
+    script = d.uzScript
   } catch {
     /* fall back to Uzbek */
   }
-  return renderBi({ uz: SHELL_EXTRA.uz[key], ru: SHELL_EXTRA.ru[key] }, lang, lang === 'uzc' ? 'cyrl' : 'latn')
+  // The error screen follows the chosen script too (Cyrillic, 2026 Latin), not only the language.
+  return renderBi({ uz: SHELL_EXTRA.uz[key], ru: SHELL_EXTRA.ru[key] }, lang, lang === 'uzc' ? 'cyrl' : script)
 }
 
 /** Clears every gapimiz.* localStorage key (device + preferences). IndexedDB (cards, recordings, profiles) is untouched. */

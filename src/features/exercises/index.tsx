@@ -1,4 +1,5 @@
 import { Info, ShieldCheck } from 'lucide-react'
+import { useScreenTitle } from '../../app/adultTitles'
 import { lazy, Suspense } from 'react'
 import { Route, Routes, useNavigate } from 'react-router'
 import { useMotionPreset } from '../../design/motion'
@@ -22,13 +23,14 @@ function Hub() {
   const navigate = useNavigate()
   const preset = useMotionPreset()
   const adult = useProfileStore((s) => s.profile.kind === 'adult')
+  const title = useScreenTitle('exercisesHeading', t('title'))
   return (
     <div className={styles.frame}>
-      <PageHeader title={t('title')} />
+      <PageHeader title={title} />
       <Page width="normal" className={styles.hub}>
       <ul className={styles.hubGrid} role="list" data-reach>
         <li>
-          <Tile
+          <Tile navigates
             art={<Candles progress={0.4} blowing={false} strength={0} movement={false} />}
             title={t('blowTitle')}
             label={t('blowTitle')}
@@ -37,7 +39,7 @@ function Hub() {
           />
         </li>
         <li>
-          <Tile
+          <Tile navigates
             art={
               <span className={styles.hubArt}>
                 {adult ? <SymbolImg id="microphone" /> : <Musicha state="happy" size={120} calm={!preset.idleLoops} title="" />}
@@ -50,7 +52,7 @@ function Hub() {
           />
         </li>
         <li>
-          <Tile symbol="mirror" title={t('mirrorTitle')} label={t('mirrorTitle')} tone="primary" onActivate={() => navigate('/exercises/mirror')} />
+          <Tile navigates symbol="mirror" title={t('mirrorTitle')} label={t('mirrorTitle')} tone="primary" onActivate={() => navigate('/exercises/mirror')} />
         </li>
       </ul>
       <div className={styles.notes}>

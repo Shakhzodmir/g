@@ -17,3 +17,5 @@ reports/
 
 # generated caches
 scripts/.cache/
+
+e2e/.shots/

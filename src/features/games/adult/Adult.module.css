@@ -1,0 +1,609 @@
+/*
+ * Adult training games: plain surfaces, text next to the picture, small radii (from the Kattalar theme tokens),
+ * no mascot, no confetti. Everything here uses design tokens; targets stay at or above --touch-min.
+ */
+
+/* ---------- Shell extras (stopwatch, plain progress, result) ---------- */
+
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.timerValue {
+  min-width: 3.25rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+}
+
+.progressText {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--fs-label);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-4);
+  width: min(100%, 36rem);
+  margin-inline: auto;
+  padding: var(--s-6) var(--pad-r, var(--gutter)) var(--s-6) var(--pad-l, var(--gutter));
+  text-align: center;
+}
+
+.resultTitle {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 800;
+}
+
+.resultCount {
+  margin: 0;
+  font-size: var(--fs-display);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.resultMeta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+  line-height: 1.45;
+}
+
+.resultList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--s-1);
+  color: var(--text);
+  font-size: var(--fs-body);
+}
+
+/* ---------- Prompt (no mascot) ---------- */
+
+.prompt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-card);
+  background: var(--surface);
+}
+
+.promptBody {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: var(--s-1);
+}
+
+.promptText {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: normal;
+  hyphens: manual;
+}
+
+.promptBig {
+  font-size: var(--fs-display);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.promptSub {
+  margin: 0;
+  font-size: var(--fs-body);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ---------- Stage layout ---------- */
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-height: 0;
+}
+
+.grow {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s-4);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  padding-top: var(--s-2);
+}
+
+.footer > * {
+  min-width: min(100%, 7.5rem);
+  justify-content: center;
+}
+
+.status {
+  margin: 0;
+  min-height: 1.5em;
+  text-align: center;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.statusOk {
+  color: var(--success);
+}
+
+/* ---------- Text options (words, phrases, yes/no, places) ---------- */
+
+.textList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--s-3);
+  width: min(100%, 44rem);
+  margin-inline: auto;
+}
+
+.textList > li {
+  display: grid;
+}
+
+.textGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.textOption {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 3.75rem;
+  padding: var(--s-3) var(--s-4);
+  border: 2px solid var(--outline-soft);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: start;
+  overflow-wrap: normal;
+  hyphens: manual;
+  touch-action: manipulation;
+  transition: border-color var(--dur-fast) var(--ease-out), opacity var(--dur-med) var(--ease-out);
+}
+
+.textOptionCenter {
+  justify-content: center;
+  text-align: center;
+}
+
+.textOption[data-pressed='true'] {
+  border-color: var(--primary);
+}
+
+.textOption[data-state='right'] {
+  border-color: var(--success);
+  box-shadow: 0 0 0 2px var(--success);
+}
+
+.textOption[data-state='dim'] {
+  opacity: 0.45;
+}
+
+.optionMark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: var(--fs-label);
+  font-weight: 800;
+}
+
+/* ---------- Picture options ---------- */
+
+.picked {
+  box-shadow:
+    0 0 0 3px var(--primary),
+    var(--elev-2);
+}
+
+.pickedMark {
+  position: absolute;
+  top: var(--s-2);
+  inset-inline-end: var(--s-2);
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.missed {
+  box-shadow:
+    0 0 0 3px var(--warm),
+    var(--elev-2);
+}
+
+/* ---------- Naming ---------- */
+
+.namingPic {
+  --pic: clamp(8rem, calc(30 * var(--dvh)), 16rem);
+  display: grid;
+  place-items: center;
+  width: min(100%, 22rem);
+  margin-inline: auto;
+  padding: var(--s-4);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-card);
+  background: var(--surface);
+}
+
+.namingPic > span {
+  display: block;
+  width: var(--pic);
+  aspect-ratio: 1;
+}
+
+.namingWord {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-display);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.cues {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--s-2);
+  width: min(100%, 40rem);
+  margin-inline: auto;
+}
+
+.cue {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-cell);
+  background: var(--surface-2);
+}
+
+.cueStep {
+  flex: none;
+  font-size: var(--fs-caption);
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.cueText {
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.typeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--s-2);
+  width: min(100%, 36rem);
+  margin-inline: auto;
+}
+
+.input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: var(--touch-min);
+  padding: var(--s-2) var(--s-4);
+  border: 2px solid var(--outline);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-title);
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--focus-outer);
+  outline-offset: 2px;
+}
+
+/* ---------- Sentence builder ---------- */
+
+.slotsLabel {
+  margin: 0;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 5rem;
+  padding: var(--s-3);
+  border: 2px dashed var(--outline);
+  border-radius: var(--r-card);
+  background: var(--surface);
+}
+
+.slotsEmpty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+}
+
+.pool {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+  min-height: 4rem;
+}
+
+.chunk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.5rem;
+  padding: var(--s-2) var(--s-4);
+  border: 2px solid var(--outline);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.chunk[data-pressed='true'] {
+  border-color: var(--primary);
+}
+
+.chunkPlaced {
+  background: var(--primary-container);
+  border-color: var(--primary);
+  color: var(--on-primary-container);
+}
+
+.chunkOk {
+  border-color: var(--success);
+}
+
+@media (max-width: 479px) {
+  .chunk {
+    white-space: normal;
+    padding-inline: var(--s-3);
+  }
+}
+
+/* ---------- Counter (category naming) ---------- */
+
+.counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-4);
+}
+
+.counterValue {
+  min-width: 4ch;
+  text-align: center;
+  font-size: calc(var(--fs-display) * 1.6);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.examples {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+}
+
+.example {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-1);
+  width: 6rem;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  text-align: center;
+}
+
+.example > span:first-child {
+  display: block;
+  width: 3.5rem;
+  aspect-ratio: 1;
+}
+
+/* ---------- Situations ---------- */
+
+.scene {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'pic label hear'
+    'text text text';
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--r-card);
+  background: var(--surface);
+}
+
+.scenePic {
+  grid-area: pic;
+  display: block;
+  width: clamp(3rem, calc(8 * var(--dvh)), 5rem);
+  aspect-ratio: 1;
+}
+
+.sceneLabel {
+  grid-area: label;
+  margin: 0;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.sceneText {
+  grid-area: text;
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: normal;
+  hyphens: manual;
+}
+
+.sceneHear {
+  grid-area: hear;
+}
+
+@media (min-width: 600px) {
+  .scene {
+    grid-template-areas:
+      'pic label hear'
+      'pic text hear';
+    gap: var(--s-1) var(--s-4);
+  }
+}
+
+/* A plain instruction line (no box), used where a boxed prompt would look like an answer option. */
+.task {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* ---------- Pictures in a prompt ---------- */
+
+.bigPic {
+  display: block;
+  width: clamp(5rem, calc(16 * var(--dvh)), 9rem);
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+
+.reveal {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ---------- Shared-game adult variants ---------- */
+
+.beadsPlain {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bead {
+  min-width: 4.5rem;
+  padding: var(--s-3) var(--s-4);
+  border: 2px solid var(--outline);
+  border-radius: var(--r-cell);
+  background: var(--surface);
+  text-align: center;
+  font-size: var(--fs-title);
+  font-weight: 800;
+  transition: background-color var(--dur-med) var(--ease-out);
+}
+
+.bead[data-on] {
+  background: var(--primary-container);
+  border-color: var(--primary);
+  color: var(--on-primary-container);
+}
+
+/* Whiteboard: a tighter rhythm so prompt, pictures and buttons fit above the bottom bar. */
+[data-board] .col {
+  gap: var(--s-3);
+}
+
+[data-board] .slots {
+  min-height: 4rem;
+  padding: var(--s-2) var(--s-3);
+}
+
+[data-board] .footer {
+  padding-top: 0;
+}
+
+[data-board] .scene,
+[data-board] .prompt {
+  padding-block: var(--s-2);
+}
+
+[data-board] .textList {
+  gap: var(--s-2);
+}
+
+[data-board] .textOption {
+  min-height: 3.25rem;
+  padding-block: var(--s-2);
+}
+
+[data-board] .namingPic {
+  --pic: clamp(6rem, calc(24 * var(--dvh)), 12rem);
+  padding: var(--s-2);
+}
+
+[data-board] .col {
+  padding-bottom: var(--s-6);
+}

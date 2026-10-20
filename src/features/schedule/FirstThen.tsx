@@ -7,6 +7,7 @@ import { useMotionPreset } from '../../design/motion'
 import { useLabel, useStrings } from '../../i18n'
 import type { ScheduleItem } from '../../store/db'
 import { logEvent } from '../../store/events'
+import { useProfileStore } from '../../store/profile'
 import { Button } from '../../ui/Button'
 import { Pressable } from '../../ui/Pressable'
 import { SymbolImg } from '../../ui/SymbolImg'
@@ -51,6 +52,7 @@ export function FirstThen({
   const t = useStrings(S)
   const label = useLabel()
   const preset = useMotionPreset()
+  const adult = useProfileStore((s) => s.profile.kind === 'adult')
   const thenRef = useRef<HTMLElement>(null)
   const focusThen = useRef(false)
   const cur = currentIndex(items)
@@ -84,7 +86,7 @@ export function FirstThen({
       focusThen.current = true
       void speakSequence([voice('sched_item_done'), voice('sched_then'), next.speech])
     } else {
-      void speakSequence([voice('sched_all_done')])
+      void speakSequence([voice(adult ? 'sched_item_done' : 'sched_all_done')])
     }
   }
 
@@ -139,7 +141,7 @@ export function FirstThen({
       {bar && <DoneBar name={cards[cur] ? label(cards[cur].label) : ''} scanGroup="first-then" onDone={() => markDone(cur)} />}
       {finished && !editing && (
         <div className={styles.finished} role="status">
-          <p className={styles.finishedText}>{t('allDone')}</p>
+          <p className={styles.finishedText}>{adult ? t('allDoneAdult') : t('allDone')}</p>
           <Button variant="soft" icon={<RotateCcw />} onActivate={() => onUpdate(resetDone)}>
             {t('again')}
           </Button>

@@ -1,4 +1,5 @@
 import { ArrowLeft, Check, Volume2, VolumeX, Wind, Square } from 'lucide-react'
+import { useScreenTitle } from '../../app/adultTitles'
 import { useReducedMotion } from 'motion/react'
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useNavigate } from 'react-router'
@@ -49,6 +50,7 @@ function Lotus() {
 
 export default function Calm() {
   const t = useStrings(S)
+  const title = useScreenTitle('calm', t('title'))
   const tc = useStrings(COMMON)
   const label = useLabel()
   const navigate = useNavigate()
@@ -148,7 +150,7 @@ export default function Calm() {
         <Button className={headerStyles.back} variant="soft" iconOnly icon={<ArrowLeft />} label={tc('back')} onActivate={leave}>
           {tc('back')}
         </Button>
-        <h1 className={headerStyles.title}>{t('title')}</h1>
+        <h1 className={headerStyles.title}>{title}</h1>
         <div className={headerStyles.actions}>
           <Button
             variant={voiceOn ? 'primary' : 'soft'}

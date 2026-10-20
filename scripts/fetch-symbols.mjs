@@ -1,13 +1,17 @@
-// Downloads the Fluent Emoji 3D PNGs listed in scripts/symbol-map.json and converts them to 192 px WebP.
+// Downloads the Fluent Emoji 3D PNGs listed in scripts/symbol-map*.json and converts them to 192 px WebP.
 // Usage: node scripts/fetch-symbols.mjs [--force]
 // Fluent Emoji © Microsoft, MIT License — https://github.com/microsoft/fluentui-emoji
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const map = JSON.parse(readFileSync(join(root, 'scripts', 'symbol-map.json'), 'utf8'))
+// scripts/symbol-map.json plus any scripts/symbol-map.<name>.json (each author keeps their own file so parallel edits never clash)
+const map = {}
+for (const f of readdirSync(join(root, 'scripts')).filter((n) => /^symbol-map(\..+)?\.json$/.test(n)).sort()) {
+  Object.assign(map, JSON.parse(readFileSync(join(root, 'scripts', f), 'utf8')))
+}
 const out = join(root, 'public', 'symbols')
 const force = process.argv.includes('--force')
 mkdirSync(out, { recursive: true })

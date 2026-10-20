@@ -1,10 +1,19 @@
 .splash {
-  min-height: 100dvh;
+  min-height: var(--dvh100);
   display: grid;
   align-content: center;
   justify-items: center;
   gap: var(--s-3);
   background: var(--bg);
+}
+
+/* inside <main>: below the shell, no full-screen takeover */
+.inline {
+  min-height: calc(50 * var(--dvh));
+}
+
+.pending {
+  min-height: calc(50 * var(--dvh));
 }
 
 .dot {

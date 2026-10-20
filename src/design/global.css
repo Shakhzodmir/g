@@ -16,9 +16,21 @@ html[data-board='true'] {
   font-size: calc(100% * var(--ui-scale) * var(--text-scale, 1));
 }
 
+/*
+ * Very large text on a small screen (see lib/bigText.ts): any word may break anywhere, even where a component asked for
+ * overflow-wrap: normal. A broken word beats a page that scrolls sideways (WCAG 1.4.4 / 1.4.10).
+ */
+html[data-bigtext] *,
+html[data-bigtext] *::before,
+html[data-bigtext] *::after {
+  overflow-wrap: anywhere;
+}
+
 body {
   margin: 0;
-  min-height: 100dvh;
+  /* a word wider than its whole line breaks instead of pushing the page sideways (200% text on a phone) */
+  overflow-wrap: break-word;
+  min-height: var(--dvh100);
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-ui);
@@ -32,7 +44,7 @@ body {
 }
 
 #root {
-  min-height: 100dvh;
+  min-height: var(--dvh100);
 }
 
 h1,
@@ -186,6 +198,7 @@ html[data-sensory='calm'] *::after {
   bottom: 5px;
   height: 6px;
   border-radius: 3px;
+  background: var(--outline-soft);
   background: color-mix(in srgb, currentColor 18%, transparent);
   overflow: hidden;
   pointer-events: none;

@@ -6,7 +6,13 @@ import './design/global.css'
 import { App } from './app/App'
 import { clearChunkReloadFlag, ErrorBoundary, recoverFromChunkError } from './app/ErrorBoundary'
 import { setupServiceWorker } from './lib/swUpdate'
+import { setupInstallPrompt } from './lib/installPrompt'
+import { setupBigText } from './lib/bigText'
+import { setupViewportUnit } from './lib/viewportUnit'
 
+setupViewportUnit()
+setupBigText()
+setupInstallPrompt()
 setupServiceWorker()
 
 // Vite reports a failed preload (stale chunk after a deploy) before React sees it; recover the same way.

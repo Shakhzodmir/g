@@ -95,6 +95,7 @@ export function Dialog({ open, onClose, title, children, variant = 'center', foo
       {open && (
         <motion.div
           className={styles.scrim}
+          data-sheet={variant === 'sheet' || undefined}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

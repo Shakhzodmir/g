@@ -5,7 +5,7 @@ import { defaultProfile, useProfileStore } from '../store/profile'
 import { ParentGate, resetPinLock } from './ParentGate'
 import { hashPin } from './pin'
 
-const LABEL = /3 soniya/
+const LABEL = /1,5 soniya/
 
 function setup(opts: { scan?: boolean; pin?: string } = {}) {
   useProfileStore.setState({ profile: defaultProfile({ scanning: { mode: opts.scan ? 'auto1' : 'off' } }) })
@@ -25,7 +25,7 @@ describe('ParentGate', () => {
     vi.restoreAllMocks()
   })
 
-  it('unlocks on a screen-reader / keyboard click (detail 0) without the 3 s hold', () => {
+  it('unlocks on a screen-reader / keyboard click (detail 0) without the 1.5 s hold', () => {
     const { onUnlock } = setup()
     fireEvent.click(screen.getByRole('button', { name: LABEL }), { detail: 0 })
     expect(onUnlock).toHaveBeenCalledTimes(1)
@@ -48,22 +48,22 @@ describe('ParentGate', () => {
     expect(on.onUnlock).toHaveBeenCalledTimes(1)
   })
 
-  it('a hold needs 3 s, ignores a second finger and cancels when any pointer lifts', () => {
+  it('a hold needs 1.5 s, ignores a second finger and cancels when any pointer lifts', () => {
     vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance', 'setTimeout', 'clearTimeout', 'Date'] })
     const { onUnlock } = setup()
     const btn = screen.getByRole('button', { name: LABEL })
     fireEvent.pointerDown(btn, { pointerId: 1, isPrimary: true, pointerType: 'touch' })
-    act(() => vi.advanceTimersByTime(2000))
+    act(() => vi.advanceTimersByTime(1000))
     // Second finger: non-primary, must not restart or double the loop.
     fireEvent.pointerDown(btn, { pointerId: 2, isPrimary: false, pointerType: 'touch' })
-    act(() => vi.advanceTimersByTime(900))
+    act(() => vi.advanceTimersByTime(400))
     expect(onUnlock).not.toHaveBeenCalled()
     // Lifting ANY finger ends the hold.
     fireEvent.pointerUp(window, { pointerId: 2, pointerType: 'touch' })
     act(() => vi.advanceTimersByTime(3000))
     expect(onUnlock).not.toHaveBeenCalled()
     fireEvent.pointerDown(btn, { pointerId: 1, isPrimary: true, pointerType: 'touch' })
-    act(() => vi.advanceTimersByTime(3100))
+    act(() => vi.advanceTimersByTime(1600))
     expect(onUnlock).toHaveBeenCalledTimes(1)
   })
 

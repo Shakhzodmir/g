@@ -7,7 +7,7 @@ import { isLevel, type GameId, type Level } from './rounds'
  * fallback), so the game and the "forget this profile" cleanup see the same data.
  */
 
-export const GAME_IDS: GameId[] = ['animals', 'find', 'memory', 'syllables']
+export const GAME_IDS: GameId[] = ['animals', 'find', 'memory', 'syllables', 'naming', 'sentence', 'category', 'wordpic', 'oddone', 'listen', 'situations', 'colors', 'count', 'shapes', 'odd', 'routine', 'sound', 'build', 'opposite', 'point']
 
 export const levelStorage = safeLocalStorage()
 

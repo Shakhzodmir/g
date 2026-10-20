@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.22"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<linearGradient id="g1" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#f7f8fa"/><stop offset="0.5" stop-color="#f2f4f7"/><stop offset="1" stop-color="#bdbec1"/></linearGradient>
+<linearGradient id="g2" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#878a8f"/><stop offset="0.5" stop-color="#3d424b"/><stop offset="1" stop-color="#30333b"/></linearGradient>
+<linearGradient id="g3" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#b9bfc6"/><stop offset="0.5" stop-color="#8e97a3"/><stop offset="1" stop-color="#6f767f"/></linearGradient>
+<linearGradient id="g4" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#e0e5eb"/><stop offset="0.5" stop-color="#cdd5df"/><stop offset="1" stop-color="#a0a6ae"/></linearGradient>
+</defs>
+<ellipse cx="128" cy="232" rx="86" ry="10" fill="url(#g0)"/>
+<rect x="44" y="66" width="168" height="160" rx="16" fill="url(#g1)" stroke="#a3adba" stroke-width="3"/>
+<rect x="44" y="66" width="168" height="40" rx="14" fill="url(#g2)" stroke="#23272e" stroke-width="3"/>
+<circle cx="86" cy="86" r="13" fill="#1f2329"/>
+<circle cx="128" cy="86" r="13" fill="#1f2329"/>
+<circle cx="170" cy="86" r="13" fill="#1f2329"/>
+<circle cx="80" cy="132" r="9" fill="url(#g3)" stroke="#5a626d" stroke-width="2"/>
+<circle cx="128" cy="132" r="9" fill="url(#g3)" stroke="#5a626d" stroke-width="2"/>
+<circle cx="176" cy="132" r="9" fill="url(#g3)" stroke="#5a626d" stroke-width="2"/>
+<rect x="66" y="152" width="124" height="58" rx="10" fill="url(#g4)" stroke="#a3adba" stroke-width="2"/>
+<rect x="88" y="162" width="80" height="8" rx="4" fill="#9aa4b0"/>
+</svg>

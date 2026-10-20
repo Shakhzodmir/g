@@ -1,5 +1,6 @@
 .row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--s-4);
@@ -8,15 +9,19 @@
 
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-1);
 }
 
 .labels {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-1);
 }
 
 .label {
+  min-width: 0;
+  overflow-wrap: break-word;
   font-weight: 700;
   font-size: var(--fs-label);
   padding: 0;
@@ -136,6 +141,7 @@
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-2);
   min-width: 0;
 }
@@ -203,7 +209,7 @@
   display: inline;
 }
 
-.segment:has(:focus-visible) {
+.segment[data-focus] {
   outline: 3px solid var(--focus-outer);
   outline-offset: 1px;
 }

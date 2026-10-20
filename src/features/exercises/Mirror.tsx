@@ -7,7 +7,7 @@ import { speak, stopSpeaking } from '../../audio/speech'
 import { ARTICULATION } from '../../content/exercises'
 import type { ArticulationExercise, OgizchaPose } from '../../content/types'
 import { COMMON } from '../../i18n/common'
-import { useLabel, useStrings } from '../../i18n'
+import { formatNumber, useLabel, useStrings } from '../../i18n'
 import { useDevice } from '../../store/device'
 import { logEvent } from '../../store/events'
 import { Button } from '../../ui/Button'
@@ -307,7 +307,7 @@ function ExerciseView({ ex }: { ex: ArticulationExercise }) {
         min={0.1}
         max={0.6}
         step={0.05}
-        format={(v) => v.toFixed(2)}
+        format={(v) => formatNumber(v, useDevice.getState().uiLang, 2)}
         onChange={(v) => setSettings({ mirrorThreshold: v })}
       />
       {ex.metric && cam === 'on' && (det === 'tracking' || det === 'calibrating') && (

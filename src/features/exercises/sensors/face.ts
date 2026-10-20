@@ -4,10 +4,17 @@ import type { BlendCategory } from './blendMetric'
 /*
  * Front camera + MediaPipe Face Landmarker for "Oyna". Everything runs in the browser:
  * the video is only drawn on screen and analysed frame by frame — never recorded or uploaded.
- * The ~7 MB module is loaded lazily, only when an exercise with a camera metric starts.
+ * The module (wasm + model, ~15 MB) is loaded lazily, only when an exercise with a camera metric starts. It ships WITH
+ * the app (public/mediapipe, see scripts/fetch-mediapipe.mjs) and is cached by the service worker ('mediapipe',
+ * CacheFirst), so the exercise works offline and nothing is requested from a third party. The CDN is only a fallback
+ * for a build that lacks the local files.
  */
 
 export const MP_VERSION = '1.0.1'
+/** Self-hosted copies, resolved against the page so they work under any sub-path. */
+export const LOCAL_WASM_URL = (): string => new URL(`${import.meta.env.BASE_URL}mediapipe/wasm`, document.baseURI).href
+export const LOCAL_MODEL_URL = (): string => new URL(`${import.meta.env.BASE_URL}mediapipe/face_landmarker.task`, document.baseURI).href
+/** CDN fallback (used only when the local files cannot be loaded). */
 export const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`
 export const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'
 
@@ -22,18 +29,25 @@ export function loadFaceLandmarker(): Promise<FaceLandmarker> {
   if (!landmarker) {
     landmarker = (async () => {
       const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision')
-      const fileset = await FilesetResolver.forVisionTasks(WASM_URL)
-      const options = (delegate: 'GPU' | 'CPU') => ({
-        baseOptions: { modelAssetPath: MODEL_URL, delegate },
-        runningMode: 'VIDEO' as const,
-        numFaces: 1,
-        outputFaceBlendshapes: true,
-        outputFacialTransformationMatrixes: false,
-      })
+      const create = async (wasmUrl: string, modelUrl: string): Promise<FaceLandmarker> => {
+        const fileset = await FilesetResolver.forVisionTasks(wasmUrl)
+        const options = (delegate: 'GPU' | 'CPU') => ({
+          baseOptions: { modelAssetPath: modelUrl, delegate },
+          runningMode: 'VIDEO' as const,
+          numFaces: 1,
+          outputFaceBlendshapes: true,
+          outputFacialTransformationMatrixes: false,
+        })
+        try {
+          return await FaceLandmarker.createFromOptions(fileset, options('GPU'))
+        } catch {
+          return await FaceLandmarker.createFromOptions(fileset, options('CPU'))
+        }
+      }
       try {
-        return await FaceLandmarker.createFromOptions(fileset, options('GPU'))
+        return await create(LOCAL_WASM_URL(), LOCAL_MODEL_URL())
       } catch {
-        return await FaceLandmarker.createFromOptions(fileset, options('CPU'))
+        return await create(WASM_URL, MODEL_URL)
       }
     })()
     // Let a later attempt retry (e.g. the first one failed offline).

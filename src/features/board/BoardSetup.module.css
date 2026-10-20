@@ -93,6 +93,7 @@
   left: 0;
   right: 0;
   bottom: 12%;
+  background: transparent; /* the dashed edge alone marks the zone where color-mix is missing */
   background: color-mix(in srgb, var(--primary) 30%, transparent);
   border-top: 2px dashed var(--primary);
   transition: height var(--dur-med) var(--ease-out);
@@ -121,7 +122,9 @@
   bottom: var(--nav-bottom, 0px);
   z-index: 5;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  gap: var(--s-3);
   padding: var(--s-3) 0 var(--s-2);
   background: linear-gradient(to bottom, transparent, var(--bg) 35%);
 }

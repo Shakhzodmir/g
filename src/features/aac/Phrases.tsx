@@ -12,10 +12,11 @@ const PAIN_IDS = new Set(Array.from({ length: 11 }, (_, i) => `pain_${i}`))
 /** Quick phrases for the profile's audience (children: kid/both; adults: adult/both), pain scale excluded. */
 export function PhrasesPanel({ adult, onTap, glowKey, name }: { adult: boolean; onTap: OnTap; glowKey: string | null; name: string }) {
   const label = useLabel()
-  const list = useMemo(
-    () => PHRASES.filter((p) => !PAIN_IDS.has(p.id) && (p.audience === 'both' || p.audience === (adult ? 'adult' : 'kid'))),
-    [adult],
-  )
+  const list = useMemo(() => {
+    const mine = PHRASES.filter((p) => !PAIN_IDS.has(p.id) && (p.audience === 'both' || p.audience === (adult ? 'adult' : 'kid')))
+    // Adults meet the phrases written for adults first, the shared ones after them (stable order inside each group).
+    return adult ? [...mine.filter((p) => p.audience === 'adult'), ...mine.filter((p) => p.audience !== 'adult')] : mine
+  }, [adult])
   return (
     <div className={styles.phraseGrid} role="group" aria-label={name}>
       {list.map((p, i) => {
@@ -63,6 +64,8 @@ export function PainPanel({ onTap, glowKey }: { onTap: OnTap; glowKey: string | 
               scanGroup={n < 6 ? 'pain-a' : 'pain-b'}
               pressed={chosen === n}
               style={{ '--n': n } as CSSProperties}
+              // stepped colour for engines without color-mix (see Aac.module.css)
+              data-band={n <= 3 ? 0 : n <= 6 ? 1 : n <= 8 ? 2 : 3}
               data-glow={glowKey === e.key ? 'true' : undefined}
               onActivate={() => {
                 setChosen(n)

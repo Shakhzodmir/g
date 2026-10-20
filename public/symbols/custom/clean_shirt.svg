@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.22"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<linearGradient id="g1" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#aedaf6"/><stop offset="0.5" stop-color="#7cc4f0"/><stop offset="1" stop-color="#6199bb"/></linearGradient>
+</defs>
+<ellipse cx="128" cy="228" rx="78" ry="11" fill="url(#g0)"/>
+<path d="M82 50 L112 36 C118 52 138 52 144 36 L174 50 L214 88 L190 118 L172 104 L172 216 L84 216 L84 104 L66 118 L42 88 Z" fill="url(#g1)" stroke="#517f9c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M112 38 C118 56 138 56 144 38" fill="none" stroke="#4f93c4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M212 30 Q215 49 234 52 Q215 55 212 74 Q209 55 190 52 Q209 49 212 30 Z" fill="#ffe266" stroke="#e0a800" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M48 134 Q51 147 64 150 Q51 153 48 166 Q45 153 32 150 Q45 147 48 134 Z" fill="#ffe266" stroke="#e0a800" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M196 164 Q199 173 208 176 Q199 179 196 188 Q193 179 184 176 Q193 173 196 164 Z" fill="#fff3a8" stroke="#e0a800" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

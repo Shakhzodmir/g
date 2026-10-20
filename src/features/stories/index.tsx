@@ -32,7 +32,7 @@ function StoryList() {
           const title = label(s.title)
           return (
             <li key={s.id}>
-              <Tile
+              <Tile navigates
                 shape="card"
                 tone="calm"
                 symbol={s.symbol}

@@ -2,9 +2,11 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { buildManifest } from '../../scripts/audio-manifest'
+import { adultSpoken } from '../content/adultgamedata'
 import { SOUND_MAKERS } from '../content/animals'
 import { ARTICULATION } from '../content/exercises'
 import { FEELINGS, HELPERS } from '../content/feelings'
+import { GAME_LINES, LISTEN_SENTENCES, LISTEN_TASKS } from '../content/gamedata'
 import { PHRASES } from '../content/phrases'
 import { STICKERS } from '../content/stickers'
 import { STORIES } from '../content/stories'
@@ -48,6 +50,7 @@ const FAMILIES: Record<string, string[]> = {
   'g.animals.': SOUND_MAKERS.map((s) => `g.animals.${s.id}`),
   'g.find.': WORDS.filter((w) => w.topic !== 'core').map((w) => `g.find.${w.id}`),
   'g.syl.': WORDS.filter((w) => w.syllables).map((w) => `g.syl.${w.id}`),
+  'g.ad.': adultSpoken().map((s) => s.key),
   'n.': NUMBER_LINES.map((n) => `n.${n.id.replace(/^num_/, '')}`),
   'x.': [...ARTICULATION.map((x) => `x.${x.id}`), 'x.blow_candles', 'x.blow_dandelion', 'x.blow_boat'],
   'c.': [], // custom cards: no bundled clip by design
@@ -88,6 +91,10 @@ describe('audio manifest key coverage', () => {
     const missing: string[] = []
     for (const keys of Object.values(FAMILIES)) for (const k of keys) if (!bothLangs(k)) missing.push(k)
     expect(missing).toEqual([])
+  })
+
+  it('has clips (both languages) for every spoken line of the kids games', () => {
+    for (const l of [...GAME_LINES, ...LISTEN_SENTENCES, ...LISTEN_TASKS]) expect(bothLangs(l.key), l.key).toBe(true)
   })
 
   it('has clips for all 24 stickers, the adult voice prompt and the token counters', () => {

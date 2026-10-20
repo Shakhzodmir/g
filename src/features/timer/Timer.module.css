@@ -1,5 +1,6 @@
 .layout {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--section-gap);
   min-width: 0;
 }
@@ -7,6 +8,7 @@
 /* Display (dial, digits, next card) above; controls below, inside the reach zone. */
 .display {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   align-content: start;
   gap: var(--s-4);
@@ -15,6 +17,7 @@
 .controls {
   container-type: inline-size;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-4);
   align-content: start;
   width: min(100%, 32rem);
@@ -31,21 +34,23 @@
 /* ---------- Dial ---------- */
 .dial {
   position: relative;
+  /* the clamp() floor is in rem: with enlarged text it must still fit the column */
+  max-width: 100%;
   border-radius: 50%;
   box-shadow: var(--elev-2);
-  width: clamp(11rem, min(72vw, 36dvh), 30rem);
+  width: clamp(11rem, min(72vw, calc(36 * var(--dvh))), 30rem);
   aspect-ratio: 1;
 }
 
 @media (min-width: 900px) {
   .dial {
-    width: clamp(14rem, min(40vw, 54dvh), 34rem);
+    width: clamp(14rem, min(40vw, calc(54 * var(--dvh))), 34rem);
   }
 }
 
 @media (orientation: landscape) and (max-height: 520px) {
   .dial {
-    width: clamp(9rem, min(40vw, 58dvh), 20rem);
+    width: clamp(9rem, min(40vw, calc(58 * var(--dvh))), 20rem);
   }
 }
 
@@ -194,6 +199,14 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+/* No container queries (Chrome < 105): the viewport minus the page gutters (2 x 1rem) stands in for the controls column. */
+@supports not (container-type: inline-size) {
+  @media (max-width: 23rem) {
+    .presets {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
 
 .preset {
   display: grid;
@@ -235,6 +248,7 @@
 
 .adult {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-3);
   padding: var(--s-4);
   border-radius: var(--r-card);
@@ -269,7 +283,7 @@
 /* Digits on/off: the whole row is one 48px+ target. */
 .digitToggle {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--s-3);
   width: 100%;
@@ -283,6 +297,7 @@
 
 .digitText {
   display: grid;
+  min-width: 0;
   gap: 2px;
 }
 
@@ -314,7 +329,7 @@
   border-radius: 50%;
   background: var(--surface);
   box-shadow: var(--elev-1);
-  transition: translate var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-out);
 }
 
 .digitToggle[aria-pressed='true'] .switch {
@@ -322,7 +337,7 @@
 }
 
 .digitToggle[aria-pressed='true'] .knob {
-  translate: calc(4rem - 2.375rem) 0;
+  transform: translateX(calc(4rem - 2.375rem));
 }
 
 :global(html[data-theme='hc-light']) .switch,
@@ -342,7 +357,7 @@
 
 /* Whiteboard: dial + digits + next card must fit above the bottom navigation row */
 :global(html[data-board='true']) .dial {
-  width: clamp(14rem, min(30vw, 38dvh), 34rem);
+  width: clamp(14rem, min(30vw, calc(38 * var(--dvh))), 34rem);
 }
 
 /* Finished: the dial breathes once (no loop), in addition to the check mark, for when sound is off. */
@@ -366,9 +381,11 @@
 .notice {
   position: fixed;
   z-index: 55;
-  left: 50%;
+  /* centred without transform: the notice animates its own transform (motion), and old WebViews lack `translate` */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
   bottom: calc(var(--nav-h) + var(--s-3) + var(--safe-bottom));
-  translate: -50% 0;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;

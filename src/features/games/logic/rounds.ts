@@ -1,10 +1,14 @@
 import { sample, shuffle } from '../../../lib/random'
 
 export type Level = 1 | 2 | 3
-export type GameId = 'animals' | 'find' | 'memory' | 'syllables'
+export type AdultGameId = 'naming' | 'sentence' | 'category' | 'wordpic' | 'oddone' | 'listen' | 'situations'
+export type KidGameId = 'colors' | 'count' | 'shapes' | 'odd' | 'routine' | 'sound' | 'build' | 'opposite' | 'point'
+export type GameId = 'animals' | 'find' | 'memory' | 'syllables' | AdultGameId | KidGameId
 
 /** Items per round: short and predictable. */
 export const ROUND_SIZE = 5
+/** Items per round for adult profiles (8 is the usual length of a short training set). */
+export const ADULT_ROUND_SIZE = 8
 /** After this many rounds in a row the game suggests a rest (never forces it). */
 export const REST_AFTER_ROUNDS = 3
 /** Errorless learning: the correct card glows softly after this delay. */

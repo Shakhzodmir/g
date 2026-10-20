@@ -1,3 +1,5 @@
+import { ADULT_PHRASES, withAdultGroups } from './adultPhrases'
+import { MORE_PHRASES } from './more'
 import type { Phrase } from './types'
 
 type Audience = Phrase['audience']
@@ -71,26 +73,26 @@ const ADULT: Phrase[] = [
   p('adult', 'speak_slowly', 'Iltimos, sekinroq gapiring', 'Говорите, пожалуйста, медленнее', 'Говор+ите, пож+алуйста, м+едленнее', 'turtle'),
   p('adult', 'wait_answer', 'Kuting, men javob beraman', 'Подождите, я отвечу', 'Подожд+ите, я отв+ечу', 'hourglass_not_done'),
   p('adult', 'will_write', 'Men yozib koʻrsataman', 'Я напишу', 'Я напиш+у', 'writing_hand'),
-  p('adult', 'call_nurse', 'Hamshirani chaqiring', 'Позовите медсестру', 'Позов+ите медсестр+у', 'woman_health_worker'),
-  p('adult', 'call_doctor', 'Shifokorni chaqiring', 'Позовите врача', 'Позов+ите врач+а', 'health_worker'),
+  p('adult', 'call_nurse', 'Iltimos, hamshirani chaqiring', 'Позовите, пожалуйста, медсестру', 'Позов+ите, пож+алуйста, медсестр+у', 'woman_health_worker'),
+  p('adult', 'call_doctor', 'Iltimos, shifokorni chaqiring', 'Позовите, пожалуйста, врача', 'Позов+ите, пож+алуйста, врач+а', 'health_worker'),
   p('adult', 'hard_to_breathe', 'Nafas olishim qiyin', 'Мне трудно дышать', 'Мне тр+удно дыш+ать', 'lungs'),
   p('adult', 'nausea', 'Koʻnglim aynayapti', 'Меня тошнит', 'Мен+я тошн+ит', 'nauseated_face'),
   p('adult', 'dizzy', 'Boshim aylanyapti', 'У меня кружится голова', 'У мен+я кр+ужится голов+а', 'face_with_spiral_eyes'),
-  p('adult', 'medicine', 'Dorimni bering', 'Дайте моё лекарство', 'Д+айте мо+ё лек+арство', 'pill'),
+  p('adult', 'medicine', 'Iltimos, dorimni bering', 'Дайте, пожалуйста, моё лекарство', 'Д+айте, пож+алуйста, мо+ё лек+арство', 'pill'),
   p('adult', 'toilet_adult', 'Hojatxonaga borishim kerak', 'Мне нужно в туалет', 'Мне н+ужно в туал+ет', 'toilet'),
   p('adult', 'thirsty', 'Chanqadim', 'Я хочу пить', 'Я хоч+у пить', 'potable_water'),
   p('adult', 'hungry', 'Ovqat yegim keldi', 'Я хочу есть', 'Я хоч+у есть', 'fork_and_knife'),
-  p('adult', 'cold', 'Sovqotyapman', 'Мне холодно', 'Мне х+олодно', 'snowflake'),
-  p('adult', 'hot', 'Juda issiq', 'Мне жарко', 'Мне ж+арко', 'hot_face'),
-  p('adult', 'help_lie_down', 'Yotishimga yordam bering', 'Помогите мне лечь', 'Помог+ите мне лечь', 'bed'),
-  p('adult', 'help_sit_up', 'Oʻtirishimga yordam bering', 'Помогите мне сесть', 'Помог+ите мне сесть', 'chair'),
+  p('adult', 'cold', 'Menga sovuq', 'Мне холодно', 'Мне х+олодно', 'snowflake'),
+  p('adult', 'hot', 'Menga issiq', 'Мне жарко', 'Мне ж+арко', 'sun'),
+  p('adult', 'help_lie_down', 'Iltimos, yotishimga yordam bering', 'Помогите мне лечь, пожалуйста', 'Помог+ите мне лечь, пож+алуйста', 'bed'),
+  p('adult', 'help_sit_up', 'Iltimos, oʻtirishimga yordam bering', 'Помогите мне сесть, пожалуйста', 'Помог+ите мне сесть, пож+алуйста', 'chair'),
   p('adult', 'want_rest', 'Dam olmoqchiman', 'Я хочу отдохнуть', 'Я хоч+у отдохн+уть', 'couch_and_lamp'),
-  p('adult', 'glasses', 'Koʻzoynagimni bering', 'Дайте мои очки', 'Д+айте мо+и очк+и', 'glasses'),
-  p('adult', 'phone', 'Telefonimni bering', 'Дайте мой телефон', 'Д+айте мой телеф+он', 'mobile_phone'),
+  p('adult', 'glasses', 'Iltimos, koʻzoynagimni bering', 'Дайте, пожалуйста, мои очки', 'Д+айте, пож+алуйста, мо+и очк+и', 'glasses'),
+  p('adult', 'phone', 'Iltimos, telefonimni bering', 'Дайте, пожалуйста, мой телефон', 'Д+айте, пож+алуйста, мой телеф+он', 'mobile_phone'),
   p('adult', 'call_family', 'Oilamga qoʻngʻiroq qiling', 'Позвоните моей семье', 'Позвон+ите мо+ей семь+е', 'telephone_receiver'),
   p('adult', 'family_here', 'Oilamni chaqiring', 'Позовите мою семью', 'Позов+ите мо+ю семь+ю', 'people_hugging'),
-  p('adult', 'open_window', 'Derazani oching', 'Откройте окно', 'Откр+ойте окн+о', 'window'),
-  p('adult', 'light_off', 'Chiroqni oʻchiring', 'Выключите свет', 'В+ыключите свет', 'light_bulb'),
+  p('adult', 'open_window', 'Iltimos, derazani oching', 'Откройте, пожалуйста, окно', 'Откр+ойте, пож+алуйста, окн+о', 'window'),
+  p('adult', 'light_off', 'Iltimos, chiroqni oʻchiring', 'Выключите, пожалуйста, свет', 'В+ыключите, пож+алуйста, свет', 'light_bulb'),
   p('adult', 'worried', 'Xavotirdaman', 'Я волнуюсь', 'Я волн+уюсь', 'anxious_face_with_sweat'),
   p('adult', 'scared', 'Qoʻrqyapman', 'Мне страшно', 'Мне стр+ашно', 'fearful_face'),
   p('adult', 'sad', 'Xafaman', 'Мне грустно', 'Мне гр+устно', 'frowning_face'),
@@ -101,4 +103,4 @@ const ADULT: Phrase[] = [
   p('adult', 'thank_you', 'Rahmat', 'Спасибо', 'Спас+ибо', 'heart_hands'),
 ]
 
-export const PHRASES: Phrase[] = [...KID, ...PAIN, ...ADULT]
+export const PHRASES: Phrase[] = [...KID, ...withAdultGroups([...PAIN, ...ADULT]), ...ADULT_PHRASES, ...MORE_PHRASES]

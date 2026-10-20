@@ -13,7 +13,7 @@ import { useTokenStore } from '../tokens/store'
  */
 
 export const DEVICE_BLOCK_VERSION = 1
-export const GAME_IDS = ['animals', 'find', 'memory', 'syllables'] as const
+export const GAME_IDS = ['animals', 'find', 'memory', 'syllables', 'colors', 'count', 'shapes', 'odd', 'routine', 'sound', 'build', 'opposite', 'point'] as const
 
 export interface DeviceBlock {
   version: number

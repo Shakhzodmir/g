@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import type { TopicId } from '../../content/types'
-import { WORDS, wordsByTopic } from '../../content/vocab'
+import { wordsForKind } from '../../content/vocab'
 import { useLabel } from '../../i18n'
 import type { AacSettings } from '../../store/profile'
 import styles from './Aac.module.css'
@@ -80,11 +80,11 @@ function useCoreCell(ref: RefObject<HTMLElement | null>, comfortable: number): {
 }
 
 /** Fixed 6×6 core board: words never move; masked words leave empty places of the same size. */
-export function CoreBoard({ aac, onTap, glowKey, name, comfortable = 72 }: BoardProps & { comfortable?: number }) {
+export function CoreBoard({ aac, onTap, glowKey, name, comfortable = 72, kind = 'child' }: BoardProps & { comfortable?: number; kind?: 'child' | 'adult' }) {
   const label = useLabel()
   const ref = useRef<HTMLDivElement>(null)
   const { cell, cellH, gap } = useCoreCell(ref, comfortable)
-  const cells = useMemo(() => buildCoreBoard(WORDS, aac.level, aac.hiddenWordIds), [aac.level, aac.hiddenWordIds])
+  const cells = useMemo(() => buildCoreBoard(wordsForKind(kind), aac.level, aac.hiddenWordIds), [kind, aac.level, aac.hiddenWordIds])
   return (
     <div
       ref={ref}
@@ -133,15 +133,20 @@ function useGridColumns(ref: RefObject<HTMLElement | null>): number {
 }
 
 /** A topic (fringe) board: stable order of built-in words, then the profile's own cards. */
-export function TopicBoard({ topic, profileId, aac, onTap, glowKey, name }: BoardProps & { topic: TopicId; profileId: string }) {
+export function TopicBoard({ topic, profileId, aac, onTap, glowKey, name, kind = 'child' }: BoardProps & { topic: TopicId; profileId: string; kind?: 'child' | 'adult' }) {
   const label = useLabel()
   const custom = useCustomCards(profileId, topic)
   const ref = useRef<HTMLDivElement>(null)
   const cols = useGridColumns(ref)
   const hidden = useMemo(() => new Set(aac.hiddenWordIds), [aac.hiddenWordIds])
   const slots: Array<Entry | null> = useMemo(
-    () => [...wordsByTopic(topic).map((w) => (hidden.has(w.id) ? null : wordEntry(w))), ...custom.map((c) => cardEntry(c.card, c.src))],
-    [topic, hidden, custom],
+    () => [
+      ...wordsForKind(kind)
+        .filter((w) => w.topic === topic)
+        .map((w) => (hidden.has(w.id) ? null : wordEntry(w))),
+      ...custom.map((c) => cardEntry(c.card, c.src)),
+    ],
+    [topic, kind, hidden, custom],
   )
   return (
     <div ref={ref} className={styles.topicGrid} role="group" aria-label={name}>
