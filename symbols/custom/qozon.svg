@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.3"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<linearGradient id="g1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f939a"/><stop offset="0.5" stop-color="#4a505c"/><stop offset="1" stop-color="#3a3e48"/></linearGradient>
+<linearGradient id="g2" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#9a9ea6"/><stop offset="0.5" stop-color="#5c6370"/><stop offset="1" stop-color="#484d57"/></linearGradient>
+<radialGradient id="g3" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff" stop-opacity="0.35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>
+<ellipse cx="128" cy="226" rx="90" ry="11" fill="url(#g0)"/>
+<path d="M34 110 C34 190 80 224 128 224 C176 224 222 190 222 110 Z" fill="url(#g1)" stroke="#262a31" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="128" cy="110" rx="94" ry="20" fill="url(#g2)" stroke="#262a31" stroke-width="3"/>
+<ellipse cx="128" cy="110" rx="82" ry="13" fill="#262a31"/>
+<path d="M34 124 C14 118 8 138 30 150" fill="none" stroke="#262a31" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M222 124 C242 118 248 138 226 150" fill="none" stroke="#262a31" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="84" cy="160" rx="26" ry="14" transform="rotate(-30 84 160)" fill="url(#g3)"/>
+<path d="M98 90 C86 70 110 56 98 34" fill="none" stroke="#c9d2dc" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+<path d="M128 90 C116 70 140 56 128 34" fill="none" stroke="#c9d2dc" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+<path d="M158 90 C146 70 170 56 158 34" fill="none" stroke="#c9d2dc" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+</svg>

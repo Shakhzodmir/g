@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<ellipse cx="128" cy="236" rx="52" ry="7" fill="#3b4656" opacity="0.14"/>
+<polyline points="84,96 66,138 58,180" fill="none" stroke="#8f9bab" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="172,96 190,138 198,180" fill="none" stroke="#8f9bab" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="112,180 108,222" fill="none" stroke="#8f9bab" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="144,180 148,222" fill="none" stroke="#8f9bab" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="106" cy="230" rx="15" ry="7" fill="#8f9bab"/>
+<ellipse cx="150" cy="230" rx="15" ry="7" fill="#8f9bab"/>
+<path d="M86 94 Q86 80 102 80 H154 Q170 80 170 94 L165 170 Q164 184 150 184 H106 Q92 184 91 170 Z" fill="#8f9bab"/>
+<rect x="117" y="60" width="22" height="24" rx="8" fill="#8f9bab"/>
+<circle cx="128" cy="42" r="22" fill="#8f9bab"/>
+
+<ellipse cx="110" cy="204" rx="22" ry="20" fill="#f0a43a" opacity="0.28"/><ellipse cx="110" cy="204" rx="15" ry="13" fill="#f0a43a" stroke="#c9760f" stroke-width="3"/>
+<ellipse cx="146" cy="204" rx="22" ry="20" fill="#f0a43a" opacity="0.28"/><ellipse cx="146" cy="204" rx="15" ry="13" fill="#f0a43a" stroke="#c9760f" stroke-width="3"/>
+</svg>

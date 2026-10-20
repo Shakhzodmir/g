@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.22"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<radialGradient id="g1" cx="0.36" cy="0.3" r="0.85"><stop offset="0" stop-color="#f8caa6"/><stop offset="0.5" stop-color="#f08a3a"/><stop offset="1" stop-color="#ad632a"/></radialGradient>
+<radialGradient id="g2" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff" stop-opacity="0.55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<linearGradient id="g3" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#e7c8a0"/><stop offset="0.5" stop-color="#d9a666"/><stop offset="1" stop-color="#a98150"/></linearGradient>
+<linearGradient id="g4" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#d4b18f"/><stop offset="0.5" stop-color="#b9814a"/><stop offset="1" stop-color="#90653a"/></linearGradient>
+<radialGradient id="g5" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff" stop-opacity="0.55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>
+<ellipse cx="128" cy="234" rx="100" ry="9" fill="url(#g0)"/>
+<circle cx="128" cy="184" r="36" fill="url(#g1)" stroke="#b05a14" stroke-width="3"/>
+<ellipse cx="117.2" cy="171.4" rx="14.4" ry="7.9" transform="rotate(-30 117.2 171.4)" fill="url(#g2)"/>
+<rect x="28" y="62" width="200" height="26" rx="8" fill="url(#g3)" stroke="#8f5f2a" stroke-width="3"/>
+<rect x="46" y="88" width="16" height="146" rx="4" fill="url(#g4)" stroke="#8f5f2a" stroke-width="2.5"/>
+<rect x="194" y="88" width="16" height="146" rx="4" fill="url(#g4)" stroke="#8f5f2a" stroke-width="2.5"/>
+<circle cx="128" cy="186" r="36" fill="url(#g1)" stroke="#b05a14" stroke-width="3"/>
+<ellipse cx="117.2" cy="173.4" rx="14.4" ry="7.9" transform="rotate(-30 117.2 173.4)" fill="url(#g5)"/>
+</svg>

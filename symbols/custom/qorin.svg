@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="qorin">
+  <defs>
+    <radialGradient id="skin" cx="42%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#f6d2b4"/>
+      <stop offset="0.6" stop-color="#e8b996"/>
+      <stop offset="1" stop-color="#c98f6a"/>
+    </radialGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4fb8c0"/>
+      <stop offset="1" stop-color="#0a7584"/>
+    </linearGradient>
+    <linearGradient id="pants" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3f63c9"/>
+      <stop offset="1" stop-color="#2b4fb5"/>
+    </linearGradient>
+    <radialGradient id="hand" cx="40%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#f4cdae"/>
+      <stop offset="1" stop-color="#d59a74"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+  <ellipse cx="128" cy="236" rx="78" ry="10" fill="#17363c" opacity="0.14" filter="url(#soft)"/>
+  <!-- shirt rolled up -->
+  <path d="M52 40 Q128 18 204 40 L210 92 Q128 78 46 92 Z" fill="url(#shirt)"/>
+  <path d="M46 92 Q128 74 210 92 Q212 102 206 106 Q128 92 50 106 Q44 102 46 92 Z" fill="#0a6573"/>
+  <!-- belly -->
+  <path d="M50 104 Q128 90 206 104 Q224 150 202 196 Q128 214 54 196 Q32 150 50 104 Z" fill="url(#skin)"/>
+  <ellipse cx="104" cy="132" rx="34" ry="18" fill="#fff" opacity="0.22"/>
+  <!-- navel -->
+  <path d="M124 158 q4 -8 8 0 q-4 6 -8 0 Z" fill="#a8704f"/>
+  <!-- waistband -->
+  <path d="M54 194 Q128 212 202 194 L206 222 Q128 238 50 222 Z" fill="url(#pants)"/>
+  <path d="M54 194 Q128 212 202 194 L203 202 Q128 220 53 202 Z" fill="#5c7fe0" opacity="0.6"/>
+  <!-- hand resting on the belly -->
+  <path d="M150 128 q22 -6 34 8 q10 12 2 26 q-8 12 -26 10 q-20 -2 -24 -18 q-3 -18 14 -26 Z" fill="url(#hand)"/>
+  <path d="M158 132 q4 -10 14 -10 M168 134 q6 -10 16 -6 M176 142 q8 -8 14 0" stroke="#c48661" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <!-- gentle ache marks -->
+  <path d="M86 150 q-10 -4 -14 4 M90 166 q-10 2 -10 12" stroke="#d9757d" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.75"/>
+</svg>

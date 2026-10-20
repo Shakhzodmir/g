@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.22"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<linearGradient id="g1" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#99b0d7"/><stop offset="0.5" stop-color="#5a7fbf"/><stop offset="1" stop-color="#466395"/></linearGradient>
+<linearGradient id="g2" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#e7ebf1"/><stop offset="0.5" stop-color="#d8dee8"/><stop offset="1" stop-color="#a8adb5"/></linearGradient>
+<linearGradient id="g3" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#f1dc8f"/><stop offset="0.5" stop-color="#e8c64a"/><stop offset="1" stop-color="#b59a3a"/></linearGradient>
+</defs>
+<ellipse cx="128" cy="234" rx="60" ry="8" fill="url(#g0)"/>
+<rect x="80" y="14" width="96" height="218" rx="18" fill="url(#g1)" stroke="#2f4f8a" stroke-width="3"/>
+<rect x="104" y="28" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="35" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="42" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="49" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="56" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="63" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="70" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="77" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="84" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="91" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="98" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="105" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="112" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="119" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="126" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="133" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="140" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="147" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="154" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="161" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="168" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="175" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="104" y="182" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="132" y="189" width="20" height="9" rx="3" fill="url(#g2)" stroke="#8791a3" stroke-width="1.5"/>
+<rect x="108" y="74" width="40" height="40" rx="10" fill="url(#g3)" stroke="#a98010" stroke-width="3"/>
+<rect x="116" y="112" width="24" height="34" rx="8" fill="url(#g3)" stroke="#a98010" stroke-width="3"/>
+<circle cx="128" cy="132" r="5" fill="#a98010"/>
+</svg>

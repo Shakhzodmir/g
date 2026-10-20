@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="sh" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.24"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.108"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<radialGradient id="crust" cx="0.45" cy="0.42" r="0.68">
+  <stop offset="0" stop-color="#ffd890"/>
+  <stop offset="0.5" stop-color="#f0b45c"/>
+  <stop offset="0.85" stop-color="#d48a3a"/>
+  <stop offset="1" stop-color="#b56b28"/>
+</radialGradient>
+<linearGradient id="side" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#c47a30"/>
+  <stop offset="1" stop-color="#94551f"/>
+</linearGradient>
+<radialGradient id="spec" cx="0.5" cy="0.5" r="0.5">
+  <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+  <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<ellipse cx="128" cy="212" rx="100" ry="14" fill="url(#sh)"/>
+<path d="M42 182C40 200 52 210 66 210H190C204 210 216 200 214 182L210 176C214 190 206 196 196 196H60C50 196 42 190 46 176Z" fill="url(#side)"/>
+<path d="M128 46C138 46 146 56 152 68L214 176C222 192 212 202 196 202H60C44 202 34 192 42 176L104 68C110 56 118 46 128 46Z" fill="url(#crust)"/>
+<g fill="none" stroke-linecap="round">
+  <path d="M128 144 128 56M128 144 54 194M128 144 202 194" stroke="#a9612a" stroke-width="5" opacity="0.4"/>
+  <path d="M130 144 130 58M130 146 204 194M126 146 54 192" stroke="#ffe3a8" stroke-width="2" opacity="0.55"/>
+</g>
+<circle cx="128" cy="144" r="6" fill="#c27a35" opacity="0.6"/>
+<g transform="rotate(43 128 92)"><ellipse cx="128" cy="93.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="128" cy="92" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(49 114 108)"><ellipse cx="114" cy="109.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="114" cy="108" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(63 142 110)"><ellipse cx="142" cy="111.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="142" cy="110" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(13 100 132)"><ellipse cx="100" cy="133.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="100" cy="132" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(128 128 124)"><ellipse cx="128" cy="125.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="128" cy="124" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(152 156 130)"><ellipse cx="156" cy="131.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="156" cy="130" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(15 86 160)"><ellipse cx="86" cy="161.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="86" cy="160" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(129 112 150)"><ellipse cx="112" cy="151.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="112" cy="150" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(18 146 150)"><ellipse cx="146" cy="151.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="146" cy="150" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(38 170 160)"><ellipse cx="170" cy="161.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="170" cy="160" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(141 100 176)"><ellipse cx="100" cy="177.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="100" cy="176" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(48 128 172)"><ellipse cx="128" cy="173.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="128" cy="172" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(64 158 178)"><ellipse cx="158" cy="179.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="158" cy="178" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(63 74 182)"><ellipse cx="74" cy="183.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="74" cy="182" rx="3.4" ry="1.9" fill="#fdf3d8"/></g><g transform="rotate(93 182 184)"><ellipse cx="182" cy="185.2" rx="3.6" ry="2" fill="#8a5220" opacity="0.35"/><ellipse cx="182" cy="184" rx="3.4" ry="1.9" fill="#fdf3d8"/></g>
+<ellipse cx="108" cy="92" rx="22" ry="10" transform="rotate(-58 108 92)" fill="url(#spec)"/>
+</svg>

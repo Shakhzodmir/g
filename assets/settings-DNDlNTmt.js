@@ -1,0 +1,1 @@
+import{rn as e}from"./shared-D1BPNcOc.js";import{n as t,r as n,t as r}from"./vendor-zustand-BVBIS4_O.js";var i=.25,a=n()(t(e=>({blowSensitivity:5,voiceSensitivity:5,mirrorThreshold:i,blowScene:`candles`,lastBlowEnd:null,set:t=>e(t)}),{name:`gapimiz.exercises`,version:1,storage:r(e),partialize:({set:e,...t})=>t}));export{a as t};

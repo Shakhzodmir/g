@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+<radialGradient id="g0" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3b2f2c" stop-opacity="0.22"/><stop offset="0.65" stop-color="#3b2f2c" stop-opacity="0.1"/><stop offset="1" stop-color="#3b2f2c" stop-opacity="0"/></radialGradient>
+<linearGradient id="g1" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#deba97"/><stop offset="0.5" stop-color="#c99058"/><stop offset="1" stop-color="#9d7045"/></linearGradient>
+<linearGradient id="g2" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#eed1ad"/><stop offset="0.5" stop-color="#e4b57a"/><stop offset="1" stop-color="#b28d5f"/></linearGradient>
+<linearGradient id="g3" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#f9e6ea"/><stop offset="0.5" stop-color="#f6d6dd"/><stop offset="1" stop-color="#c0a7ac"/></linearGradient>
+<linearGradient id="g4" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#bae2da"/><stop offset="0.5" stop-color="#8fd0c4"/><stop offset="1" stop-color="#70a299"/></linearGradient>
+</defs>
+<ellipse cx="128" cy="234" rx="100" ry="9" fill="url(#g0)"/>
+<path d="M20 150 C20 214 70 226 128 226 C186 226 236 214 236 150 Z" fill="url(#g1)" stroke="#7a4f26" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M30 150 L226 150 L212 104 L44 104 Z" fill="url(#g2)" stroke="#7a4f26" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M52 106 C52 54 204 54 204 106 Z" fill="url(#g3)" stroke="#c98a9a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M44 150 C44 130 70 128 128 128 C186 128 212 130 212 150 Z" fill="url(#g4)" stroke="#4f9a8c" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="66" cy="188" r="8" fill="#f6e1b4"/>
+<circle cx="96" cy="188" r="8" fill="#f6e1b4"/>
+<circle cx="128" cy="188" r="8" fill="#f6e1b4"/>
+<circle cx="160" cy="188" r="8" fill="#f6e1b4"/>
+<circle cx="190" cy="188" r="8" fill="#f6e1b4"/>
+</svg>
